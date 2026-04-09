@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPS Passei — Planejamento Individual para Concursos</title>
+<style>
+/* ============================================================
+   CORES E FONTES — edite aqui para mudar o visual inteiro
+   ============================================================ */
+:root {
+    --cor-principal: #1a2744;
+    --cor-destaque: #e8b830;
+    --cor-destaque-hover: #d4a520;
+    --cor-texto: #333333;
+    --cor-texto-claro: #666666;
+    --cor-fundo: #ffffff;
+    --cor-fundo-alt: #f7f8fa;
+    --cor-fundo-escuro: #1a2744;
+    --cor-borda: #e1e4e8;
+    --cor-sucesso: #2e7d32;
+    --fonte-titulo: 'Georgia', serif;
+    --fonte-corpo: 'Arial', sans-serif;
+    --largura-max: 800px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--fonte-corpo);
+    color: var(--cor-texto);
+    background: var(--cor-fundo);
+    line-height: 1.7;
+}
+
+.secao { padding: 60px 24px; }
+.secao-escura { background: var(--cor-fundo-escuro); color: #fff; }
+.secao-alt { background: var(--cor-fundo-alt); }
+.container { max-width: var(--largura-max); margin: 0 auto; }
+
+h1 {
+    font-family: var(--fonte-titulo);
+    font-size: clamp(28px, 5vw, 44px);
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+h2 {
+    font-family: var(--fonte-titulo);
+    font-size: clamp(22px, 4vw, 34px);
+    line-height: 1.3;
+    margin-bottom: 14px;
+}
+h3 {
+    font-family: var(--fonte-titulo);
+    font-size: clamp(18px, 3vw, 24px);
+    margin-bottom: 10px;
+}
+p, li { font-size: 17px; margin-bottom: 14px; }
+.destaque { color: var(--cor-destaque); }
+.subtitulo { font-size: 19px; opacity: .85; margin-bottom: 24px; }
+.texto-centro { text-align: center; }
+.texto-pequeno { font-size: 14px; color: var(--cor-texto-claro); }
+
+.cta {
+    display: inline-block;
+    background: var(--cor-destaque);
+    color: var(--cor-principal);
+    font-size: 18px;
+    font-weight: bold;
+    padding: 16px 40px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: .25s ease;
+    text-align: center;
+}
+.cta:hover {
+    background: var(--cor-destaque-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,.15);
+}
+.cta-grande { font-size: 20px; padding: 20px 48px; }
+
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.12);
+    margin: 28px 0;
+}
+.video-wrapper iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+}
+
+.card-grid { display: grid; gap: 20px; margin: 28px 0; }
+@media (min-width: 600px) {
+    .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+}
+.card {
+    background: #fff;
+    border: 1px solid var(--cor-borda);
+    border-radius: 10px;
+    padding: 24px;
+}
+.card-escuro {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.15);
+    color: #fff;
+}
+.card-numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--cor-destaque);
+    color: var(--cor-principal);
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.etapa { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 32px; }
+.etapa-numero {
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--cor-destaque);
+    color: var(--cor-principal);
+    font-weight: bold;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.etapa-conteudo h3 { margin-bottom: 6px; }
+
+.depoimento {
+    background: #fff;
+    border-left: 4px solid var(--cor-destaque);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+.depoimento p { font-style: italic; margin-bottom: 8px; }
+.depoimento .autor {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 15px;
+    color: var(--cor-principal);
+}
+
+.precos { display: grid; gap: 20px; margin: 28px 0; }
+@media (min-width: 600px) { .precos { grid-template-columns: 1fr 1fr 1fr; } }
+.preco-card {
+    border: 2px solid var(--cor-borda);
+    border-radius: 12px;
+    padding: 28px 20px;
+    text-align: center;
+    position: relative;
+    background: #fff;
+}
+.preco-card.popular {
+    border-color: var(--cor-destaque);
+    box-shadow: 0 4px 20px rgba(232,184,48,.25);
+}
+.preco-card.popular::before {
+    content: 'MAIS ESCOLHIDO';
+    position: absolute;
+    top: -14px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--cor-destaque);
+    color: var(--cor-principal);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 16px;
+    border-radius: 20px;
+}
+.preco-valor { font-size: 42px; font-weight: bold; color: var(--cor-principal); margin: 12px 0 4px; }
+.preco-periodo { font-size: 15px; color: var(--cor-texto-claro); margin-bottom: 16px; }
+.preco-nome { font-weight: bold; font-size: 18px; margin-bottom: 4px; }
+
+.garantia-box {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background: #f0faf0;
+    border: 2px solid var(--cor-sucesso);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 28px 0;
+}
+.garantia-icone {
+    flex-shrink: 0;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--cor-sucesso);
+    color: #fff;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.separador {
+    width: 60px; height: 4px;
+    background: var(--cor-destaque);
+    border-radius: 2px;
+    margin: 0 auto 24px;
+}
+.separador-esquerda { margin: 0 0 24px; }
+
+@media (max-width: 600px) {
+    .secao { padding: 40px 18px; }
+    .etapa { flex-direction: column; align-items: center; text-align: center; }
+    .garantia-box { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HERO — Headline principal + Vídeo
+     ============================================================ -->
+<section class="secao secao-escura">
+    <div class="container texto-centro">
+
+        <!-- EDITE: Texto acima do vídeo -->
+        <p class="subtitulo">Para concurseiros que estão cansados de estudar sem resultado</p>
+
+        <!-- EDITE: Headline principal -->
+        <h1>O caminho mais seguro<br>para a sua <span class="destaque">aprovação</span></h1>
+
+        <!-- EDITE: Sub-headline (H2) -->
+        <h2 style="font-size:clamp(18px,3vw,26px); opacity:.9; margin-bottom:28px;">
+            Construa sua aprovação <span class="destaque">com segurança e leveza!</span>
+        </h2>
+
+        <!-- EDITE: Troque o ID do vídeo do YouTube abaixo (após /embed/) -->
+        <div class="video-wrapper">
+            <iframe
+                src="https://www.youtube.com/embed/u9rJGGjmlZI"
+                title="Passo a Passo para Passar"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+
+        <!-- EDITE: Texto abaixo do vídeo -->
+        <p style="margin-top:20px; opacity:.8;">Assista ao vídeo completo e descubra como construir corretamente sua aprovação.</p>
+
+        <!-- EDITE: Link do botão CTA (para página de pagamento) -->
+        <a href="#planos" class="cta cta-grande" style="margin-top:12px;">QUERO COMEÇAR AGORA</a>
+
+    </div>
+</section>
+
+
+<!-- ============================================================
+     PERGUNTA PROVOCATIVA
+     ============================================================ -->
+<section class="secao">
+    <div class="container texto-centro">
+        <h2>Passar em concurso é...</h2>
+        <div class="card-grid cols-3" style="margin-top:20px;">
+            <div class="card texto-centro">
+                <h3>Estudar o conteúdo certo?</h3>
+            </div>
+            <div class="card texto-centro">
+                <h3>Controlar o seu desempenho?</h3>
+            </div>
+            <div class="card texto-centro">
+                <h3>Ter mais tempo para estudar?</h3>
+            </div>
+        </div>
+        <p style="font-size:19px; margin-top:20px;">
+            A resposta é: <strong>os três juntos, do jeito certo.</strong><br>
+            Sem isso, você está fazendo um <strong>esforço inútil</strong> — gastando tempo e energia sem sair do lugar.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     PARA QUEM É
+     ============================================================ -->
+<section class="secao secao-alt">
+    <div class="container">
+        <div class="separador separador-esquerda"></div>
+        <h2>Este método é para você que...</h2>
+        <ul style="padding-left:20px;">
+            <li>Já segue algum tipo de direcionamento, mas <strong>ainda não passou</strong> no concurso que sonha.</li>
+            <li>Quer começar certo no mundo dos concursos, <strong>sem cometer os erros</strong> que a maioria comete.</li>
+            <li>Está cansado de estudar muito e <strong>não ver resultado</strong> nas provas.</li>
+            <li>Quer um método comprovado, <strong>não fórmulas mágicas</strong>.</li>
+        </ul>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     QUEM É ELLYSSON
+     ============================================================ -->
+<section class="secao">
+    <div class="container">
+        <div class="separador separador-esquerda"></div>
+        <h2>Quem vai te guiar nessa jornada</h2>
+
+        <!-- EDITE: Descomente e troque o caminho da foto -->
+        <!-- <img src="foto-ellysson.jpg" alt="Prof. Ellysson" style="width:160px; border-radius:50%; margin-bottom:16px; display:block;"> -->
+
+        <p>
+            Eu sou o <strong>Ellysson</strong>, Auditor do TCU — para muitos, o concurso mais difícil do Brasil.
+        </p>
+        <p>
+            Mas não foi fácil chegar até aqui. Tomei reprovação, quase desisti, estudei até não aguentar mais. Até perceber que <strong>dedicação sem direção é esforço inútil</strong>.
+        </p>
+        <p>
+            Reuni todas as técnicas que me fizeram passar no TCU e criei um método que já ajudou dezenas de alunos a conquistarem seus cargos. Hoje, além de auditor, tenho outra função: <strong>ajudar famílias a conquistarem estabilidade financeira e emocional</strong>.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     OS 4 ERROS
+     ============================================================ -->
+<section class="secao secao-escura">
+    <div class="container">
+        <div class="texto-centro">
+            <div class="separador"></div>
+            <h2>Os 4 erros que te mantêm no <span class="destaque">esforço inútil</span></h2>
+            <p class="subtitulo">Se você comete pelo menos um deles, está remando sem sair do lugar.</p>
+        </div>
+        <div class="card-grid cols-2">
+
+            <div class="card card-escuro">
+                <div class="card-numero">1</div>
+                <h3>Acreditar que basta estudar</h3>
+                <p>Dedicação sem direção é como correr uma maratona sem rota. Você se esgota e não chega a lugar nenhum.</p>
+            </div>
+
+            <div class="card card-escuro">
+                <div class="card-numero">2</div>
+                <h3>Estudar sem priorizar</h3>
+                <p>Dar a mesma importância para uma matéria de 40 pontos e outra de 5 é como grifar o livro inteiro: não funciona.</p>
+            </div>
+
+            <div class="card card-escuro">
+                <div class="card-numero">3</div>
+                <h3>Não revisar (ou revisar errado)</h3>
+                <p>Sua memória não é de ouro. Sem revisão com técnica, você perde o que já estudou e precisa começar do zero.</p>
+            </div>
+
+            <div class="card card-escuro">
+                <div class="card-numero">4</div>
+                <h3>Não analisar seu desempenho</h3>
+                <p>Sem olhar para os dados das suas questões, seu estudo é guiado por achismo, não por estratégia.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     OS 3 PILARES
+     ============================================================ -->
+<section class="secao">
+    <div class="container">
+        <div class="texto-centro">
+            <div class="separador"></div>
+            <h2>Os 3 pilares dos <span class="destaque">reais competidores</span></h2>
+            <p style="margin-bottom:28px;">Quem domina esses pilares chega a ser um concorrente desleal.</p>
+        </div>
+        <div class="card-grid cols-3">
+
+            <div class="card texto-centro">
+                <div class="card-numero" style="margin:0 auto 12px;">1</div>
+                <h3>Autoconhecimento</h3>
+                <p>Saber exatamente onde você está, com base em dados e estatísticas. É o seu GPS na jornada.</p>
+            </div>
+
+            <div class="card texto-centro">
+                <div class="card-numero" style="margin:0 auto 12px;">2</div>
+                <h3>Organização inteligente</h3>
+                <p>Priorizar o que importa, considerando suas individualidades e o histórico da banca. Isso calibra o GPS.</p>
+            </div>
+
+            <div class="card texto-centro">
+                <div class="card-numero" style="margin:0 auto 12px;">3</div>
+                <h3>Mentalidade blindada</h3>
+                <p>A confiança que vem de enxergar seu progresso com clareza. Não é otimismo vazio — é evidência.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     O MÉTODO — 5 ETAPAS
+     ============================================================ -->
+<section class="secao secao-alt">
+    <div class="container">
+        <div class="texto-centro">
+            <div class="separador"></div>
+            <h2>As 5 etapas do <span class="destaque">OPS Passei</span></h2>
+            <p style="margin-bottom:36px;">Um planejamento individual feito para você. Seu único papel é sentar na cadeira e estudar.</p>
+        </div>
+
+        <div class="etapa">
+            <div class="etapa-numero">1</div>
+            <div class="etapa-conteudo">
+                <h3>Estudo Inteligente</h3>
+                <p>Você aprende todas as técnicas que me fizeram passar no TCU. Aprende a usar a plataforma com inteligência artificial a seu favor — videoaulas com explicações e exemplos práticos.</p>
+            </div>
+        </div>
+
+        <div class="etapa">
+            <div class="etapa-numero">2</div>
+            <div class="etapa-conteudo">
+                <h3>Autoconhecimento Estatístico</h3>
+                <p>Com os dados da plataforma, você descobre seu nível em cada assunto, seus pontos fortes e fracos. É o satélite que te localiza no mapa da sua aprovação.</p>
+            </div>
+        </div>
+
+        <div class="etapa">
+            <div class="etapa-numero">3</div>
+            <div class="etapa-conteudo">
+                <h3>Metas Personalizadas</h3>
+                <p>Defina onde quer chegar. A plataforma cria metas de conteúdo e de tempo, distribuídas diariamente, com priorização individual. Atrasou? Ela recalcula a rota em segundos — como um GPS moderno.</p>
+            </div>
+        </div>
+
+        <div class="etapa">
+            <div class="etapa-numero">4</div>
+            <div class="etapa-conteudo">
+                <h3>Execução das Metas</h3>
+                <p>Seu trabalho é só estudar, fazer exercícios e revisões. A plataforma te lembra o dia exato de revisar cada matéria e o momento de fazer questões. Zero preocupação além de estudar.</p>
+            </div>
+        </div>
+
+        <div class="etapa">
+            <div class="etapa-numero">5</div>
+            <div class="etapa-conteudo">
+                <h3>Diagnóstico Recorrente</h3>
+                <p>À medida que você estuda, a plataforma entrega estatísticas do seu desempenho. Você enxerga com clareza o que atrapalha e o que te leva pra frente. Mentalidade blindada se constrói com evidências.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ============================================================
+     DEPOIMENTOS
+     EDITE: Troque textos, nomes e resultados
+     ============================================================ -->
+<section class="secao">
+    <div class="container">
+        <div class="texto-centro">
+            <div class="separador"></div>
+            <h2>Quem seguiu o método, <span class="destaque">passou</span></h2>
+        </div>
+
+        <div class="depoimento">
+            <p>"Depois de dois anos estudando, acumulando bagagem, sem passar nas provas, eu fiz a mentoria com o professor Ellysson. Fui aprovado em três concursos em três meses."</p>
+            <div class="autor">Mateus — Servidor do TJDFT</div>
+        </div>
+
+        <div class="depoimento">
+            <p>"É uma técnica que eu falo que é um caminho sem volta. Depois que você aprende, você nunca mais é o mesmo estudando. Você realmente dá um passo para frente."</p>
+            <div class="autor">Cadu — Oficial de Justiça do TJDFT e Auditor do TCDF</div>
+        </div>
+
+        <div class="depoimento">
+            <p>"Se você quer ser aprovado assim como eu fui e tem desejo de conhecer melhor essas ferramentas e melhorar seu desempenho, confere o perfil dele."</p>
+            <div class="autor">Aluno aprovado</div>
+        </div>
+
+        <div class="depoimento">
+            <p>"Valeu, Ellysson. Sem o seu apoio não sei se seria possível. Valeu mesmo."</p>
+            <div class="autor">Aprovado na Sefaz-CE</div>
+        </div>
+
+        <div class="depoimento">
+            <p>"Com certeza esse resultado não seria possível sem a orientação do Ellysson."</p>
+            <div class="autor">Aprovado como Auditor Fiscal — Sefaz-CE</div>
+        </div>
+
+        <div class="depoimento">
+            <p>"Muito obrigado pela sua parceria, pelos ensinamentos, por me guiar — literalmente — nesse caminho."</p>
+            <div class="autor">Aprovado como Auditor da CGU</div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ============================================================
+     PLANOS E PREÇOS
+     EDITE: Valores, links dos botões
+     ============================================================ -->
+<section class="secao secao-escura" id="planos">
+    <div class="container">
+        <div class="texto-centro">
+            <div class="separador"></div>
+            <h2>Escolha o seu plano</h2>
+            <p class="subtitulo">Quanto mais comprometido, menor o investimento.</p>
+        </div>
+
+        <div class="precos">
+
+            <div class="preco-card">
+                <div class="preco-nome">Mensal</div>
+                <div class="preco-valor">R$ 170</div>
+                <div class="preco-periodo">por mês</div>
+                <!-- EDITE: Link de pagamento -->
+                <a href="#" class="cta" style="width:100%;">ASSINAR</a>
+            </div>
+
+            <div class="preco-card">
+                <div class="preco-nome">Trimestral</div>
+                <div class="preco-valor">R$ 117</div>
+                <div class="preco-periodo">por mês (3x de R$ 117)</div>
+                <!-- EDITE: Link de pagamento -->
+                <a href="#" class="cta" style="width:100%;">ASSINAR</a>
+            </div>
+
+            <div class="preco-card popular">
+                <div class="preco-nome">Anual</div>
+                <div class="preco-valor">R$ 79</div>
+                <div class="preco-periodo">por mês (12x de R$ 79)</div>
+                <!-- EDITE: Link de pagamento -->
+                <a href="#" class="cta" style="width:100%;">ASSINAR</a>
+            </div>
+
+        </div>
+
+        <p class="texto-centro" style="margin-top:12px; opacity:.7; font-size:14px;">
+            Pagamento via cartão de crédito, PIX ou boleto. Até 12x no cartão.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     BÔNUS
+     ============================================================ -->
+<section class="secao">
+    <div class="container">
+        <div class="texto-centro">
+            <div class="separador"></div>
+            <h2>Bônus exclusivo</h2>
+        </div>
+        <div class="card" style="max-width:600px; margin:0 auto;">
+            <h3>Aulas ao vivo com o Prof. Ellysson</h3>
+            <p>
+                Além de todo o conteúdo da plataforma, você participa de <strong>aulas ao vivo</strong> para tirar dúvidas e aprofundar temas do seu preparo.
+            </p>
+            <ul style="padding-left:20px;">
+                <li>Aulas em grupo, guiadas pelas necessidades dos alunos.</li>
+                <li>Canal exclusivo no Telegram com datas e links.</li>
+                <li>Aulas gravadas, caso não consiga participar ao vivo.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     GARANTIA
+     ============================================================ -->
+<section class="secao secao-alt">
+    <div class="container">
+        <div class="garantia-box">
+            <div class="garantia-icone">&#10003;</div>
+            <div>
+                <h3>Garantia de 15 dias</h3>
+                <p>
+                    Se dentro de 15 dias você não gostar, ou até se desistir, eu devolvo <strong>100% do seu dinheiro</strong>. Sem precisar justificar. Faço isso porque confio no poder de entrega do OPS Passei — a maioria dos meus alunos não desiste.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     CTA FINAL
+     ============================================================ -->
+<section class="secao secao-escura">
+    <div class="container texto-centro">
+        <h2>Não é sorte. É método.<br>Não é sorte. É <span class="destaque">OPS</span>.</h2>
+        <p style="font-size:19px; margin-bottom:24px; opacity:.9;">
+            Você está comprometido com a sua aprovação?<br>
+            Então escolha o plano e comece agora.
+        </p>
+        <!-- EDITE: Link do botão CTA -->
+        <a href="#planos" class="cta cta-grande">QUERO MINHA APROVAÇÃO</a>
+        <p style="margin-top:16px; font-size:14px; opacity:.6;">Acesso imediato à plataforma após a compra.</p>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="secao" style="padding:28px 24px; border-top:1px solid var(--cor-borda);">
+    <div class="container texto-centro texto-pequeno">
+        <!-- EDITE: Dados do footer -->
+        <p>&copy; 2026 Prof. Ellysson — OPS Passei. Todos os direitos reservados.</p>
+        <p>Contato: contato@profellysson.com.br</p>
+    </div>
+</footer>
+
+</body>
+</html>

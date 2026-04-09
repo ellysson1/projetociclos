@@ -1,0 +1,251 @@
+Leia o arquivo CONTEXTO.md nesta pasta e continue o desenvolvimento a partir daí. Próximo passo: Fase 5 (Edital).
+
+
+Contexto
+O app atual e um SPA monolitico (index.html, 1360 linhas) com vanilla HTML/CSS/JS + Supabase. O usuario quer transformar isso em uma plataforma mais robusta com dois perfis (professor/aluno), rastreamento de questoes, acompanhamento de edital e evolucao automatica do ciclo.
+
+Fase 0: Dividir o Monolito
+Objetivo: Separar index.html em arquivos menores sem mudar funcionalidade.
+Estrutura de arquivos:
+css/
+  variables.css    (variaveis CSS, reset)
+  layout.css       (container, tabs, geral)
+  blocks.css       (blocos, intervalos, cards)
+  forms.css        (inputs, botoes, tabelas)
+  modals.css       (overlays para fases futuras)
+js/
+  config.js        (constantes Supabase, defaults)
+  state.js         (variaveis globais, salvar/carregar estado)
+  tabs.js          (alternarAba)
+  supabase-auth.js (auth functions)
+  supabase-sync.js (salvar/carregar nuvem)
+  materias.js      (CRUD materias)
+  variaveis.js     (tabela de pesos, calcularBlocos)
+  blocos.js        (distribuicao, render, drag-drop, toggle)
+  timer.js         (cronometro/timer)
+  notes.js         (anotacoes)
+  export.js        (PDF, Excel)
+  app.js           (init, event listeners)
+index.html         (shell HTML com links CSS + scripts)
+Ordem de scripts: config -> state -> tabs -> supabase-auth -> supabase-sync -> materias -> variaveis -> blocos -> timer -> notes -> export -> app
+Verificacao: Todas as abas, drag-drop, timer, export, auth e sync devem funcionar identicamente.
+
+Fase 1: Perfis + Sistema de Roles (Professor/Aluno)
+Arquivo principal: js/profile.js, modificacoes em criar-conta.html
+Schema Supabase:
+sqlCREATE TABLE profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('professor', 'aluno')) DEFAULT 'aluno',
+  nome TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id)
+);
+-- + trigger on_auth_user_created para auto-criar profile
+-- + RLS: usuario le/escreve apenas o proprio
+Mudancas:
+
+criar-conta.html: NAO muda - continua criando apenas alunos (sem select de role)
+Nova pagina criar-professor.html: pagina separada, protegida por codigo secreto (ex: variavel CODIGO_PROFESSOR em config.js). So quem conhece o codigo consegue cadastrar um professor. Esta pagina NAO e linkada em nenhum lugar do site.
+Trigger Supabase: sempre cria profile com role='aluno'. A pagina criar-professor.html, apos criar a conta, faz um UPDATE no profile para role='professor' (protegido pelo codigo).
+js/profile.js: getProfile(), isTeacher(), ensureProfile() (migra usuarios existentes como 'aluno')
+app.js: apos login, carregar profile e mostrar/ocultar tabs conforme role
+Professor ve aba extra "Planos"; Aluno ve botao "Escolher Plano" na Home
+
+
+Fase 2: Planos de Professor + Upload em Lote
+Arquivos: js/planos.js, js/batch-upload.js
+Schema Supabase:
+sqlCREATE TABLE planos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  professor_id UUID NOT NULL REFERENCES auth.users(id),
+  nome TEXT NOT NULL,
+  descricao TEXT,
+  materias JSONB NOT NULL DEFAULT '[]',
+  configuracoes JSONB NOT NULL DEFAULT '{}',
+  edital JSONB DEFAULT NULL,
+  regras_evolucao JSONB DEFAULT '[]',
+  publico BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+-- + coluna plano_id nullable na tabela progresso existente
+Upload em lote:
+
+Input file aceita .xlsx/.xls/.csv
+Colunas esperadas: Nome, Sigla, Peso, Extensao, Dificuldade (apenas Nome e Sigla obrigatorios)
+Preview tabela antes de confirmar
+Botao "Baixar modelo" gera template
+Usa xlsx.js ja carregado
+
+Selecao de plano pelo aluno:
+
+Home mostra cards de planos publicos
+"Adotar Plano" copia materias/configs para o estado do aluno
+Aluno pode alternativamente "Configurar do Zero"
+
+
+Fase 3: Redesign dos Blocos (Card Minimalista) + Fluxo de Conclusao
+Arquivo principal: js/blocos.js (rewrite de exibirCicloVisual), js/questoes.js, css/blocks.css, css/modals.css
+Novo layout do card (minimalista - mostra apenas a materia):
++---[barra colorida topo]---------------------+
+|                                              |
+|   CGE                                        |
+|   CONTABILIDADE GERAL                        |
+|   60 min                                     |
+|                                              |
+|   [ ] Concluir          [Cronometro]         |
++----------------------------------------------+
+
+Card minimalista: mostra apenas sigla, nome da materia e duracao
+Borda esquerda teal (#26A69A) como accent
+Cor de fundo pastel da materia (como hoje)
+Grid responsivo: repeat(auto-fill, minmax(200px, 1fr))
+Sessoes agrupadas com separador horizontal
+Checkbox "Concluir" para marcar como feito
+Botao cronometro vinculado ao bloco
+Drag-and-drop mantido
+Card concluido: fundo verde, checkbox marcado, mostra assunto informado + % acertos (se houver)
+
+Fluxo sequencial ao concluir (3 etapas via modais):
+
+Etapa 1 - Informar Assunto: Aluno marca "Concluir" -> abre modal:
+
+   +-- Registrar Estudo -----------------------+
+   |  Materia: CONTABILIDADE GERAL (auto)      |
+   |                                           |
+   |  Qual assunto voce estudou?               |
+   |  [input text: ex: Balanco Patrimonial]    |
+   |                                           |
+   |  [Confirmar]                              |
+   +-------------------------------------------+
+
+Etapa 2 - Fez questoes?: Apos confirmar assunto, modal pergunta:
+
+   +-- Exercitando os Conhecimentos -----------+
+   |  Voce fez questoes sobre este assunto?    |
+   |                                           |
+   |  [Sim]  [Nao, apenas estudei]             |
+   +-------------------------------------------+
+
+Etapa 3 - Registrar questoes (so se clicou Sim):
+
+   +-- Registrar Questoes ----------------------+
+   |  Materia: CONTABILIDADE GERAL (auto)       |
+   |  Assunto: Balanco Patrimonial (auto)       |
+   |                                            |
+   |  Questoes feitas:    [____]                |
+   |  Questoes corretas:  [____]                |
+   |                                            |
+   |  [Salvar]                                  |
+   +--------------------------------------------+
+
+Apos salvar (ou clicar "Nao"): bloco marcado como concluido, cor verde, assunto aparece no card
+
+Schema Supabase (questoes):
+sqlCREATE TABLE questoes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  bloco_index INTEGER NOT NULL,
+  ciclo_numero INTEGER DEFAULT 1,
+  materia TEXT NOT NULL,
+  assunto TEXT,
+  questoes_feitas INTEGER NOT NULL DEFAULT 0,
+  questoes_corretas INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+Dados salvos no bloco: { concluido: true, assunto: "Balanco Patrimonial", questoes: {feitas: 10, corretas: 7} }
+Dashboard na Home: estatisticas agregadas por materia (% acertos, total questoes)
+
+Fase 5: Aba Edital (Acompanhamento do Conteudo Programatico)
+Arquivos: js/edital.js, nova aba no HTML
+Schema Supabase:
+sqlCREATE TABLE edital_progresso (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  plano_id UUID REFERENCES planos(id),
+  materia TEXT NOT NULL,
+  topico TEXT NOT NULL,
+  subtopico TEXT,
+  status TEXT CHECK (status IN ('pendente', 'em_andamento', 'concluido')) DEFAULT 'pendente',
+  questoes_feitas INTEGER DEFAULT 0,
+  questoes_corretas INTEGER DEFAULT 0,
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, plano_id, materia, topico, subtopico)
+);
+UI: Arvore/accordion colapsavel:
+[Portugues] ████████░░░░ 65%
+  [Compreensao de textos] ██████░░ 50%
+    [x] Tipologia textual
+    [ ] Significacao contextual
+Integracao com fluxo de conclusao (Fase 3):
+
+Quando o aluno conclui um bloco e informa o assunto (ex: "Balanco Patrimonial"), o sistema busca no edital se existe um topico/subtopico correspondente para aquela materia.
+Se encontrar match (busca por nome similar/contido), marca automaticamente como 'concluido' no edital_progresso.
+Se nao encontrar match exato, sugere topicos do edital para o aluno selecionar (dropdown com autocomplete ao informar o assunto na Etapa 1 da conclusao, filtrado pelos topicos do edital daquela materia).
+Questoes feitas/corretas tambem sao agregadas no edital_progresso por topico.
+
+Professor configura estrutura do edital (materias -> topicos -> subtopicos) dentro do Plano. Pode importar via Excel.
+
+Fase 6: Evolucao Automatica do Ciclo
+Arquivos: js/evolucao.js
+Schema Supabase:
+sqlCREATE TABLE ciclo_historico (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  plano_id UUID REFERENCES planos(id),
+  numero_ciclo INTEGER NOT NULL DEFAULT 1,
+  blocos JSONB NOT NULL DEFAULT '[]',
+  questoes_resumo JSONB DEFAULT '{}',
+  completed_at TIMESTAMPTZ DEFAULT now()
+);
+Tipos de gatilho:
+
+ciclos_completos: apos N ciclos -> acao
+progresso_edital: materia X atingiu Y% -> acao
+prerequisito: materia X concluida ate Z% -> desbloqueia materia Y
+
+Tipos de acao:
+
+adicionar_materia: inclui nova materia no ciclo
+alterar_peso: muda peso de materia existente
+desbloquear_materia: adiciona materia bloqueada
+remover_materia: retira materia do ciclo
+
+Fluxo ao completar ciclo:
+
+Salvar snapshot em ciclo_historico
+Avaliar todas as regras
+Mostrar resumo das regras ativadas
+Gerar novo ciclo com alteracoes aplicadas
+Resetar blocos para o novo ciclo
+
+Configuracao: Professor define regras no Plano. Aluno pode ver regras + adicionar proprias na aba Configuracoes.
+
+Ordem de Implementacao
+Fase 0 (fundacao)
+    |
+    +---> Fase 1 (roles) -----> Fase 2 (planos + batch)
+    |                                    |
+    +---> Fase 3 (cards + conclusao + questoes)
+                                         |
+                                    Fase 5 (edital) --> Fase 6 (evolucao)
+Fases 1 e 3 podem ser feitas em paralelo apos a Fase 0.
+Fase 5 depende de Fase 2 (edital vem do plano do professor) e Fase 3 (assunto informado na conclusao alimenta o edital).
+
+Compatibilidade com Usuarios Existentes
+
+Fase 0: Zero mudancas de dados
+Fase 1: ensureProfile() cria perfil 'aluno' automaticamente no primeiro login
+Fase 2: plano_id nullable na tabela progresso (existentes = null = manual)
+Fase 3: Novos campos nos blocos sao opcionais, estado antigo carrega normalmente
+Fases 4-6: Tabelas novas, sem impacto em dados existentes
+
+Verificacao
+Apos cada fase:
+
+Testar login/logout e criacao de conta
+Testar criacao de ciclo do zero (fluxo completo)
+Testar persistencia (recarregar pagina, verificar estado)
+Testar sync nuvem (login em outro dispositivo)
+Testar export Excel/PDF
+Testar responsividade mobile

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<title>Entrar | Ciclos</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+    :root {
+        --primary-color: #4A90E2;
+        --secondary-color: #F5F7FA;
+        --accent-color: #FF6B6B;
+        --text-color: #333333;
+        --border-color: #E1E4E8;
+        --success-color: #2E7D32;
+        --error-color: #C62828;
+    }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background: var(--secondary-color);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+    .auth-wrapper {
+        width: 100%;
+        max-width: 460px;
+    }
+    .brand {
+        text-align: center;
+        margin-bottom: 18px;
+    }
+    .brand h1 {
+        color: var(--primary-color);
+        margin-bottom: 6px;
+        font-size: 32px;
+    }
+    .brand p {
+        color: #667085;
+        font-size: 14px;
+    }
+    .card {
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.08);
+        padding: 28px;
+    }
+    h2 {
+        color: var(--primary-color);
+        margin-bottom: 8px;
+        font-size: 26px;
+    }
+    .sub {
+        color: #667085;
+        margin-bottom: 18px;
+        font-size: 14px;
+    }
+    label {
+        display: block;
+        font-weight: bold;
+        margin: 12px 0 6px;
+    }
+    input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 15px;
+    }
+    input:focus {
+        outline: 2px solid rgba(74,144,226,.2);
+        border-color: var(--primary-color);
+    }
+    button {
+        width: 100%;
+        background: var(--primary-color);
+        color: white;
+        padding: 12px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: .2s ease;
+        font-size: 15px;
+        margin-top: 16px;
+    }
+    button:hover {
+        background: var(--accent-color);
+    }
+    .links {
+        margin-top: 18px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .links a, .back-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 14px;
+    }
+    .links a:hover, .back-link:hover {
+        text-decoration: underline;
+    }
+    .msg {
+        margin-top: 14px;
+        font-size: 14px;
+        min-height: 22px;
+    }
+    .msg.success { color: var(--success-color); }
+    .msg.error { color: var(--error-color); }
+    .small {
+        margin-top: 12px;
+        font-size: 13px;
+        color: #667085;
+    }
+    .divider {
+        margin: 18px 0;
+        border-top: 1px solid var(--border-color);
+    }
+</style>
+<script>
+const SUPABASE_URL = 'https://znkxhacjuejmxhgcaqvz.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ULAmkcVfbsAzJ6tRCQJarQ_WGMbMaTo';
+const BASE_URL = 'https://profellysson.com.br';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+function setMsg(text, type='success') {
+    const el = document.getElementById('msg');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'msg ' + type;
+}
+
+function normalizeError(error) {
+    if (!error) return 'Erro desconhecido.';
+    return error.message || String(error);
+}
+</script>
+
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="brand">
+            <h1>Ciclos</h1>
+            <p>Entre para acessar seu ciclo de estudos online.</p>
+        </div>
+        <div class="card">
+            <h2>Entrar</h2>
+            <p class="sub">Use seu e-mail e sua senha.</p>
+
+            <label for="email">E-mail</label>
+            <input type="email" id="email" autocomplete="email" placeholder="voce@exemplo.com">
+
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" autocomplete="current-password" placeholder="Sua senha">
+
+            <button id="btnEntrar" type="button">Entrar</button>
+            <div id="msg" class="msg"></div>
+
+            <div class="links">
+                <a href="https://ellysson1.github.io/ciclos/criar-conta.html">Criar conta</a>
+                <a href="https://ellysson1.github.io/ciclos/esqueci-senha.html">Esqueci minha senha</a>
+            </div>
+
+            <div class="divider"></div>
+            <a class="back-link" href="https://ellysson1.github.io/ciclos/">Ir para o app principal</a>
+        </div>
+    </div>
+
+<script>
+document.getElementById('btnEntrar').addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('senha').value;
+
+    if (!email || !password) {
+        setMsg('Informe e-mail e senha.', 'error');
+        return;
+    }
+
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+        setMsg(normalizeError(error), 'error');
+        return;
+    }
+
+    setMsg('Login realizado com sucesso. Redirecionando...');
+    window.location.href = BASE_URL + '/';
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const { data } = await supabaseClient.auth.getSession();
+    if (data.session) {
+        window.location.href = BASE_URL + '/';
+    }
+});
+</script>
+</body>
+</html>

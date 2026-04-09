@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<title>Cadastro Professor | Ciclos</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+    :root {
+        --primary-color: #4A90E2;
+        --secondary-color: #F5F7FA;
+        --accent-color: #FF6B6B;
+        --text-color: #333333;
+        --border-color: #E1E4E8;
+        --success-color: #2E7D32;
+        --error-color: #C62828;
+    }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background: var(--secondary-color);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+    .auth-wrapper {
+        width: 100%;
+        max-width: 460px;
+    }
+    .brand {
+        text-align: center;
+        margin-bottom: 18px;
+    }
+    .brand h1 {
+        color: var(--primary-color);
+        margin-bottom: 6px;
+        font-size: 32px;
+    }
+    .brand p {
+        color: #667085;
+        font-size: 14px;
+    }
+    .card {
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.08);
+        padding: 28px;
+    }
+    h2 {
+        color: var(--primary-color);
+        margin-bottom: 8px;
+        font-size: 26px;
+    }
+    .sub {
+        color: #667085;
+        margin-bottom: 18px;
+        font-size: 14px;
+    }
+    label {
+        display: block;
+        font-weight: bold;
+        margin: 12px 0 6px;
+    }
+    input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 15px;
+    }
+    input:focus {
+        outline: 2px solid rgba(74,144,226,.2);
+        border-color: var(--primary-color);
+    }
+    button {
+        width: 100%;
+        background: var(--primary-color);
+        color: white;
+        padding: 12px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: .2s ease;
+        font-size: 15px;
+        margin-top: 16px;
+    }
+    button:hover {
+        background: var(--accent-color);
+    }
+    .msg {
+        margin-top: 14px;
+        font-size: 14px;
+        min-height: 22px;
+    }
+    .msg.success { color: var(--success-color); }
+    .msg.error { color: var(--error-color); }
+    .back-link {
+        display: inline-block;
+        margin-top: 16px;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 14px;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    #formProfessor { display: none; }
+</style>
+<script>
+const SUPABASE_URL = 'https://znkxhacjuejmxhgcaqvz.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ULAmkcVfbsAzJ6tRCQJarQ_WGMbMaTo';
+const BASE_URL = 'https://profellysson.com.br';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const CODIGO_PROFESSOR = 'prof2026@ciclo';
+
+function setMsg(text, type='success') {
+    const el = document.getElementById('msg');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'msg ' + type;
+}
+</script>
+
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="brand">
+            <h1>Ciclos</h1>
+            <p>Cadastro restrito para professores.</p>
+        </div>
+        <div class="card">
+            <div id="formCodigo">
+                <h2>Acesso Restrito</h2>
+                <p class="sub">Informe o codigo de acesso para cadastrar uma conta de professor.</p>
+
+                <label for="codigo">Codigo de Acesso</label>
+                <input type="password" id="codigo" placeholder="Digite o codigo">
+
+                <button id="btnValidarCodigo" type="button">Validar</button>
+                <div id="msg" class="msg"></div>
+            </div>
+
+            <div id="formProfessor">
+                <h2>Criar conta de Professor</h2>
+                <p class="sub">Apos o cadastro, confirme seu e-mail antes de fazer login.</p>
+
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" placeholder="Seu nome completo">
+
+                <label for="email">E-mail</label>
+                <input type="email" id="email" autocomplete="email" placeholder="voce@exemplo.com">
+
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" autocomplete="new-password" placeholder="Crie uma senha">
+
+                <label for="senha2">Confirmar senha</label>
+                <input type="password" id="senha2" autocomplete="new-password" placeholder="Repita a senha">
+
+                <button id="btnCriarProfessor" type="button">Criar conta de Professor</button>
+                <div id="msg2" class="msg"></div>
+            </div>
+
+            <a class="back-link" href="login.html">Voltar ao login</a>
+        </div>
+    </div>
+
+<script>
+function setMsg2(text, type='success') {
+    const el = document.getElementById('msg2');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'msg ' + type;
+}
+
+document.getElementById('btnValidarCodigo').addEventListener('click', () => {
+    const codigo = document.getElementById('codigo').value.trim();
+    if (codigo === CODIGO_PROFESSOR) {
+        document.getElementById('formCodigo').style.display = 'none';
+        document.getElementById('formProfessor').style.display = 'block';
+    } else {
+        setMsg('Codigo invalido.', 'error');
+    }
+});
+
+document.getElementById('btnCriarProfessor').addEventListener('click', async () => {
+    const nome = document.getElementById('nome').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('senha').value;
+    const password2 = document.getElementById('senha2').value;
+
+    if (!nome || !email || !password || !password2) {
+        setMsg2('Preencha todos os campos.', 'error');
+        return;
+    }
+    if (password.length < 6) {
+        setMsg2('Use uma senha com pelo menos 6 caracteres.', 'error');
+        return;
+    }
+    if (password !== password2) {
+        setMsg2('As senhas nao coincidem.', 'error');
+        return;
+    }
+
+    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+            data: { nome, role: 'professor' },
+            emailRedirectTo: BASE_URL + '/login.html'
+        }
+    });
+
+    if (signUpError) {
+        setMsg2(signUpError.message || String(signUpError), 'error');
+        return;
+    }
+
+    const userId = signUpData.user?.id;
+    if (userId) {
+        const { error: profileError } = await supabaseClient
+            .from('profiles')
+            .upsert({
+                user_id: userId,
+                role: 'professor',
+                nome: nome
+            }, { onConflict: 'user_id' });
+
+        if (profileError) {
+            console.error('Erro ao definir role professor:', profileError);
+            setMsg2('Conta criada, mas houve erro ao definir perfil de professor. Entre em contato com o administrador.', 'error');
+            return;
+        }
+    }
+
+    setMsg2('Conta de professor criada com sucesso! Verifique seu e-mail para confirmar o cadastro.');
+});
+</script>
+</body>
+</html>

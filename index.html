@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciclo de Estudos</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/blocks.css">
+    <link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Ciclo de Estudos</h1>
+        <div id="topAuthBar" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:#fff;">
+            <div id="usuarioInfo" style="font-size:14px; color:#333;">Verificando sessão...</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a id="btnIrLogin" href="login.html" style="display:none; background-color:var(--primary-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Entrar</a>
+                <button id="btnLogoutTop" type="button" style="display:none;">Sair</button>
+            </div>
+        </div>
+        <div id="bloqueioAuth" style="display:none; margin-bottom:20px; padding:18px; border:1px solid var(--border-color); border-radius:8px; background:#fff;">
+            <h2 style="margin-bottom:10px;">Faça login para usar o app</h2>
+            <p style="margin-bottom:12px;">Seu progresso é salvo online. Para acessar seu ciclo de estudos, entre com sua conta ou crie uma nova.</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="login.html" style="background-color:var(--primary-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Entrar</a>
+                <a href="criar-conta.html" style="background-color:var(--accent-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Criar conta</a>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab active" data-tab="home">Home</button>
+            <button class="tab" data-tab="materias">Matérias</button>
+            <button class="tab" data-tab="variaveis">Variáveis</button>
+            <button class="tab" data-tab="ajustes">Ajustes</button>
+            <button class="tab" data-tab="ciclo">Ciclo</button>
+            <button class="tab" data-tab="configuracoes">Configurações</button>
+            <button class="tab" data-tab="anotacoes">Anotações</button>
+            <button class="tab" data-tab="planos" style="display:none;">Planos</button>
+            <button class="tab" data-tab="exportar">Exportar</button>
+        </div>
+
+        <div id="home" class="tab-content active">
+            <h2>Configuração do Ciclo</h2>
+            <div id="escolherPlanoSection" style="display:none; margin-bottom:20px; padding:16px; border:1px solid var(--border-color); border-radius:8px; background:#f0f7ff;">
+                <h3 style="margin-bottom:8px;">Planos de Professores</h3>
+                <p style="margin-bottom:12px; font-size:14px; color:#666;">Selecione um plano pré-configurado ou configure do zero.</p>
+                <div id="planosDisponiveis" style="margin-bottom:12px;"></div>
+                <button id="btnEscolherPlano" type="button">Ver Planos Disponíveis</button>
+            </div>
+            <div id="inicio">
+                <form id="horasForm">
+                    <label for="horasSemanais">Quantas horas por semana você pode dedicar aos estudos?</label>
+                    <input type="number" id="horasSemanais" name="horasSemanais" min="1" required>
+                    <button type="submit">Próximo</button>
+                </form>
+            </div>
+            <div id="continuar" style="display: none;">
+                <button id="continuarEstudo">Continuar Último Estudo</button>
+                <button id="novoEstudo">Iniciar Novo Estudo</button>
+            </div>
+        </div>
+
+        <div id="materias" class="tab-content">
+            <h2>Selecionar Matérias</h2>
+            <div id="materiasLista"></div>
+            <input type="text" id="novaMateriaNome" placeholder="Nome da Matéria">
+            <input type="text" id="novaMateriaSigla" placeholder="Sigla (até 3 letras)" maxlength="3">
+            <button id="adicionarMateria">Adicionar Matéria</button>
+            <button id="btnUploadMaterias" type="button" style="background:#26A69A;">Importar Excel/CSV</button>
+            <button id="btnBaixarModeloAluno" type="button" style="background:#FF9800;">Baixar Modelo</button>
+            <button id="proximoMaterias">Próximo</button>
+        </div>
+
+        <div id="variaveis" class="tab-content">
+            <h2>Definir Variáveis por Matéria</h2>
+            <table id="tabelaVariaveis">
+                <thead>
+                    <tr>
+                        <th>Matéria</th>
+                        <th>Peso (1-10)</th>
+                        <th>Extensão/Volume (1-10)</th>
+                        <th>Dificuldade (1-10)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button id="calcularBlocos">Calcular Blocos</button>
+        </div>
+
+        <div id="ajustes" class="tab-content">
+            <h2>Ajustar Quantidade de Blocos por Matéria</h2>
+            <table id="tabelaAjustes">
+                <thead>
+                    <tr>
+                        <th>Matéria</th>
+                        <th>Blocos</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button id="ajustarBlocos">Ajustar Blocos</button>
+        </div>
+
+        <div id="ciclo" class="tab-content">
+            <h2>Seu Ciclo de Estudos</h2>
+            <div id="blocosContainer"></div>
+            <div id="tempoControle">
+                <select id="tipoTempo">
+                    <option value="cronometro">Cronômetro</option>
+                    <option value="timer">Timer</option>
+                </select>
+                <div id="timerConfig" style="display: none;">
+                    <input type="number" id="timerHoras" min="0" max="23" placeholder="Horas">
+                    <input type="number" id="timerMinutos" min="0" max="59" placeholder="Minutos">
+                </div>
+                <span id="tempo">00:00:00</span>
+                <button id="iniciarPausar">Iniciar</button>
+                <button id="resetar">Resetar</button>
+            </div>
+        </div>
+
+        <div id="configuracoes" class="tab-content">
+            <h2>Configurações Avançadas</h2>
+            <div>
+                <label for="duracaoBloco">Duração do Bloco (minutos):</label>
+                <input type="number" id="duracaoBloco" min="15" max="120" value="60">
+            </div>
+            <div>
+                <label for="intervaloEntreBlocos">Intervalo entre Blocos (minutos):</label>
+                <input type="number" id="intervaloEntreBlocos" min="0" max="30" value="5">
+            </div>
+            <div>
+                <label for="blocosPorSessao">Blocos por Sessão:</label>
+                <input type="number" id="blocosPorSessao" min="1" max="10" value="4">
+            </div>
+            <button id="salvarConfiguracoes">Salvar Configurações</button>
+        </div>
+
+        <div id="anotacoes" class="tab-content">
+            <h2>Anotações</h2>
+            <textarea id="anotacoesTexto" rows="10" placeholder="Faça suas anotações aqui (ex: página em que parou)"></textarea>
+            <button id="salvarAnotacoes">Salvar Anotações</button>
+        </div>
+
+        <div id="exportar" class="tab-content">
+            <h2>Exportar Ciclo</h2>
+            <button id="gerarPDF">Gerar PDF</button>
+            <button id="exportarExcel">Exportar para Excel</button>
+        </div>
+
+        <div id="planos" class="tab-content">
+            <h2>Gerenciar Planos</h2>
+            <p style="margin-bottom:16px; color:#666;">Crie planos pré-configurados para seus alunos.</p>
+            <div id="planosLista" style="margin-bottom:20px;"></div>
+            <button id="btnCriarPlano" type="button">Criar Novo Plano</button>
+
+            <div id="planoEditor" style="display:none; margin-top:20px;">
+                <h3 style="margin-bottom:16px;">Editor de Plano</h3>
+
+                <label for="planoNome">Nome do Plano:</label>
+                <input type="text" id="planoNome" placeholder="Ex: Preparatório TCU 2026">
+
+                <label for="planoDescricao">Descrição:</label>
+                <textarea id="planoDescricao" rows="3" placeholder="Breve descrição do plano..." style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:4px; margin-bottom:10px;"></textarea>
+
+                <label><input type="checkbox" id="planoPublico" checked style="width:auto; margin-right:6px;">Plano público (visível para alunos)</label>
+
+                <h4 style="margin:16px 0 8px; color:var(--primary-color);">Configurações</h4>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-bottom:16px;">
+                    <div>
+                        <label for="planoHorasSemanais">Horas semanais:</label>
+                        <input type="number" id="planoHorasSemanais" min="1" placeholder="Ex: 20">
+                    </div>
+                    <div>
+                        <label for="planoDuracaoBloco">Duração do bloco (min):</label>
+                        <input type="number" id="planoDuracaoBloco" min="15" max="120" value="60">
+                    </div>
+                    <div>
+                        <label for="planoIntervalo">Intervalo (min):</label>
+                        <input type="number" id="planoIntervalo" min="0" max="30" value="5">
+                    </div>
+                    <div>
+                        <label for="planoBlocosSessao">Blocos por sessão:</label>
+                        <input type="number" id="planoBlocosSessao" min="1" max="10" value="4">
+                    </div>
+                </div>
+
+                <h4 style="margin:16px 0 8px; color:var(--primary-color);">Matérias</h4>
+                <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <button id="btnAddMateriaPlano" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Matéria</button>
+                    <button id="btnUploadMateriasPlano" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
+                    <button id="btnBaixarModelo" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo</button>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead>
+                            <tr style="background:var(--secondary-color);">
+                                <th style="padding:8px;">Nome</th>
+                                <th style="padding:8px;">Sigla</th>
+                                <th style="padding:8px;">Peso</th>
+                                <th style="padding:8px;">Extensão</th>
+                                <th style="padding:8px;">Dificuldade</th>
+                                <th style="padding:8px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="planoMateriasTbody"></tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top:16px; display:flex; gap:10px;">
+                    <button id="btnSalvarPlano" type="button" style="background:#4CAF50;">Salvar Plano</button>
+                    <button id="btnCancelarPlano" type="button" style="background:#999;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais de conclusao -->
+    <div id="modalAssunto" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Registrar Estudo</h3>
+            <p>Matéria: <strong id="modalAssuntoMateria"></strong></p>
+            <label for="inputAssunto" style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto você estudou?</label>
+            <input type="text" id="inputAssunto" placeholder="Ex: Balanço Patrimonial">
+            <div class="modal-actions">
+                <button id="btnConfirmarAssunto">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalQuestoes" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Exercitando os Conhecimentos</h3>
+            <p>Você fez questões sobre este assunto?</p>
+            <div class="modal-actions">
+                <button id="btnSimQuestoes">Sim</button>
+                <button id="btnNaoQuestoes" style="background:#999;">Não, apenas estudei</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalRegistrarQuestoes" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Registrar Questões</h3>
+            <p>Matéria: <strong id="modalRegMateria"></strong></p>
+            <p>Assunto: <strong id="modalRegAssunto"></strong></p>
+            <label for="inputQtdFeitas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questões feitas:</label>
+            <input type="number" id="inputQtdFeitas" min="0" placeholder="0">
+            <label for="inputQtdCorretas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questões corretas:</label>
+            <input type="number" id="inputQtdCorretas" min="0" placeholder="0">
+            <div class="modal-actions">
+                <button id="btnSalvarQuestoes">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/tabs.js"></script>
+    <script src="js/supabase-auth.js"></script>
+    <script src="js/supabase-sync.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/materias.js"></script>
+    <script src="js/variaveis.js"></script>
+    <script src="js/blocos.js"></script>
+    <script src="js/questoes.js"></script>
+    <script src="js/planos.js"></script>
+    <script src="js/batch-upload.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/notes.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

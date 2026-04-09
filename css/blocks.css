@@ -1,0 +1,215 @@
+/* Card minimalista de bloco */
+.bloco-card {
+    position: relative;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid #26A69A;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: move;
+    transition: all 0.3s ease;
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.bloco-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.bloco-card .bloco-card__header {
+    height: 6px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.bloco-card .bloco-card__sigla {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-color);
+    letter-spacing: 1px;
+}
+
+.bloco-card .bloco-card__nome {
+    font-size: 13px;
+    color: #666;
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+.bloco-card .bloco-card__duracao {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 12px;
+}
+
+.bloco-card .bloco-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.bloco-card .bloco-card__check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+}
+
+.bloco-card .bloco-card__check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #4CAF50;
+}
+
+.bloco-card .bloco-card__btn-timer {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--primary-color);
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.bloco-card .bloco-card__btn-timer:hover {
+    background: var(--secondary-color);
+}
+
+/* Estado concluido */
+.bloco-card.concluido {
+    background: #E8F5E9;
+    border-left-color: #4CAF50;
+}
+
+.bloco-card.concluido .bloco-card__header {
+    background: #4CAF50 !important;
+}
+
+.bloco-card.concluido .bloco-card__sigla {
+    color: #2E7D32;
+}
+
+.bloco-card .bloco-card__info-concluido {
+    display: none;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #C8E6C9;
+    font-size: 12px;
+    color: #2E7D32;
+}
+
+.bloco-card.concluido .bloco-card__info-concluido {
+    display: block;
+}
+
+/* Grid de blocos */
+.blocos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* Sessao group */
+.sessao-group {
+    margin-bottom: 24px;
+}
+
+.sessao-group__header {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Separador de intervalo entre sessoes */
+.sessao-intervalo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.sessao-intervalo::before,
+.sessao-intervalo::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+/* Drag feedback */
+.bloco-card.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+.bloco-card.drag-over {
+    border: 2px dashed var(--primary-color);
+}
+
+/* Legacy block styles (kept for export compatibility) */
+.bloco {
+    display: inline-flex;
+    flex-direction: column;
+    width: 100px;
+    height: 60px;
+    border: 1px solid var(--border-color);
+    margin: 5px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    position: relative;
+    font-size: 12px;
+    user-select: none;
+}
+
+.bloco.concluido {
+    background-color: #4CAF50 !important;
+    color: white;
+}
+
+.intervalo {
+    display: inline-flex;
+    flex-direction: column;
+    width: 100px;
+    height: 60px;
+    border: 1px dashed var(--border-color);
+    margin: 5px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-color);
+    font-size: 12px;
+}
+
+.bloco-controls {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+    z-index: 10;
+}
+
+.bloco-controls button {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+    padding: 5px;
+    text-align: left;
+}
