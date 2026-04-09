@@ -48,6 +48,7 @@ Aplicativo web de gerenciamento de ciclo de estudos para concurseiros.
 │   ├── blocos.js           ← distribuirBlocosAleatoriamente, exibirCicloVisual, criarCardBloco
 │   ├── questoes.js         ← fluxo de conclusão 3 etapas (assunto → questões feitas?)
 │   ├── planos.js           ← CRUD planos professor, renderizarPlanosDisponiveis, adotarPlano
+│   ├── edital.js           ← aba Edital: accordion, progresso, match, editor professor, import Excel
 │   ├── batch-upload.js     ← upload Excel/CSV matérias, baixarModeloExcel
 │   ├── timer.js            ← cronômetro / timer
 │   ├── notes.js            ← anotações + salvarConfiguracoes
@@ -122,7 +123,7 @@ CREATE POLICY "Users manage own questoes" ON questoes FOR ALL USING (auth.uid() 
 
 ---
 
-## O que foi implementado (Fases 0, 1, 2, 3)
+## O que foi implementado (Fases 0, 1, 2, 3, 5)
 
 ### Fase 0 - Divisão do monolito
 - index.html era 1360 linhas com tudo junto
@@ -153,14 +154,27 @@ CREATE POLICY "Users manage own questoes" ON questoes FOR ALL USING (auth.uid() 
 - Card concluído fica verde e mostra assunto + % acertos
 - `js/questoes.js`: salva no Supabase tabela `questoes`
 
----
-
-## O que falta implementar (Fases 5 e 6)
-
 ### Fase 5 - Aba Edital
-**Objetivo**: acompanhar progresso no conteúdo programático do concurso.
+- `js/edital.js`: módulo completo com ~400 linhas
+  - `renderizarEdital()`: árvore accordion (matéria → tópico → subtópico) com barras de progresso
+  - `atualizarProgressoEdital(materia, assunto, questoes)`: chamada quando bloco é concluído
+  - Match automático assunto → tópico do edital por similaridade (normalizaTexto + palavras em comum)
+  - `preencherDatalistEdital(materiaBloco)`: autocomplete no modal de assunto com tópicos disponíveis
+  - `atualizarVisibilidadeEdital()`: mostra/oculta aba Edital conforme plano adotado
+  - Editor de edital para professor: add/remove matérias → tópicos → subtópicos manualmente
+  - Import/export edital via Excel/CSV (colunas: Materia, Topico, Subtopico) com preview
+  - `baixarModeloEdital()`: gera modelo Excel de exemplo
+- Filtros na aba: por status (pendente/em_andamento/concluido) e busca por texto
+- Alteração manual de status por item (select dropdown)
+- Progresso calculado e exibido em cada nível (geral, matéria, tópico)
+- `state.js`: novo `planoAdotado = { id, nome, edital }` persistido no estado
+- `planos.js`: `adotarPlano()` salva referência ao plano + edital; `coletarDadosPlano()` coleta edital do editor
+- `questoes.js`: `iniciarFluxoConclusao()` preenche datalist; `finalizarConclusao()` atualiza edital
+- `profile.js`: `atualizarUIRole()` chama `atualizarVisibilidadeEdital()`
+- `index.html`: aba "Edital" com resumo+filtros+árvore; seção "Edital" no editor de planos; datalist no modal assunto
+- CSS em `blocks.css`: estilos para accordion, barras de progresso, status com cores
 
-**Schema Supabase a criar**:
+**Tabela Supabase a criar (edital_progresso)**:
 ```sql
 CREATE TABLE edital_progresso (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -179,18 +193,9 @@ ALTER TABLE edital_progresso ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own edital" ON edital_progresso FOR ALL USING (auth.uid() = user_id);
 ```
 
-**O que construir**:
-1. Nova aba "Edital" no index.html (visível apenas para quem adotou plano com edital)
-2. `js/edital.js` com:
-   - `renderizarEdital()`: árvore accordion (materia → topico → subtopico) com barra de progresso %
-   - `atualizarProgressoEdital(materia, assunto)`: chamada quando bloco é concluído
-   - match automático assunto → tópico do edital (busca por similaridade)
-3. No editor de planos do professor (aba Planos), seção "Edital" para configurar a estrutura:
-   - Adicionar matérias → tópicos → subtópicos manualmente
-   - Importar via Excel/CSV (colunas: Materia, Topico, Subtopico)
-4. No fluxo de conclusão do bloco (Etapa 1 - informar assunto), se o plano tiver edital:
-   - Mostrar autocomplete/datalist com tópicos disponíveis para aquela matéria
-   - Match automático marca o tópico como 'concluido' no edital
+---
+
+## O que falta implementar (Fase 6)
 
 ### Fase 6 - Evolução Automática do Ciclo
 **Objetivo**: o ciclo se adapta automaticamente com base em gatilhos.

@@ -37,6 +37,7 @@
             <button class="tab" data-tab="ciclo">Ciclo</button>
             <button class="tab" data-tab="configuracoes">Configurações</button>
             <button class="tab" data-tab="anotacoes">Anotações</button>
+            <button class="tab" data-tab="edital" style="display:none;">Edital</button>
             <button class="tab" data-tab="planos" style="display:none;">Planos</button>
             <button class="tab" data-tab="exportar">Exportar</button>
         </div>
@@ -144,6 +145,35 @@
             <button id="salvarAnotacoes">Salvar Anotações</button>
         </div>
 
+        <div id="edital" class="tab-content">
+            <h2>Edital - Conteúdo Programático</h2>
+            <div id="editalResumo" style="margin-bottom:16px; padding:14px; border:1px solid var(--border-color); border-radius:8px; background:#f0f7ff;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <strong id="editalPlanoNome" style="font-size:15px;"></strong>
+                        <span id="editalProgressoGeral" style="font-size:13px; color:#666; margin-left:8px;"></span>
+                    </div>
+                    <div class="edital-barra-container" style="width:200px;">
+                        <div class="edital-barra" id="editalBarraGeral" style="width:0%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="editalFiltros" style="margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <select id="editalFiltroStatus" style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px;">
+                    <option value="todos">Todos os status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="em_andamento">Em andamento</option>
+                    <option value="concluido">Concluído</option>
+                </select>
+                <input type="text" id="editalBusca" placeholder="Buscar tópico..." style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px; flex:1; min-width:150px;">
+            </div>
+            <div id="editalArvore"></div>
+            <div id="editalVazio" style="display:none; text-align:center; padding:40px 20px; color:#999;">
+                <p style="font-size:16px; margin-bottom:8px;">Nenhum edital configurado</p>
+                <p style="font-size:13px;">Adote um plano que contenha edital para acompanhar seu progresso no conteúdo programático.</p>
+            </div>
+        </div>
+
         <div id="exportar" class="tab-content">
             <h2>Exportar Ciclo</h2>
             <button id="gerarPDF">Gerar PDF</button>
@@ -210,6 +240,15 @@
                     </table>
                 </div>
 
+                <h4 style="margin:20px 0 8px; color:var(--primary-color);">Edital (Conteúdo Programático)</h4>
+                <p style="font-size:13px; color:#666; margin-bottom:10px;">Configure a estrutura do edital para que alunos acompanhem o progresso no conteúdo.</p>
+                <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <button id="btnAddMateriaEdital" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Matéria</button>
+                    <button id="btnUploadEdital" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
+                    <button id="btnBaixarModeloEdital" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo Edital</button>
+                </div>
+                <div id="editalEditorContainer" style="margin-bottom:16px;"></div>
+
                 <div style="margin-top:16px; display:flex; gap:10px;">
                     <button id="btnSalvarPlano" type="button" style="background:#4CAF50;">Salvar Plano</button>
                     <button id="btnCancelarPlano" type="button" style="background:#999;">Cancelar</button>
@@ -224,7 +263,8 @@
             <h3>Registrar Estudo</h3>
             <p>Matéria: <strong id="modalAssuntoMateria"></strong></p>
             <label for="inputAssunto" style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto você estudou?</label>
-            <input type="text" id="inputAssunto" placeholder="Ex: Balanço Patrimonial">
+            <input type="text" id="inputAssunto" placeholder="Ex: Balanço Patrimonial" list="datalistTopicosEdital" autocomplete="off">
+            <datalist id="datalistTopicosEdital"></datalist>
             <div class="modal-actions">
                 <button id="btnConfirmarAssunto">Confirmar</button>
             </div>
@@ -270,6 +310,7 @@
     <script src="js/blocos.js"></script>
     <script src="js/questoes.js"></script>
     <script src="js/planos.js"></script>
+    <script src="js/edital.js"></script>
     <script src="js/batch-upload.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/notes.js"></script>

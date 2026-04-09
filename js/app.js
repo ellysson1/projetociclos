@@ -71,6 +71,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('btnUploadMaterias').addEventListener('click', uploadMateriasAluno);
     document.getElementById('btnBaixarModeloAluno').addEventListener('click', baixarModeloExcel);
 
+    // Editor de edital (professor)
+    document.getElementById('btnAddMateriaEdital').addEventListener('click', adicionarMateriaEdital);
+    document.getElementById('btnUploadEdital').addEventListener('click', uploadEditalExcel);
+    document.getElementById('btnBaixarModeloEdital').addEventListener('click', baixarModeloEdital);
+
+    // Filtros da aba Edital (aluno)
+    document.getElementById('editalFiltroStatus').addEventListener('change', renderizarEdital);
+    document.getElementById('editalBusca').addEventListener('input', renderizarEdital);
+
     // Escolher plano (aluno)
     document.getElementById('btnEscolherPlano').addEventListener('click', renderizarPlanosDisponiveis);
 
@@ -86,12 +95,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             await ensureProfile();
             atualizarUIRole();
             await carregarEstadoNuvem();
+            atualizarVisibilidadeEdital();
+            if (planoAdotado?.edital) {
+                await carregarEditalProgresso();
+                renderizarEdital();
+            }
         }
         supabaseClient.auth.onAuthStateChange(async (_event, session) => {
             if (session) {
                 await ensureProfile();
                 atualizarUIRole();
                 await carregarEstadoNuvem();
+                atualizarVisibilidadeEdital();
+                if (planoAdotado?.edital) {
+                    await carregarEditalProgresso();
+                    renderizarEdital();
+                }
             }
             await atualizarUIAuth();
         });

@@ -15,6 +15,7 @@ let cronometroInterval;
 let cronometroRodando = false;
 let modoCronometro = true;
 let salvarAoSair = true;
+let planoAdotado = null; // { id, nome, edital }
 
 let configuracoes = {
     duracaoBloco: 60,
@@ -30,6 +31,7 @@ function salvarEstado() {
         tempoDecorrido,
         modoCronometro,
         configuracoes,
+        planoAdotado,
         horasSemanais: document.getElementById('horasSemanais')?.value || null
     };
     localStorage.setItem('cicloEstudosEstado', JSON.stringify(estado));
@@ -46,6 +48,7 @@ function carregarEstado() {
         tempoDecorrido = estado.tempoDecorrido;
         modoCronometro = estado.modoCronometro;
         configuracoes = estado.configuracoes;
+        planoAdotado = estado.planoAdotado || null;
 
         document.getElementById('horasSemanais').value = estado.horasSemanais || '';
         document.getElementById('inicio').style.display = 'none';

@@ -213,3 +213,184 @@
     padding: 5px;
     text-align: left;
 }
+
+/* ── Edital: Accordion Tree ─────────────────────────────────────────────── */
+
+.edital-barra-container {
+    height: 8px;
+    background: #E0E0E0;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.edital-barra-container--sm {
+    height: 6px;
+    width: 80px;
+}
+
+.edital-barra {
+    height: 100%;
+    background: linear-gradient(90deg, #26A69A, #4CAF50);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+/* Matéria (nível 1) */
+.edital-materia {
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.edital-materia__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #f5f5f5;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.edital-materia__header:hover {
+    background: #eeeeee;
+}
+
+.edital-materia__arrow {
+    font-size: 10px;
+    color: #999;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.edital-materia__nome {
+    flex: 1;
+    font-size: 14px;
+}
+
+.edital-materia__progresso {
+    font-size: 12px;
+    color: #666;
+    white-space: nowrap;
+}
+
+.edital-materia__conteudo {
+    padding: 0 14px 12px;
+}
+
+/* Tópico (nível 2) */
+.edital-topico {
+    margin-top: 8px;
+}
+
+.edital-topico__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #fafafa;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.edital-topico__header:hover {
+    background: #f0f0f0;
+}
+
+.edital-topico__arrow {
+    font-size: 9px;
+    color: #bbb;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.edital-topico__nome {
+    flex: 1;
+    font-size: 13px;
+    color: #444;
+}
+
+.edital-topico__progresso {
+    font-size: 11px;
+    color: #888;
+    white-space: nowrap;
+}
+
+.edital-topico__subtopicos {
+    padding-left: 18px;
+    margin-top: 4px;
+}
+
+/* Item individual (tópico sem sub ou subtópico) */
+.edital-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    margin-top: 4px;
+    border-radius: 6px;
+    border-left: 3px solid #E0E0E0;
+    background: white;
+    transition: all 0.2s;
+}
+
+.edital-item:hover {
+    background: #fafafa;
+}
+
+.edital-item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.edital-item__label {
+    font-size: 13px;
+    color: #333;
+    display: block;
+}
+
+.edital-item__questoes {
+    font-size: 11px;
+    color: #888;
+    display: block;
+    margin-top: 2px;
+}
+
+.edital-item__actions {
+    flex-shrink: 0;
+}
+
+.edital-item__select {
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+/* Status colors */
+.edital-status--pendente {
+    border-left-color: #E0E0E0;
+}
+
+.edital-status--em_andamento {
+    border-left-color: #FFA726;
+    background: #FFF8E1;
+}
+
+.edital-status--concluido {
+    border-left-color: #4CAF50;
+    background: #E8F5E9;
+}
+
+.edital-status--concluido .edital-item__label {
+    text-decoration: line-through;
+    color: #666;
+}

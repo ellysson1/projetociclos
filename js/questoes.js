@@ -75,6 +75,12 @@ function iniciarFluxoConclusao(index, card) {
 
     document.getElementById('modalAssuntoMateria').textContent = bloco.nome;
     document.getElementById('inputAssunto').value = bloco.assunto || '';
+
+    // Preencher autocomplete com tópicos do edital para esta matéria
+    if (typeof preencherDatalistEdital === 'function') {
+        preencherDatalistEdital(bloco.nome);
+    }
+
     abrirModal('modalAssunto');
 }
 
@@ -100,6 +106,11 @@ function finalizarConclusao(questoes) {
 
     salvarEstado();
     salvarQuestoesNuvem(bloco, questoes);
+
+    // Atualizar progresso no edital
+    if (typeof atualizarProgressoEdital === 'function') {
+        atualizarProgressoEdital(bloco.nome, bloco.assunto, questoes);
+    }
 
     blocoEmConclusao = null;
     cardEmConclusao = null;

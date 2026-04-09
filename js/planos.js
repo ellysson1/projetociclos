@@ -178,6 +178,7 @@ function preencherEditorPlano() {
     document.getElementById('planoHorasSemanais').value = planoEditando?.configuracoes?.horasSemanais || '';
 
     renderizarMateriasPlano(planoEditando?.materias || []);
+    renderizarEditorEdital(planoEditando?.edital || []);
 }
 
 function renderizarMateriasPlano(materias) {
@@ -233,7 +234,7 @@ function coletarDadosPlano() {
             blocosPorSessao: parseInt(document.getElementById('planoBlocosSessao').value) || 4,
             horasSemanais: parseInt(document.getElementById('planoHorasSemanais').value) || null
         },
-        edital: planoEditando?.edital || null,
+        edital: coletarEditalDoEditor(),
         regras_evolucao: planoEditando?.regras_evolucao || []
     };
 }
@@ -304,6 +305,13 @@ async function adotarPlano(planoId) {
 
     if (!confirm(`Deseja adotar o plano "${plano.nome}"? Suas configurações atuais serão substituídas.`)) return;
 
+    // Salvar referência ao plano adotado
+    planoAdotado = {
+        id: plano.id,
+        nome: plano.nome,
+        edital: plano.edital || null
+    };
+
     // Aplicar matérias do plano
     const materiasDoPlano = plano.materias || [];
     materiasList = materiasDoPlano.map(m => ({ nome: m.nome, legenda: m.legenda }));
@@ -341,6 +349,16 @@ async function adotarPlano(planoId) {
     });
 
     salvarEstado();
+
+    // Atualizar visibilidade da aba Edital
+    if (typeof atualizarVisibilidadeEdital === 'function') {
+        atualizarVisibilidadeEdital();
+    }
+    if (planoAdotado?.edital && typeof carregarEditalProgresso === 'function') {
+        await carregarEditalProgresso();
+        renderizarEdital();
+    }
+
     alert(`Plano "${plano.nome}" adotado com sucesso! Prosseguindo para calcular blocos.`);
     calcularBlocos();
 }

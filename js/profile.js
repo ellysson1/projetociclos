@@ -72,4 +72,9 @@ function atualizarUIRole() {
         if (tabPlanos) tabPlanos.style.display = 'none';
         if (escolherPlanoSection) escolherPlanoSection.style.display = 'block';
     }
+
+    // Atualizar visibilidade da aba Edital
+    if (typeof atualizarVisibilidadeEdital === 'function') {
+        atualizarVisibilidadeEdital();
+    }
 }
