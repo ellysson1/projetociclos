@@ -29,12 +29,14 @@ async function ensureProfile() {
     if (!profile) {
         const user = await getUsuarioLogado();
         if (!user) return null;
+        const role = user.user_metadata?.role === 'professor' ? 'professor' : 'aluno';
+        const nome = user.user_metadata?.nome || user.email.split('@')[0];
         const { error } = await supabaseClient
             .from('profiles')
             .upsert({
                 user_id: user.id,
-                role: 'aluno',
-                nome: user.email.split('@')[0]
+                role,
+                nome
             }, { onConflict: 'user_id' });
 
         if (error) {

@@ -225,23 +225,6 @@ document.getElementById('btnCriarProfessor').addEventListener('click', async () 
         return;
     }
 
-    const userId = signUpData.user?.id;
-    if (userId) {
-        const { error: profileError } = await supabaseClient
-            .from('profiles')
-            .upsert({
-                user_id: userId,
-                role: 'professor',
-                nome: nome
-            }, { onConflict: 'user_id' });
-
-        if (profileError) {
-            console.error('Erro ao definir role professor:', profileError);
-            setMsg2('Conta criada, mas houve erro ao definir perfil de professor. Entre em contato com o administrador.', 'error');
-            return;
-        }
-    }
-
     setMsg2('Conta de professor criada com sucesso! Verifique seu e-mail para confirmar o cadastro.');
 });
 </script>
