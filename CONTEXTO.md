@@ -39,7 +39,7 @@ Aplicativo web de gerenciamento de ciclo de estudos para concurseiros.
 ├── js/
 │   ├── config.js           ← SUPABASE_URL, SUPABASE_ANON_KEY, supabaseClient
 │   ├── state.js            ← variáveis globais (materiasList, blocosAtivos, etc), salvarEstado
-│   ├── tabs.js             ← alternarAba()
+│   ├── tabs.js             ← alternarAba(), ativarMainTab(), ativarSubTab() + legacyMapping
 │   ├── supabase-auth.js    ← getUsuarioLogado, sair, atualizarUIAuth
 │   ├── supabase-sync.js    ← salvarEstadoNuvem, carregarEstadoNuvem
 │   ├── profile.js          ← getProfile, isTeacher, ensureProfile, atualizarUIRole
@@ -49,9 +49,10 @@ Aplicativo web de gerenciamento de ciclo de estudos para concurseiros.
 │   ├── questoes.js         ← fluxo de conclusão 3 etapas (assunto → questões feitas?)
 │   ├── planos.js           ← CRUD planos professor, renderizarPlanosDisponiveis, adotarPlano
 │   ├── edital.js           ← aba Edital: accordion, progresso, match, editor professor, import Excel
+│   ├── desempenho.js       ← aba Desempenho: estatísticas questões + progresso edital
 │   ├── batch-upload.js     ← upload Excel/CSV matérias, baixarModeloExcel
 │   ├── timer.js            ← cronômetro / timer
-│   ├── notes.js            ← anotações + salvarConfiguracoes
+│   ├── notes.js            ← salvarConfiguracoes, carregarConfiguracoes (anotações removidas)
 │   ├── export.js           ← gerarPDF, exportarParaExcel
 │   └── app.js              ← DOMContentLoaded, todos os event listeners
 │
@@ -123,7 +124,7 @@ CREATE POLICY "Users manage own questoes" ON questoes FOR ALL USING (auth.uid() 
 
 ---
 
-## O que foi implementado (Fases 0, 1, 2, 3, 5)
+## O que foi implementado (Fases 0, 1, 2, 3, 5, UI Restructure)
 
 ### Fase 0 - Divisão do monolito
 - index.html era 1360 linhas com tudo junto
@@ -192,6 +193,28 @@ CREATE TABLE edital_progresso (
 ALTER TABLE edital_progresso ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own edital" ON edital_progresso FOR ALL USING (auth.uid() = user_id);
 ```
+
+### Reestruturação de UI - Abas + Sub-abas + Desempenho
+- **Novas abas principais**: Ciclo | Edital | Desempenho | Planos | Exportar
+- **Sub-abas dentro de Ciclo**: Início | Matérias | Variáveis | Ajustes | Meu Ciclo | Configurações
+- **Aba removida**: Anotações (functions removidas de notes.js e app.js)
+- **Aba Home removida**: conteúdo movido para sub-aba "Início" dentro de Ciclo
+- **Aba Desempenho (nova)**: estatísticas de questões (total, corretas, %) + desempenho por matéria + progresso edital
+  - `js/desempenho.js`: `renderizarDesempenho()`, `carregarQuestoesHistorico()`, `renderizarDesempenhoEdital()`
+  - Carrega dados automaticamente ao acessar a aba
+- **Aba Planos reestruturada**: sempre visível, conteúdo difere por role
+  - Aluno vê `#planosAluno` com botão "Carregar Planos Disponíveis"
+  - Professor vê `#planosProfessor` com gerenciamento completo
+  - `profile.js:atualizarUIRole()` alterna entre as duas seções
+- **tabs.js reescrito**: `alternarAba()` com mapping de nomes legados para sub-abas
+  - `subtabMap`: home→subtab-inicio, materias→subtab-materias, etc.
+  - `ativarMainTab()` e `ativarSubTab()` para navegação
+- **CSS**: sub-tabs com estilo pill/toggle em `layout.css`, cards de desempenho
+- **Alterações em outros JS**:
+  - `blocos.js`: `alternarAba('ciclo')` → `alternarAba('meuciclo')`
+  - `variaveis.js`: idem
+  - `supabase-sync.js`: removida referência a anotacoesTexto
+  - `notes.js`: mantém apenas salvarConfiguracoes/carregarConfiguracoes
 
 ---
 

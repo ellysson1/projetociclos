@@ -13,14 +13,11 @@ async function salvarEstadoNuvem() {
         horasSemanais: document.getElementById('horasSemanais')?.value || null
     };
 
-    const anotacoes = document.getElementById('anotacoesTexto')?.value || '';
-
     const { error } = await supabaseClient
         .from('progresso')
         .upsert({
             user_id: user.id,
             estado,
-            anotacoes,
             updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
 
@@ -73,7 +70,5 @@ async function carregarEstadoNuvem() {
         }
     }
 
-    if (typeof data.anotacoes === 'string') {
-        document.getElementById('anotacoesTexto').value = data.anotacoes;
-    }
+    // anotacoes field kept in DB for backwards compatibility but no longer used in UI
 }

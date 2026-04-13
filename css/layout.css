@@ -9,6 +9,8 @@ h1, h2, h3 {
     margin-bottom: 20px;
 }
 
+/* ── Main tabs ──────────────────────────────────────────────── */
+
 .tab-container {
     display: flex;
     justify-content: center;
@@ -46,4 +48,110 @@ h1, h2, h3 {
 
 .tab-content.active {
     display: block;
+}
+
+/* ── Sub-tabs ───────────────────────────────────────────────── */
+
+.subtab-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 18px;
+    background-color: #e8ecf1;
+    border-radius: 6px;
+    padding: 3px;
+}
+
+.subtab {
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--text-color);
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.subtab:hover {
+    background-color: #d0d7e2;
+}
+
+.subtab.active {
+    background-color: white;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.subtab-content {
+    display: none;
+}
+
+.subtab-content.active {
+    display: block;
+}
+
+/* ── Desempenho ─────────────────────────────────────────────── */
+
+.desempenho-card {
+    background: #f8f9fb;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 18px 14px;
+    text-align: center;
+}
+
+.desempenho-card__valor {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.desempenho-card__label {
+    font-size: 13px;
+    color: #666;
+}
+
+.desempenho-materia {
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: white;
+}
+
+.desempenho-materia__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.desempenho-materia__nome {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.desempenho-materia__stats {
+    font-size: 13px;
+    color: #666;
+}
+
+.desempenho-barra-container {
+    height: 8px;
+    background: #e8ecf1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.desempenho-barra {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.desempenho-barra--edital {
+    background: #26A69A;
 }

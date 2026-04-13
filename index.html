@@ -14,139 +14,142 @@
     <div class="container">
         <h1>Ciclo de Estudos</h1>
         <div id="topAuthBar" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:#fff;">
-            <div id="usuarioInfo" style="font-size:14px; color:#333;">Verificando sessão...</div>
+            <div id="usuarioInfo" style="font-size:14px; color:#333;">Verificando sessao...</div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <a id="btnIrLogin" href="login.html" style="display:none; background-color:var(--primary-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Entrar</a>
                 <button id="btnLogoutTop" type="button" style="display:none;">Sair</button>
             </div>
         </div>
         <div id="bloqueioAuth" style="display:none; margin-bottom:20px; padding:18px; border:1px solid var(--border-color); border-radius:8px; background:#fff;">
-            <h2 style="margin-bottom:10px;">Faça login para usar o app</h2>
-            <p style="margin-bottom:12px;">Seu progresso é salvo online. Para acessar seu ciclo de estudos, entre com sua conta ou crie uma nova.</p>
+            <h2 style="margin-bottom:10px;">Faca login para usar o app</h2>
+            <p style="margin-bottom:12px;">Seu progresso e salvo online. Para acessar seu ciclo de estudos, entre com sua conta ou crie uma nova.</p>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <a href="login.html" style="background-color:var(--primary-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Entrar</a>
                 <a href="criar-conta.html" style="background-color:var(--accent-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Criar conta</a>
             </div>
         </div>
 
+        <!-- Main tabs -->
         <div class="tab-container">
-            <button class="tab active" data-tab="home">Home</button>
-            <button class="tab" data-tab="materias">Matérias</button>
-            <button class="tab" data-tab="variaveis">Variáveis</button>
-            <button class="tab" data-tab="ajustes">Ajustes</button>
-            <button class="tab" data-tab="ciclo">Ciclo</button>
-            <button class="tab" data-tab="configuracoes">Configurações</button>
-            <button class="tab" data-tab="anotacoes">Anotações</button>
+            <button class="tab active" data-tab="ciclo">Ciclo</button>
             <button class="tab" data-tab="edital" style="display:none;">Edital</button>
-            <button class="tab" data-tab="planos" style="display:none;">Planos</button>
+            <button class="tab" data-tab="desempenho">Desempenho</button>
+            <button class="tab" data-tab="planos">Planos</button>
             <button class="tab" data-tab="exportar">Exportar</button>
         </div>
 
-        <div id="home" class="tab-content active">
-            <h2>Configuração do Ciclo</h2>
-            <div id="escolherPlanoSection" style="display:none; margin-bottom:20px; padding:16px; border:1px solid var(--border-color); border-radius:8px; background:#f0f7ff;">
-                <h3 style="margin-bottom:8px;">Planos de Professores</h3>
-                <p style="margin-bottom:12px; font-size:14px; color:#666;">Selecione um plano pré-configurado ou configure do zero.</p>
-                <div id="planosDisponiveis" style="margin-bottom:12px;"></div>
-                <button id="btnEscolherPlano" type="button">Ver Planos Disponíveis</button>
+        <!-- ============ CICLO TAB (with sub-tabs) ============ -->
+        <div id="ciclo" class="tab-content active">
+            <div class="subtab-container">
+                <button class="subtab active" data-subtab="subtab-inicio">Inicio</button>
+                <button class="subtab" data-subtab="subtab-materias">Materias</button>
+                <button class="subtab" data-subtab="subtab-variaveis">Variaveis</button>
+                <button class="subtab" data-subtab="subtab-ajustes">Ajustes</button>
+                <button class="subtab" data-subtab="subtab-meuciclo">Meu Ciclo</button>
+                <button class="subtab" data-subtab="subtab-config">Configuracoes</button>
             </div>
-            <div id="inicio">
-                <form id="horasForm">
-                    <label for="horasSemanais">Quantas horas por semana você pode dedicar aos estudos?</label>
-                    <input type="number" id="horasSemanais" name="horasSemanais" min="1" required>
-                    <button type="submit">Próximo</button>
-                </form>
-            </div>
-            <div id="continuar" style="display: none;">
-                <button id="continuarEstudo">Continuar Último Estudo</button>
-                <button id="novoEstudo">Iniciar Novo Estudo</button>
-            </div>
-        </div>
 
-        <div id="materias" class="tab-content">
-            <h2>Selecionar Matérias</h2>
-            <div id="materiasLista"></div>
-            <input type="text" id="novaMateriaNome" placeholder="Nome da Matéria">
-            <input type="text" id="novaMateriaSigla" placeholder="Sigla (até 3 letras)" maxlength="3">
-            <button id="adicionarMateria">Adicionar Matéria</button>
-            <button id="btnUploadMaterias" type="button" style="background:#26A69A;">Importar Excel/CSV</button>
-            <button id="btnBaixarModeloAluno" type="button" style="background:#FF9800;">Baixar Modelo</button>
-            <button id="proximoMaterias">Próximo</button>
-        </div>
-
-        <div id="variaveis" class="tab-content">
-            <h2>Definir Variáveis por Matéria</h2>
-            <table id="tabelaVariaveis">
-                <thead>
-                    <tr>
-                        <th>Matéria</th>
-                        <th>Peso (1-10)</th>
-                        <th>Extensão/Volume (1-10)</th>
-                        <th>Dificuldade (1-10)</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button id="calcularBlocos">Calcular Blocos</button>
-        </div>
-
-        <div id="ajustes" class="tab-content">
-            <h2>Ajustar Quantidade de Blocos por Matéria</h2>
-            <table id="tabelaAjustes">
-                <thead>
-                    <tr>
-                        <th>Matéria</th>
-                        <th>Blocos</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button id="ajustarBlocos">Ajustar Blocos</button>
-        </div>
-
-        <div id="ciclo" class="tab-content">
-            <h2>Seu Ciclo de Estudos</h2>
-            <div id="blocosContainer"></div>
-            <div id="tempoControle">
-                <select id="tipoTempo">
-                    <option value="cronometro">Cronômetro</option>
-                    <option value="timer">Timer</option>
-                </select>
-                <div id="timerConfig" style="display: none;">
-                    <input type="number" id="timerHoras" min="0" max="23" placeholder="Horas">
-                    <input type="number" id="timerMinutos" min="0" max="59" placeholder="Minutos">
+            <!-- Sub-tab: Inicio -->
+            <div id="subtab-inicio" class="subtab-content active">
+                <h2>Configuracao do Ciclo</h2>
+                <div id="inicio">
+                    <form id="horasForm">
+                        <label for="horasSemanais">Quantas horas por semana voce pode dedicar aos estudos?</label>
+                        <input type="number" id="horasSemanais" name="horasSemanais" min="1" required>
+                        <button type="submit">Proximo</button>
+                    </form>
                 </div>
-                <span id="tempo">00:00:00</span>
-                <button id="iniciarPausar">Iniciar</button>
-                <button id="resetar">Resetar</button>
+                <div id="continuar" style="display: none;">
+                    <button id="continuarEstudo">Continuar Ultimo Estudo</button>
+                    <button id="novoEstudo">Iniciar Novo Estudo</button>
+                </div>
+            </div>
+
+            <!-- Sub-tab: Materias -->
+            <div id="subtab-materias" class="subtab-content">
+                <h2>Selecionar Materias</h2>
+                <div id="materiasLista"></div>
+                <input type="text" id="novaMateriaNome" placeholder="Nome da Materia">
+                <input type="text" id="novaMateriaSigla" placeholder="Sigla (ate 3 letras)" maxlength="3">
+                <button id="adicionarMateria">Adicionar Materia</button>
+                <button id="btnUploadMaterias" type="button" style="background:#26A69A;">Importar Excel/CSV</button>
+                <button id="btnBaixarModeloAluno" type="button" style="background:#FF9800;">Baixar Modelo</button>
+                <button id="proximoMaterias">Proximo</button>
+            </div>
+
+            <!-- Sub-tab: Variaveis -->
+            <div id="subtab-variaveis" class="subtab-content">
+                <h2>Definir Variaveis por Materia</h2>
+                <table id="tabelaVariaveis">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Peso (1-10)</th>
+                            <th>Extensao/Volume (1-10)</th>
+                            <th>Dificuldade (1-10)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button id="calcularBlocos">Calcular Blocos</button>
+            </div>
+
+            <!-- Sub-tab: Ajustes -->
+            <div id="subtab-ajustes" class="subtab-content">
+                <h2>Ajustar Quantidade de Blocos por Materia</h2>
+                <table id="tabelaAjustes">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Blocos</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button id="ajustarBlocos">Ajustar Blocos</button>
+            </div>
+
+            <!-- Sub-tab: Meu Ciclo -->
+            <div id="subtab-meuciclo" class="subtab-content">
+                <h2>Seu Ciclo de Estudos</h2>
+                <div id="blocosContainer"></div>
+                <div id="tempoControle">
+                    <select id="tipoTempo">
+                        <option value="cronometro">Cronometro</option>
+                        <option value="timer">Timer</option>
+                    </select>
+                    <div id="timerConfig" style="display: none;">
+                        <input type="number" id="timerHoras" min="0" max="23" placeholder="Horas">
+                        <input type="number" id="timerMinutos" min="0" max="59" placeholder="Minutos">
+                    </div>
+                    <span id="tempo">00:00:00</span>
+                    <button id="iniciarPausar">Iniciar</button>
+                    <button id="resetar">Resetar</button>
+                </div>
+            </div>
+
+            <!-- Sub-tab: Configuracoes -->
+            <div id="subtab-config" class="subtab-content">
+                <h2>Configuracoes Avancadas</h2>
+                <div>
+                    <label for="duracaoBloco">Duracao do Bloco (minutos):</label>
+                    <input type="number" id="duracaoBloco" min="15" max="120" value="60">
+                </div>
+                <div>
+                    <label for="intervaloEntreBlocos">Intervalo entre Blocos (minutos):</label>
+                    <input type="number" id="intervaloEntreBlocos" min="0" max="30" value="5">
+                </div>
+                <div>
+                    <label for="blocosPorSessao">Blocos por Sessao:</label>
+                    <input type="number" id="blocosPorSessao" min="1" max="10" value="4">
+                </div>
+                <button id="salvarConfiguracoes">Salvar Configuracoes</button>
             </div>
         </div>
 
-        <div id="configuracoes" class="tab-content">
-            <h2>Configurações Avançadas</h2>
-            <div>
-                <label for="duracaoBloco">Duração do Bloco (minutos):</label>
-                <input type="number" id="duracaoBloco" min="15" max="120" value="60">
-            </div>
-            <div>
-                <label for="intervaloEntreBlocos">Intervalo entre Blocos (minutos):</label>
-                <input type="number" id="intervaloEntreBlocos" min="0" max="30" value="5">
-            </div>
-            <div>
-                <label for="blocosPorSessao">Blocos por Sessão:</label>
-                <input type="number" id="blocosPorSessao" min="1" max="10" value="4">
-            </div>
-            <button id="salvarConfiguracoes">Salvar Configurações</button>
-        </div>
-
-        <div id="anotacoes" class="tab-content">
-            <h2>Anotações</h2>
-            <textarea id="anotacoesTexto" rows="10" placeholder="Faça suas anotações aqui (ex: página em que parou)"></textarea>
-            <button id="salvarAnotacoes">Salvar Anotações</button>
-        </div>
-
+        <!-- ============ EDITAL TAB ============ -->
         <div id="edital" class="tab-content">
-            <h2>Edital - Conteúdo Programático</h2>
+            <h2>Edital - Conteudo Programatico</h2>
             <div id="editalResumo" style="margin-bottom:16px; padding:14px; border:1px solid var(--border-color); border-radius:8px; background:#f0f7ff;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                     <div>
@@ -163,97 +166,144 @@
                     <option value="todos">Todos os status</option>
                     <option value="pendente">Pendente</option>
                     <option value="em_andamento">Em andamento</option>
-                    <option value="concluido">Concluído</option>
+                    <option value="concluido">Concluido</option>
                 </select>
-                <input type="text" id="editalBusca" placeholder="Buscar tópico..." style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px; flex:1; min-width:150px;">
+                <input type="text" id="editalBusca" placeholder="Buscar topico..." style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px; flex:1; min-width:150px;">
             </div>
             <div id="editalArvore"></div>
             <div id="editalVazio" style="display:none; text-align:center; padding:40px 20px; color:#999;">
                 <p style="font-size:16px; margin-bottom:8px;">Nenhum edital configurado</p>
-                <p style="font-size:13px;">Adote um plano que contenha edital para acompanhar seu progresso no conteúdo programático.</p>
+                <p style="font-size:13px;">Adote um plano que contenha edital para acompanhar seu progresso no conteudo programatico.</p>
             </div>
         </div>
 
+        <!-- ============ DESEMPENHO TAB ============ -->
+        <div id="desempenho" class="tab-content">
+            <h2>Desempenho</h2>
+
+            <div id="desempenhoResumo" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:12px; margin-bottom:24px;">
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoTotalQuestoes">0</div>
+                    <div class="desempenho-card__label">Questoes feitas</div>
+                </div>
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoTotalCorretas">0</div>
+                    <div class="desempenho-card__label">Questoes corretas</div>
+                </div>
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoPercentual">0%</div>
+                    <div class="desempenho-card__label">Aproveitamento</div>
+                </div>
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoBlocosConcluidos">0</div>
+                    <div class="desempenho-card__label">Blocos concluidos</div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom:12px;">Desempenho por Materia</h3>
+            <div id="desempenhoPorMateria">
+                <p style="color:#999;">Carregando...</p>
+            </div>
+
+            <div id="desempenhoEdital" style="display:none; margin-top:24px;">
+                <h3 style="margin-bottom:12px;">Progresso no Edital</h3>
+                <div id="desempenhoEditalConteudo"></div>
+            </div>
+        </div>
+
+        <!-- ============ PLANOS TAB ============ -->
+        <div id="planos" class="tab-content">
+            <!-- Student view -->
+            <div id="planosAluno">
+                <h2>Planos Disponiveis</h2>
+                <p style="margin-bottom:12px; font-size:14px; color:#666;">Selecione um plano pre-configurado por um professor ou configure do zero na aba Ciclo.</p>
+                <div id="planosDisponiveis" style="margin-bottom:12px;"></div>
+                <button id="btnEscolherPlano" type="button">Carregar Planos Disponiveis</button>
+            </div>
+
+            <!-- Teacher view -->
+            <div id="planosProfessor" style="display:none;">
+                <h2>Gerenciar Planos</h2>
+                <p style="margin-bottom:16px; color:#666;">Crie planos pre-configurados para seus alunos.</p>
+                <div id="planosLista" style="margin-bottom:20px;"></div>
+                <button id="btnCriarPlano" type="button">Criar Novo Plano</button>
+
+                <div id="planoEditor" style="display:none; margin-top:20px;">
+                    <h3 style="margin-bottom:16px;">Editor de Plano</h3>
+
+                    <label for="planoNome">Nome do Plano:</label>
+                    <input type="text" id="planoNome" placeholder="Ex: Preparatorio TCU 2026">
+
+                    <label for="planoDescricao">Descricao:</label>
+                    <textarea id="planoDescricao" rows="3" placeholder="Breve descricao do plano..." style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:4px; margin-bottom:10px;"></textarea>
+
+                    <label><input type="checkbox" id="planoPublico" checked style="width:auto; margin-right:6px;">Plano publico (visivel para alunos)</label>
+
+                    <h4 style="margin:16px 0 8px; color:var(--primary-color);">Configuracoes</h4>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-bottom:16px;">
+                        <div>
+                            <label for="planoHorasSemanais">Horas semanais:</label>
+                            <input type="number" id="planoHorasSemanais" min="1" placeholder="Ex: 20">
+                        </div>
+                        <div>
+                            <label for="planoDuracaoBloco">Duracao do bloco (min):</label>
+                            <input type="number" id="planoDuracaoBloco" min="15" max="120" value="60">
+                        </div>
+                        <div>
+                            <label for="planoIntervalo">Intervalo (min):</label>
+                            <input type="number" id="planoIntervalo" min="0" max="30" value="5">
+                        </div>
+                        <div>
+                            <label for="planoBlocosSessao">Blocos por sessao:</label>
+                            <input type="number" id="planoBlocosSessao" min="1" max="10" value="4">
+                        </div>
+                    </div>
+
+                    <h4 style="margin:16px 0 8px; color:var(--primary-color);">Materias</h4>
+                    <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button id="btnAddMateriaPlano" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Materia</button>
+                        <button id="btnUploadMateriasPlano" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
+                        <button id="btnBaixarModelo" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo</button>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead>
+                                <tr style="background:var(--secondary-color);">
+                                    <th style="padding:8px;">Nome</th>
+                                    <th style="padding:8px;">Sigla</th>
+                                    <th style="padding:8px;">Peso</th>
+                                    <th style="padding:8px;">Extensao</th>
+                                    <th style="padding:8px;">Dificuldade</th>
+                                    <th style="padding:8px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="planoMateriasTbody"></tbody>
+                        </table>
+                    </div>
+
+                    <h4 style="margin:20px 0 8px; color:var(--primary-color);">Edital (Conteudo Programatico)</h4>
+                    <p style="font-size:13px; color:#666; margin-bottom:10px;">Configure a estrutura do edital para que alunos acompanhem o progresso no conteudo.</p>
+                    <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button id="btnAddMateriaEdital" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Materia</button>
+                        <button id="btnUploadEdital" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
+                        <button id="btnBaixarModeloEdital" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo Edital</button>
+                    </div>
+                    <div id="editalEditorContainer" style="margin-bottom:16px;"></div>
+
+                    <div style="margin-top:16px; display:flex; gap:10px;">
+                        <button id="btnSalvarPlano" type="button" style="background:#4CAF50;">Salvar Plano</button>
+                        <button id="btnCancelarPlano" type="button" style="background:#999;">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ EXPORTAR TAB ============ -->
         <div id="exportar" class="tab-content">
             <h2>Exportar Ciclo</h2>
             <button id="gerarPDF">Gerar PDF</button>
             <button id="exportarExcel">Exportar para Excel</button>
-        </div>
-
-        <div id="planos" class="tab-content">
-            <h2>Gerenciar Planos</h2>
-            <p style="margin-bottom:16px; color:#666;">Crie planos pré-configurados para seus alunos.</p>
-            <div id="planosLista" style="margin-bottom:20px;"></div>
-            <button id="btnCriarPlano" type="button">Criar Novo Plano</button>
-
-            <div id="planoEditor" style="display:none; margin-top:20px;">
-                <h3 style="margin-bottom:16px;">Editor de Plano</h3>
-
-                <label for="planoNome">Nome do Plano:</label>
-                <input type="text" id="planoNome" placeholder="Ex: Preparatório TCU 2026">
-
-                <label for="planoDescricao">Descrição:</label>
-                <textarea id="planoDescricao" rows="3" placeholder="Breve descrição do plano..." style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:4px; margin-bottom:10px;"></textarea>
-
-                <label><input type="checkbox" id="planoPublico" checked style="width:auto; margin-right:6px;">Plano público (visível para alunos)</label>
-
-                <h4 style="margin:16px 0 8px; color:var(--primary-color);">Configurações</h4>
-                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-bottom:16px;">
-                    <div>
-                        <label for="planoHorasSemanais">Horas semanais:</label>
-                        <input type="number" id="planoHorasSemanais" min="1" placeholder="Ex: 20">
-                    </div>
-                    <div>
-                        <label for="planoDuracaoBloco">Duração do bloco (min):</label>
-                        <input type="number" id="planoDuracaoBloco" min="15" max="120" value="60">
-                    </div>
-                    <div>
-                        <label for="planoIntervalo">Intervalo (min):</label>
-                        <input type="number" id="planoIntervalo" min="0" max="30" value="5">
-                    </div>
-                    <div>
-                        <label for="planoBlocosSessao">Blocos por sessão:</label>
-                        <input type="number" id="planoBlocosSessao" min="1" max="10" value="4">
-                    </div>
-                </div>
-
-                <h4 style="margin:16px 0 8px; color:var(--primary-color);">Matérias</h4>
-                <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
-                    <button id="btnAddMateriaPlano" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Matéria</button>
-                    <button id="btnUploadMateriasPlano" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
-                    <button id="btnBaixarModelo" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo</button>
-                </div>
-
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                        <thead>
-                            <tr style="background:var(--secondary-color);">
-                                <th style="padding:8px;">Nome</th>
-                                <th style="padding:8px;">Sigla</th>
-                                <th style="padding:8px;">Peso</th>
-                                <th style="padding:8px;">Extensão</th>
-                                <th style="padding:8px;">Dificuldade</th>
-                                <th style="padding:8px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="planoMateriasTbody"></tbody>
-                    </table>
-                </div>
-
-                <h4 style="margin:20px 0 8px; color:var(--primary-color);">Edital (Conteúdo Programático)</h4>
-                <p style="font-size:13px; color:#666; margin-bottom:10px;">Configure a estrutura do edital para que alunos acompanhem o progresso no conteúdo.</p>
-                <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
-                    <button id="btnAddMateriaEdital" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Matéria</button>
-                    <button id="btnUploadEdital" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
-                    <button id="btnBaixarModeloEdital" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo Edital</button>
-                </div>
-                <div id="editalEditorContainer" style="margin-bottom:16px;"></div>
-
-                <div style="margin-top:16px; display:flex; gap:10px;">
-                    <button id="btnSalvarPlano" type="button" style="background:#4CAF50;">Salvar Plano</button>
-                    <button id="btnCancelarPlano" type="button" style="background:#999;">Cancelar</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -261,9 +311,9 @@
     <div id="modalAssunto" class="modal-overlay">
         <div class="modal-card">
             <h3>Registrar Estudo</h3>
-            <p>Matéria: <strong id="modalAssuntoMateria"></strong></p>
-            <label for="inputAssunto" style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto você estudou?</label>
-            <input type="text" id="inputAssunto" placeholder="Ex: Balanço Patrimonial" list="datalistTopicosEdital" autocomplete="off">
+            <p>Materia: <strong id="modalAssuntoMateria"></strong></p>
+            <label for="inputAssunto" style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto voce estudou?</label>
+            <input type="text" id="inputAssunto" placeholder="Ex: Balanco Patrimonial" list="datalistTopicosEdital" autocomplete="off">
             <datalist id="datalistTopicosEdital"></datalist>
             <div class="modal-actions">
                 <button id="btnConfirmarAssunto">Confirmar</button>
@@ -274,22 +324,22 @@
     <div id="modalQuestoes" class="modal-overlay">
         <div class="modal-card">
             <h3>Exercitando os Conhecimentos</h3>
-            <p>Você fez questões sobre este assunto?</p>
+            <p>Voce fez questoes sobre este assunto?</p>
             <div class="modal-actions">
                 <button id="btnSimQuestoes">Sim</button>
-                <button id="btnNaoQuestoes" style="background:#999;">Não, apenas estudei</button>
+                <button id="btnNaoQuestoes" style="background:#999;">Nao, apenas estudei</button>
             </div>
         </div>
     </div>
 
     <div id="modalRegistrarQuestoes" class="modal-overlay">
         <div class="modal-card">
-            <h3>Registrar Questões</h3>
-            <p>Matéria: <strong id="modalRegMateria"></strong></p>
+            <h3>Registrar Questoes</h3>
+            <p>Materia: <strong id="modalRegMateria"></strong></p>
             <p>Assunto: <strong id="modalRegAssunto"></strong></p>
-            <label for="inputQtdFeitas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questões feitas:</label>
+            <label for="inputQtdFeitas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questoes feitas:</label>
             <input type="number" id="inputQtdFeitas" min="0" placeholder="0">
-            <label for="inputQtdCorretas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questões corretas:</label>
+            <label for="inputQtdCorretas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questoes corretas:</label>
             <input type="number" id="inputQtdCorretas" min="0" placeholder="0">
             <div class="modal-actions">
                 <button id="btnSalvarQuestoes">Salvar</button>
@@ -311,6 +361,7 @@
     <script src="js/questoes.js"></script>
     <script src="js/planos.js"></script>
     <script src="js/edital.js"></script>
+    <script src="js/desempenho.js"></script>
     <script src="js/batch-upload.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/notes.js"></script>

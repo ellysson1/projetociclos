@@ -129,5 +129,5 @@ function ajustarBlocos() {
 
     blocosAtivos = distribuirBlocosAleatoriamente(blocos);
     exibirCicloVisual(blocosAtivos);
-    alternarAba('ciclo');
+    alternarAba('meuciclo');
 }

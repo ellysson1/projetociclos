@@ -29,12 +29,14 @@ async function ensureProfile() {
     if (!profile) {
         const user = await getUsuarioLogado();
         if (!user) return null;
+        const role = user.user_metadata?.role === 'professor' ? 'professor' : 'aluno';
+        const nome = user.user_metadata?.nome || user.email.split('@')[0];
         const { error } = await supabaseClient
             .from('profiles')
             .upsert({
                 user_id: user.id,
-                role: 'aluno',
-                nome: user.email.split('@')[0]
+                role,
+                nome
             }, { onConflict: 'user_id' });
 
         if (error) {
@@ -61,16 +63,16 @@ async function promoverParaProfessor(userId) {
 }
 
 function atualizarUIRole() {
-    const tabPlanos = document.querySelector('.tab[data-tab="planos"]');
-    const escolherPlanoSection = document.getElementById('escolherPlanoSection');
+    const planosAluno = document.getElementById('planosAluno');
+    const planosProfessor = document.getElementById('planosProfessor');
 
     if (isTeacher()) {
-        if (tabPlanos) tabPlanos.style.display = 'inline-block';
-        if (escolherPlanoSection) escolherPlanoSection.style.display = 'none';
+        if (planosAluno) planosAluno.style.display = 'none';
+        if (planosProfessor) planosProfessor.style.display = 'block';
         renderizarListaPlanosProfessor();
     } else {
-        if (tabPlanos) tabPlanos.style.display = 'none';
-        if (escolherPlanoSection) escolherPlanoSection.style.display = 'block';
+        if (planosAluno) planosAluno.style.display = 'block';
+        if (planosProfessor) planosProfessor.style.display = 'none';
     }
 
     // Atualizar visibilidade da aba Edital

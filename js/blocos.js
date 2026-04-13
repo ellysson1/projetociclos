@@ -126,7 +126,7 @@ function criarCardBloco(bloco, index) {
     // Timer button
     card.querySelector('.bloco-card__btn-timer').addEventListener('click', function(e) {
         e.stopPropagation();
-        alternarAba('ciclo');
+        alternarAba('meuciclo');
         document.getElementById('tempoControle').scrollIntoView({ behavior: 'smooth' });
     });
 
@@ -189,12 +189,11 @@ function verificarConclusao() {
 
 function continuarEstudo() {
     exibirCicloVisual(blocosAtivos);
-    alternarAba('ciclo');
+    alternarAba('meuciclo');
 }
 
 function iniciarNovoEstudo() {
     salvarAoSair = false;
     localStorage.removeItem('cicloEstudosEstado');
-    localStorage.removeItem('cicloEstudosAnotacoes');
     location.reload();
 }

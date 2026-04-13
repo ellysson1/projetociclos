@@ -1,7 +1,19 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    document.querySelectorAll('.tab').forEach(tab => {
+    // Main tab clicks
+    document.querySelectorAll('.tab-container > .tab').forEach(tab => {
         tab.addEventListener('click', function() {
             alternarAba(this.getAttribute('data-tab'));
+        });
+    });
+
+    // Sub-tab clicks
+    document.querySelectorAll('.subtab').forEach(subtab => {
+        subtab.addEventListener('click', function() {
+            const subtabId = this.getAttribute('data-subtab');
+            const parentTab = this.closest('.tab-content');
+            if (parentTab) {
+                ativarSubTab(parentTab.id, subtabId);
+            }
         });
     });
 
@@ -15,11 +27,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         const sigla = document.getElementById('novaMateriaSigla').value.trim().toUpperCase();
         if (nome && sigla) {
             if (sigla.length > 3) {
-                alert('A sigla deve ter no máximo 3 letras.');
+                alert('A sigla deve ter no maximo 3 letras.');
                 return;
             }
             if (materiasList.some(m => m.legenda === sigla)) {
-                alert('Já existe uma matéria com essa sigla. Por favor, escolha outra.');
+                alert('Ja existe uma materia com essa sigla. Por favor, escolha outra.');
                 return;
             }
             const novaMateria = {nome: nome, legenda: sigla};
@@ -27,13 +39,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             adicionarMateriaAoDOM(novaMateria);
             document.getElementById('novaMateriaNome').value = '';
             document.getElementById('novaMateriaSigla').value = '';
-            alert('Matéria adicionada com sucesso!');
+            alert('Materia adicionada com sucesso!');
         } else {
-            alert('Para adicionar uma nova matéria, preencha tanto o nome quanto a sigla.');
+            alert('Para adicionar uma nova materia, preencha tanto o nome quanto a sigla.');
         }
     });
 
-    document.getElementById('salvarAnotacoes').addEventListener('click', salvarAnotacoes);
     document.getElementById('tipoTempo').addEventListener('change', alternarModoTempo);
     document.getElementById('iniciarPausar').addEventListener('click', iniciarPausarTempo);
     document.getElementById('resetar').addEventListener('click', resetarTempo);
@@ -45,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const btnLogoutTop = document.getElementById('btnLogoutTop');
     if (btnLogoutTop) btnLogoutTop.addEventListener('click', sair);
 
-    // Modais de conclusão
+    // Modais de conclusao
     inicializarModaisQuestoes();
 
     // Planos (professor)
@@ -53,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('btnSalvarPlano').addEventListener('click', async () => {
         const dados = coletarDadosPlano();
         if (!dados.nome) { alert('Informe o nome do plano.'); return; }
-        if (dados.materias.length === 0) { alert('Adicione pelo menos uma matéria.'); return; }
+        if (dados.materias.length === 0) { alert('Adicione pelo menos uma materia.'); return; }
         const result = await salvarPlano(dados);
         if (result) {
             alert('Plano salvo com sucesso!');
@@ -67,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('btnUploadMateriasPlano').addEventListener('click', uploadMateriasPlano);
     document.getElementById('btnBaixarModelo').addEventListener('click', baixarModeloExcel);
 
-    // Upload matérias (aluno)
+    // Upload materias (aluno)
     document.getElementById('btnUploadMaterias').addEventListener('click', uploadMateriasAluno);
     document.getElementById('btnBaixarModeloAluno').addEventListener('click', baixarModeloExcel);
 
@@ -84,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('btnEscolherPlano').addEventListener('click', renderizarPlanosDisponiveis);
 
     inicializarSelecaoMaterias();
-    carregarAnotacoes();
     carregarConfiguracoes();
     carregarEstado();
 
