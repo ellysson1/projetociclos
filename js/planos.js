@@ -4,7 +4,7 @@ async function carregarPlanosPublicos() {
     if (!supabaseConfigurado()) return [];
     const { data, error } = await supabaseClient
         .from('planos')
-        .select('*, profiles!planos_professor_id_fkey(nome)')
+        .select('*')
         .eq('publico', true)
         .order('created_at', { ascending: false });
 
