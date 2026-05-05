@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESTE OFFLINE - Ciclo de Estudos</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/blocks.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <style>
+        #testeBanner {
+            background: #FF9800;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+        }
+        #testeBanner button {
+            margin-left: 12px;
+            background: #fff;
+            color: #FF9800;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="testeBanner">
+        MODO TESTE OFFLINE - Nenhuma conexao com Supabase
+        <button onclick="resetarTeste()">Resetar Tudo</button>
+        <button onclick="testarLogout()">Testar Logout</button>
+    </div>
+
+    <div class="container">
+        <h1>Ciclo de Estudos</h1>
+        <div id="topAuthBar" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:#fff;">
+            <div id="usuarioInfo" style="font-size:14px; color:#333;">Logado como teste@teste.com (MODO OFFLINE)</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a id="btnIrLogin" href="#" style="display:none; background-color:var(--primary-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Entrar</a>
+                <button id="btnLogoutTop" type="button" style="display:inline-block;">Sair</button>
+            </div>
+        </div>
+        <div id="bloqueioAuth" style="display:none;"></div>
+
+        <!-- Main tabs -->
+        <div class="tab-container">
+            <button class="tab active" data-tab="ciclo">Ciclo</button>
+            <button class="tab" data-tab="edital">Edital</button>
+            <button class="tab" data-tab="desempenho">Desempenho</button>
+            <button class="tab" data-tab="planos">Planos</button>
+            <button class="tab" data-tab="exportar">Exportar</button>
+        </div>
+
+        <!-- ============ CICLO TAB (with sub-tabs) ============ -->
+        <div id="ciclo" class="tab-content active">
+            <div class="subtab-container">
+                <button class="subtab active" data-subtab="subtab-inicio">Inicio</button>
+                <button class="subtab" data-subtab="subtab-materias">Materias</button>
+                <button class="subtab" data-subtab="subtab-variaveis">Variaveis</button>
+                <button class="subtab" data-subtab="subtab-ajustes">Ajustes</button>
+                <button class="subtab" data-subtab="subtab-meuciclo">Meu Ciclo</button>
+                <button class="subtab" data-subtab="subtab-config">Configuracoes</button>
+            </div>
+
+            <div id="subtab-inicio" class="subtab-content active">
+                <h2>Configuracao do Ciclo</h2>
+                <div id="inicio">
+                    <form id="horasForm">
+                        <label for="horasSemanais">Quantas horas por semana voce pode dedicar aos estudos?</label>
+                        <input type="number" id="horasSemanais" name="horasSemanais" min="1" required>
+                        <button type="submit">Proximo</button>
+                    </form>
+                </div>
+                <div id="continuar" style="display: none;">
+                    <p style="margin-bottom:12px; color:#666;">Seu ciclo esta ativo na aba "Meu Ciclo".</p>
+                    <button id="novoEstudo" style="background:#FF6B6B;">Reiniciar Ciclo</button>
+                </div>
+            </div>
+
+            <div id="subtab-materias" class="subtab-content">
+                <h2>Selecionar Materias</h2>
+                <div id="materiasLista"></div>
+                <input type="text" id="novaMateriaNome" placeholder="Nome da Materia">
+                <input type="text" id="novaMateriaSigla" placeholder="Sigla (ate 3 letras)" maxlength="3">
+                <button id="adicionarMateria">Adicionar Materia</button>
+                <button id="btnUploadMaterias" type="button" style="background:#26A69A;">Importar Excel/CSV</button>
+                <button id="btnBaixarModeloAluno" type="button" style="background:#FF9800;">Baixar Modelo</button>
+                <button id="proximoMaterias">Proximo</button>
+            </div>
+
+            <div id="subtab-variaveis" class="subtab-content">
+                <h2>Definir Variaveis por Materia</h2>
+                <table id="tabelaVariaveis">
+                    <thead><tr><th>Materia</th><th>Peso (1-10)</th><th>Extensao/Volume (1-10)</th><th>Dificuldade (1-10)</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <button id="calcularBlocos">Calcular Blocos</button>
+            </div>
+
+            <div id="subtab-ajustes" class="subtab-content">
+                <h2>Ajustar Quantidade de Blocos por Materia</h2>
+                <table id="tabelaAjustes">
+                    <thead><tr><th>Materia</th><th>Blocos</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <button id="ajustarBlocos">Ajustar Blocos</button>
+            </div>
+
+            <div id="subtab-meuciclo" class="subtab-content">
+                <h2>Seu Ciclo de Estudos</h2>
+                <div id="blocosContainer"></div>
+                <div id="tempoControle">
+                    <select id="tipoTempo">
+                        <option value="cronometro">Cronometro</option>
+                        <option value="timer">Timer</option>
+                    </select>
+                    <div id="timerConfig" style="display: none;">
+                        <input type="number" id="timerHoras" min="0" max="23" placeholder="Horas">
+                        <input type="number" id="timerMinutos" min="0" max="59" placeholder="Minutos">
+                    </div>
+                    <span id="tempo">00:00:00</span>
+                    <button id="iniciarPausar">Iniciar</button>
+                    <button id="resetar">Resetar</button>
+                </div>
+            </div>
+
+            <div id="subtab-config" class="subtab-content">
+                <h2>Configuracoes Avancadas</h2>
+                <div>
+                    <label for="duracaoBloco">Duracao do Bloco (minutos):</label>
+                    <input type="number" id="duracaoBloco" min="15" max="120" value="60">
+                </div>
+                <div>
+                    <label for="intervaloEntreBlocos">Intervalo entre Blocos (minutos):</label>
+                    <input type="number" id="intervaloEntreBlocos" min="0" max="30" value="5">
+                </div>
+                <div>
+                    <label for="blocosPorSessao">Blocos por Sessao:</label>
+                    <input type="number" id="blocosPorSessao" min="1" max="10" value="4">
+                </div>
+                <button id="salvarConfiguracoes">Salvar Configuracoes</button>
+            </div>
+        </div>
+
+        <!-- ============ EDITAL TAB ============ -->
+        <div id="edital" class="tab-content">
+            <h2>Edital - Conteudo Programatico</h2>
+            <div id="editalResumo" style="margin-bottom:16px; padding:14px; border:1px solid var(--border-color); border-radius:8px; background:#f0f7ff;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <strong id="editalPlanoNome" style="font-size:15px;"></strong>
+                        <span id="editalProgressoGeral" style="font-size:13px; color:#666; margin-left:8px;"></span>
+                    </div>
+                    <div class="edital-barra-container" style="width:200px;">
+                        <div class="edital-barra" id="editalBarraGeral" style="width:0%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="editalFiltros" style="margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <select id="editalFiltroStatus" style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px;">
+                    <option value="todos">Todos os status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="em_andamento">Em andamento</option>
+                    <option value="concluido">Concluido</option>
+                </select>
+                <input type="text" id="editalBusca" placeholder="Buscar topico..." style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px; flex:1; min-width:150px;">
+            </div>
+            <div id="editalArvore"></div>
+            <div id="editalVazio" style="display:none; text-align:center; padding:40px 20px; color:#999;">
+                <p style="font-size:16px; margin-bottom:8px;">Nenhum edital configurado</p>
+                <p style="font-size:13px;">Adote um plano que contenha edital.</p>
+            </div>
+        </div>
+
+        <!-- ============ DESEMPENHO TAB ============ -->
+        <div id="desempenho" class="tab-content">
+            <h2>Desempenho</h2>
+            <div id="desempenhoResumo" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:12px; margin-bottom:24px;">
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoTotalQuestoes">0</div>
+                    <div class="desempenho-card__label">Questoes feitas</div>
+                </div>
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoTotalCorretas">0</div>
+                    <div class="desempenho-card__label">Questoes corretas</div>
+                </div>
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoPercentual">0%</div>
+                    <div class="desempenho-card__label">Aproveitamento</div>
+                </div>
+                <div class="desempenho-card">
+                    <div class="desempenho-card__valor" id="desempenhoBlocosConcluidos">0</div>
+                    <div class="desempenho-card__label">Blocos concluidos</div>
+                </div>
+            </div>
+            <h3 style="margin-bottom:12px;">Desempenho por Materia</h3>
+            <div id="desempenhoPorMateria"><p style="color:#999;">Conclua blocos para ver estatisticas.</p></div>
+            <div id="desempenhoEdital" style="display:none; margin-top:24px;">
+                <h3 style="margin-bottom:12px;">Progresso no Edital</h3>
+                <div id="desempenhoEditalConteudo"></div>
+            </div>
+        </div>
+
+        <!-- ============ PLANOS TAB ============ -->
+        <div id="planos" class="tab-content">
+            <div id="planosAluno">
+                <h2>Planos Disponiveis</h2>
+                <p style="margin-bottom:12px; font-size:14px; color:#666;">Selecione um plano pre-configurado por um professor.</p>
+                <div id="planosDisponiveis" style="margin-bottom:12px;"></div>
+                <button id="btnEscolherPlano" type="button">Carregar Planos Disponiveis</button>
+            </div>
+            <div id="planosProfessor" style="display:none;">
+                <h2>Gerenciar Planos</h2>
+                <p style="margin-bottom:16px; color:#666;">Crie planos pre-configurados para seus alunos.</p>
+                <div id="planosLista" style="margin-bottom:20px;"></div>
+                <button id="btnCriarPlano" type="button">Criar Novo Plano</button>
+                <div id="planoEditor" style="display:none; margin-top:20px;">
+                    <h3 style="margin-bottom:16px;">Editor de Plano</h3>
+                    <label for="planoNome">Nome do Plano:</label>
+                    <input type="text" id="planoNome" placeholder="Ex: Preparatorio TCU 2026">
+                    <label for="planoDescricao">Descricao:</label>
+                    <textarea id="planoDescricao" rows="3" placeholder="Breve descricao..." style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:4px; margin-bottom:10px;"></textarea>
+                    <label><input type="checkbox" id="planoPublico" checked style="width:auto; margin-right:6px;">Plano publico</label>
+                    <h4 style="margin:16px 0 8px; color:var(--primary-color);">Configuracoes</h4>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-bottom:16px;">
+                        <div><label for="planoHorasSemanais">Horas semanais:</label><input type="number" id="planoHorasSemanais" min="1" placeholder="Ex: 20"></div>
+                        <div><label for="planoDuracaoBloco">Duracao do bloco (min):</label><input type="number" id="planoDuracaoBloco" min="15" max="120" value="60"></div>
+                        <div><label for="planoIntervalo">Intervalo (min):</label><input type="number" id="planoIntervalo" min="0" max="30" value="5"></div>
+                        <div><label for="planoBlocosSessao">Blocos por sessao:</label><input type="number" id="planoBlocosSessao" min="1" max="10" value="4"></div>
+                    </div>
+                    <h4 style="margin:16px 0 8px; color:var(--primary-color);">Materias</h4>
+                    <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button id="btnAddMateriaPlano" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Materia</button>
+                        <button id="btnUploadMateriasPlano" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
+                        <button id="btnBaixarModelo" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo</button>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead><tr style="background:var(--secondary-color);"><th style="padding:8px;">Nome</th><th style="padding:8px;">Sigla</th><th style="padding:8px;">Peso</th><th style="padding:8px;">Extensao</th><th style="padding:8px;">Dificuldade</th><th style="padding:8px;"></th></tr></thead>
+                            <tbody id="planoMateriasTbody"></tbody>
+                        </table>
+                    </div>
+                    <h4 style="margin:20px 0 8px; color:var(--primary-color);">Edital</h4>
+                    <p style="font-size:13px; color:#666; margin-bottom:10px;">Configure a estrutura do edital.</p>
+                    <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button id="btnAddMateriaEdital" type="button" style="font-size:13px; padding:6px 14px;">+ Adicionar Materia</button>
+                        <button id="btnUploadEdital" type="button" style="font-size:13px; padding:6px 14px; background:#26A69A;">Importar Excel/CSV</button>
+                        <button id="btnBaixarModeloEdital" type="button" style="font-size:13px; padding:6px 14px; background:#FF9800;">Baixar Modelo Edital</button>
+                    </div>
+                    <div id="editalEditorContainer" style="margin-bottom:16px;"></div>
+                    <div style="margin-top:16px; display:flex; gap:10px;">
+                        <button id="btnSalvarPlano" type="button" style="background:#4CAF50;">Salvar Plano</button>
+                        <button id="btnCancelarPlano" type="button" style="background:#999;">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ EXPORTAR TAB ============ -->
+        <div id="exportar" class="tab-content">
+            <h2>Exportar Ciclo</h2>
+            <button id="gerarPDF">Gerar PDF</button>
+            <button id="exportarExcel">Exportar para Excel</button>
+        </div>
+    </div>
+
+    <!-- Modais de conclusao -->
+    <div id="modalAssunto" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Registrar Estudo</h3>
+            <p>Materia: <strong id="modalAssuntoMateria"></strong></p>
+            <label style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto voce estudou?</label>
+            <div id="listaAssuntosEdital" class="assunto-lista"></div>
+            <div id="assuntoOutroContainer" style="display:none;">
+                <input type="text" id="inputAssunto" placeholder="Digite o assunto..." autocomplete="off">
+            </div>
+            <input type="hidden" id="assuntoSelecionado" value="">
+            <div class="modal-actions">
+                <button id="btnConfirmarAssunto">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalQuestoes" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Exercitando os Conhecimentos</h3>
+            <p>Voce fez questoes sobre este assunto?</p>
+            <div class="modal-actions">
+                <button id="btnSimQuestoes">Sim</button>
+                <button id="btnNaoQuestoes" style="background:#999;">Nao, apenas estudei</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalRegistrarQuestoes" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Registrar Questoes</h3>
+            <p>Materia: <strong id="modalRegMateria"></strong></p>
+            <p>Assunto: <strong id="modalRegAssunto"></strong></p>
+            <label for="inputQtdFeitas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questoes feitas:</label>
+            <input type="number" id="inputQtdFeitas" min="0" placeholder="0">
+            <label for="inputQtdCorretas" style="display:block; margin:12px 0 6px; font-weight:bold;">Questoes corretas:</label>
+            <input type="number" id="inputQtdCorretas" min="0" placeholder="0">
+            <div class="modal-actions">
+                <button id="btnSalvarQuestoes">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// MOCKS: substituem Supabase e funcoes que dependem de backend
+// ══════════════════════════════════════════════════════════════════════════
+
+function supabaseConfigurado() { return false; }
+async function getUsuarioLogado() { return { id: 'teste-offline', email: 'teste@teste.com' }; }
+async function atualizarUIAuth() { return true; }
+function salvarEstadoNuvem() {}
+async function carregarEstadoNuvem() {}
+async function ensureProfile() {}
+function atualizarUIRole() {}
+function setAuthStatus() {}
+function redirecionarParaLogin() {}
+
+async function sair() {
+    alert('Voce saiu da sua conta.');
+    location.reload();
+}
+
+function salvarQuestoesNuvem() {}
+function carregarPlanosPublicos() { return []; }
+async function salvarPlano() { alert('Modo offline: plano nao salvo.'); return false; }
+function renderizarPlanosDisponiveis() { alert('Modo offline: sem planos do servidor.'); }
+function abrirEditorPlano() { alert('Modo offline: editor de planos desabilitado.'); }
+function fecharEditorPlano() {}
+function coletarDadosPlano() { return { nome: '', materias: [] }; }
+function adicionarMateriaAoPlano() {}
+function uploadMateriasPlano() {}
+function uploadMateriasAluno() {}
+function baixarModeloExcel() { alert('Modo offline: funcao de export desabilitada.'); }
+function adicionarMateriaEdital() {}
+function uploadEditalExcel() {}
+function baixarModeloEdital() {}
+function gerarPDF() { alert('Modo offline: PDF desabilitado.'); }
+function exportarParaExcel() { alert('Modo offline: export desabilitado.'); }
+
+async function carregarEditalProgresso() {}
+async function salvarEditalProgressoItem() {}
+
+function renderizarDesempenho() {
+    let totalFeitas = 0, totalCorretas = 0, blocosConcluidos = 0;
+    const porMateria = {};
+
+    blocosAtivos.forEach(b => {
+        if (b.concluido) {
+            blocosConcluidos++;
+            if (b.questoes) {
+                totalFeitas += b.questoes.feitas || 0;
+                totalCorretas += b.questoes.corretas || 0;
+                if (!porMateria[b.nome]) porMateria[b.nome] = { feitas: 0, corretas: 0 };
+                porMateria[b.nome].feitas += b.questoes.feitas || 0;
+                porMateria[b.nome].corretas += b.questoes.corretas || 0;
+            }
+        }
+    });
+
+    document.getElementById('desempenhoTotalQuestoes').textContent = totalFeitas;
+    document.getElementById('desempenhoTotalCorretas').textContent = totalCorretas;
+    document.getElementById('desempenhoPercentual').textContent = totalFeitas > 0 ? Math.round((totalCorretas / totalFeitas) * 100) + '%' : '0%';
+    document.getElementById('desempenhoBlocosConcluidos').textContent = blocosConcluidos;
+
+    const container = document.getElementById('desempenhoPorMateria');
+    if (Object.keys(porMateria).length === 0) {
+        container.innerHTML = '<p style="color:#999;">Conclua blocos com questoes para ver estatisticas.</p>';
+        return;
+    }
+    let html = '';
+    for (const [nome, dados] of Object.entries(porMateria)) {
+        const pct = dados.feitas > 0 ? Math.round((dados.corretas / dados.feitas) * 100) : 0;
+        html += `<div class="desempenho-materia">
+            <div class="desempenho-materia__header">
+                <span class="desempenho-materia__nome">${nome}</span>
+                <span class="desempenho-materia__stats">${dados.corretas}/${dados.feitas} (${pct}%)</span>
+            </div>
+            <div class="desempenho-barra-container"><div class="desempenho-barra" style="width:${pct}%;"></div></div>
+        </div>`;
+    }
+    container.innerHTML = html;
+}
+
+function getBaseUrl() { return ''; }
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════
+
+let materiasList = [
+    {nome: "AFO", legenda: "AFO"},
+    {nome: "CONTABILIDADE GERAL", legenda: "CGE"},
+    {nome: "CONTABILIDADE PUBLICA", legenda: "CPB"},
+    {nome: "AUDITORIA", legenda: "AUD"},
+    {nome: "CONTROLE EXTERNO", legenda: "CEX"}
+];
+let materiasSelecionadas = [];
+let blocosAtivos = [];
+let coresUsadas = [];
+let tempoDecorrido = 0;
+let tempoTotal = 0;
+let cronometroInterval;
+let cronometroRodando = false;
+let modoCronometro = true;
+let salvarAoSair = true;
+
+let planoAdotado = {
+    id: 'teste-plano-1',
+    nome: 'Plano TCU 2026 (Teste)',
+    edital: [
+        {
+            materia: 'AFO',
+            topicos: [
+                { nome: 'Orcamento Publico', subtopicos: ['Principios Orcamentarios', 'Ciclo Orcamentario', 'Creditos Adicionais'] },
+                { nome: 'Receita Publica', subtopicos: ['Classificacao da Receita', 'Estagios da Receita'] },
+                { nome: 'Despesa Publica', subtopicos: ['Classificacao da Despesa', 'Estagios da Despesa', 'Restos a Pagar'] }
+            ]
+        },
+        {
+            materia: 'CONTABILIDADE GERAL',
+            topicos: [
+                { nome: 'Balanco Patrimonial', subtopicos: ['Ativo Circulante', 'Passivo Circulante', 'Patrimonio Liquido'] },
+                { nome: 'DRE', subtopicos: ['Receitas', 'Despesas', 'Lucro Liquido'] },
+                { nome: 'Provisoes e Contingencias', subtopicos: [] }
+            ]
+        },
+        {
+            materia: 'CONTABILIDADE PUBLICA',
+            topicos: [
+                { nome: 'MCASP', subtopicos: ['Plano de Contas', 'Demonstracoes Contabeis'] },
+                { nome: 'NBCASP', subtopicos: [] }
+            ]
+        },
+        {
+            materia: 'AUDITORIA',
+            topicos: [
+                { nome: 'Normas de Auditoria', subtopicos: ['NBC TA 200', 'NBC TA 240', 'NBC TA 700'] },
+                { nome: 'Evidencia de Auditoria', subtopicos: [] },
+                { nome: 'Relatorio do Auditor', subtopicos: ['Opiniao Nao Modificada', 'Opiniao Modificada'] }
+            ]
+        },
+        {
+            materia: 'CONTROLE EXTERNO',
+            topicos: [
+                { nome: 'Competencias do TCU', subtopicos: ['Fiscalizacao Contabil', 'Julgamento de Contas'] },
+                { nome: 'Processo de Contas', subtopicos: [] }
+            ]
+        }
+    ]
+};
+
+let editalProgresso = {};
+
+let configuracoes = {
+    duracaoBloco: 60,
+    intervaloEntreBlocos: 5,
+    blocosPorSessao: 4
+};
+
+function salvarEstado() {
+    const estado = {
+        materiasList,
+        materiasSelecionadas,
+        blocosAtivos,
+        tempoDecorrido,
+        modoCronometro,
+        configuracoes,
+        planoAdotado,
+        horasSemanais: document.getElementById('horasSemanais')?.value || null
+    };
+    localStorage.setItem('cicloTesteOffline', JSON.stringify(estado));
+}
+
+function carregarEstado() {
+    const estadoSalvo = localStorage.getItem('cicloTesteOffline');
+    if (estadoSalvo) {
+        const estado = JSON.parse(estadoSalvo);
+        materiasList = estado.materiasList || materiasList;
+        materiasSelecionadas = estado.materiasSelecionadas || [];
+        blocosAtivos = estado.blocosAtivos || [];
+        tempoDecorrido = estado.tempoDecorrido || 0;
+        modoCronometro = estado.modoCronometro !== undefined ? estado.modoCronometro : true;
+        configuracoes = estado.configuracoes || configuracoes;
+        if (estado.planoAdotado) planoAdotado = estado.planoAdotado;
+
+        document.getElementById('horasSemanais').value = estado.horasSemanais || '';
+        document.getElementById('inicio').style.display = 'none';
+        document.getElementById('continuar').style.display = 'block';
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TABS (from js/tabs.js)
+// ══════════════════════════════════════════════════════════════════════════
+
+const subtabMap = {
+    'home':           { tab: 'ciclo', subtab: 'subtab-inicio' },
+    'materias':       { tab: 'ciclo', subtab: 'subtab-materias' },
+    'variaveis':      { tab: 'ciclo', subtab: 'subtab-variaveis' },
+    'ajustes':        { tab: 'ciclo', subtab: 'subtab-ajustes' },
+    'meuciclo':       { tab: 'ciclo', subtab: 'subtab-meuciclo' },
+    'configuracoes':  { tab: 'ciclo', subtab: 'subtab-config' },
+};
+
+function alternarAba(tabName) {
+    const mapping = subtabMap[tabName];
+    if (mapping) {
+        ativarMainTab(mapping.tab);
+        ativarSubTab(mapping.tab, mapping.subtab);
+    } else {
+        ativarMainTab(tabName);
+    }
+}
+
+function ativarMainTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-container > .tab').forEach(t => t.classList.remove('active'));
+    const content = document.getElementById(tabName);
+    if (content) content.classList.add('active');
+    const tab = document.querySelector(`.tab-container > .tab[data-tab="${tabName}"]`);
+    if (tab) tab.classList.add('active');
+    if (tabName === 'desempenho') renderizarDesempenho();
+}
+
+function ativarSubTab(parentTabId, subtabId) {
+    const parentTab = document.getElementById(parentTabId);
+    if (!parentTab) return;
+    parentTab.querySelectorAll('.subtab-content').forEach(c => c.classList.remove('active'));
+    parentTab.querySelectorAll('.subtab').forEach(s => s.classList.remove('active'));
+    const subtabContent = document.getElementById(subtabId);
+    if (subtabContent) subtabContent.classList.add('active');
+    const subtabBtn = parentTab.querySelector(`.subtab[data-subtab="${subtabId}"]`);
+    if (subtabBtn) subtabBtn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TIMER (from js/timer.js)
+// ══════════════════════════════════════════════════════════════════════════
+
+function inicializarControlesTempo() {
+    document.getElementById('tempoControle').style.display = 'block';
+}
+
+function alternarModoTempo() {
+    modoCronometro = document.getElementById('tipoTempo').value === 'cronometro';
+    document.getElementById('timerConfig').style.display = modoCronometro ? 'none' : 'block';
+    resetarTempo();
+}
+
+function iniciarPausarTempo() {
+    if (cronometroRodando) {
+        clearInterval(cronometroInterval);
+        document.getElementById('iniciarPausar').textContent = 'Retomar';
+    } else {
+        if (!modoCronometro && tempoDecorrido === 0) {
+            const horas = parseInt(document.getElementById('timerHoras').value) || 0;
+            const minutos = parseInt(document.getElementById('timerMinutos').value) || 0;
+            tempoTotal = (horas * 3600) + (minutos * 60);
+            tempoDecorrido = tempoTotal;
+        }
+        cronometroInterval = setInterval(atualizarTempo, 1000);
+        document.getElementById('iniciarPausar').textContent = 'Pausar';
+    }
+    cronometroRodando = !cronometroRodando;
+}
+
+function atualizarTempo() {
+    if (modoCronometro) {
+        tempoDecorrido++;
+    } else {
+        tempoDecorrido--;
+        if (tempoDecorrido <= 0) {
+            clearInterval(cronometroInterval);
+            cronometroRodando = false;
+            document.getElementById('iniciarPausar').textContent = 'Iniciar';
+            alert('Tempo esgotado!');
+        }
+    }
+    atualizarExibicaoTempo();
+}
+
+function atualizarExibicaoTempo() {
+    const tempo = modoCronometro ? tempoDecorrido : Math.max(0, tempoDecorrido);
+    const horas = Math.floor(tempo / 3600);
+    const minutos = Math.floor((tempo % 3600) / 60);
+    const segundos = tempo % 60;
+    document.getElementById('tempo').textContent =
+        `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+}
+
+function resetarTempo() {
+    clearInterval(cronometroInterval);
+    cronometroRodando = false;
+    tempoDecorrido = 0;
+    document.getElementById('iniciarPausar').textContent = 'Iniciar';
+    atualizarExibicaoTempo();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MATERIAS (from js/materias.js - simplified)
+// ══════════════════════════════════════════════════════════════════════════
+
+const coresMaterias = ['#4A90E2', '#FF6B6B', '#50C878', '#FF9800', '#9C27B0', '#00BCD4', '#E91E63', '#8BC34A', '#795548', '#607D8B'];
+
+function inicializarSelecaoMaterias() {
+    const container = document.getElementById('materiasLista');
+    container.innerHTML = '';
+    materiasList.forEach(m => adicionarMateriaAoDOM(m));
+}
+
+function adicionarMateriaAoDOM(materia) {
+    const container = document.getElementById('materiasLista');
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:6px;';
+    const checked = materiasSelecionadas.some(ms => ms.legenda === materia.legenda);
+    div.innerHTML = `<label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+        <input type="checkbox" value="${materia.legenda}" ${checked ? 'checked' : ''} style="width:auto;">
+        <strong>${materia.legenda}</strong> - ${materia.nome}
+    </label>`;
+    container.appendChild(div);
+}
+
+function avancarHorasSemanais(e) {
+    e.preventDefault();
+    const horas = parseInt(document.getElementById('horasSemanais').value);
+    if (!horas || horas < 1) { alert('Informe as horas semanais.'); return; }
+    alternarAba('materias');
+}
+
+function avancarSelecaoMaterias() {
+    const checkboxes = document.querySelectorAll('#materiasLista input[type="checkbox"]:checked');
+    if (checkboxes.length === 0) { alert('Selecione pelo menos uma materia.'); return; }
+    materiasSelecionadas = [];
+    checkboxes.forEach(cb => {
+        const m = materiasList.find(mat => mat.legenda === cb.value);
+        if (m) materiasSelecionadas.push({ ...m, cor: coresMaterias[materiasSelecionadas.length % coresMaterias.length] });
+    });
+
+    const tbody = document.querySelector('#tabelaVariaveis tbody');
+    tbody.innerHTML = '';
+    materiasSelecionadas.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${m.nome} (${m.legenda})</td>
+            <td><input type="number" class="peso" min="1" max="10" value="5"></td>
+            <td><input type="number" class="extensao" min="1" max="10" value="5"></td>
+            <td><input type="number" class="dificuldade" min="1" max="10" value="5"></td>`;
+        tbody.appendChild(tr);
+    });
+    alternarAba('variaveis');
+}
+
+function calcularBlocos() {
+    const rows = document.querySelectorAll('#tabelaVariaveis tbody tr');
+    const horas = parseInt(document.getElementById('horasSemanais').value) || 10;
+    const totalMinutos = horas * 60;
+    const totalBlocos = Math.floor(totalMinutos / configuracoes.duracaoBloco);
+
+    let somaScores = 0;
+    const scores = [];
+    rows.forEach((row, i) => {
+        const peso = parseInt(row.querySelector('.peso').value) || 5;
+        const ext = parseInt(row.querySelector('.extensao').value) || 5;
+        const dif = parseInt(row.querySelector('.dificuldade').value) || 5;
+        const score = peso * 0.4 + ext * 0.3 + dif * 0.3;
+        scores.push(score);
+        somaScores += score;
+    });
+
+    const tbody = document.querySelector('#tabelaAjustes tbody');
+    tbody.innerHTML = '';
+    materiasSelecionadas.forEach((m, i) => {
+        const blocos = Math.max(1, Math.round((scores[i] / somaScores) * totalBlocos));
+        m.quantidadeBlocos = blocos;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${m.nome} (${m.legenda})</td><td><input type="number" class="ajusteBlocos" min="1" value="${blocos}"></td>`;
+        tbody.appendChild(tr);
+    });
+    alternarAba('ajustes');
+}
+
+function ajustarBlocos() {
+    const inputs = document.querySelectorAll('.ajusteBlocos');
+    inputs.forEach((input, i) => {
+        materiasSelecionadas[i].quantidadeBlocos = parseInt(input.value) || 1;
+    });
+
+    blocosAtivos = distribuirBlocosAleatoriamente(
+        materiasSelecionadas.map(m => ({
+            nome: m.nome,
+            legenda: m.legenda,
+            cor: m.cor,
+            quantidadeBlocos: m.quantidadeBlocos
+        }))
+    );
+
+    exibirCicloVisual(blocosAtivos);
+    document.getElementById('inicio').style.display = 'none';
+    document.getElementById('continuar').style.display = 'block';
+    salvarEstado();
+    alternarAba('meuciclo');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// BLOCOS (from js/blocos.js)
+// ══════════════════════════════════════════════════════════════════════════
+
+function distribuirBlocosAleatoriamente(blocos) {
+    let dist = [];
+    blocos.forEach(b => { for (let i = 0; i < b.quantidadeBlocos; i++) dist.push({ ...b }); });
+    for (let i = dist.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [dist[i], dist[j]] = [dist[j], dist[i]];
+    }
+    return dist;
+}
+
+function exibirCicloVisual(blocos) {
+    const container = document.getElementById("blocosContainer");
+    container.innerHTML = "";
+    const bps = configuracoes.blocosPorSessao;
+    const sessoes = [];
+    for (let i = 0; i < blocos.length; i += bps) sessoes.push(blocos.slice(i, i + bps));
+
+    sessoes.forEach((sessao, sessaoIdx) => {
+        const sessaoDiv = document.createElement("div");
+        sessaoDiv.className = "sessao-group";
+        const header = document.createElement("div");
+        header.className = "sessao-group__header";
+        header.textContent = `Sessao ${sessaoIdx + 1}`;
+        sessaoDiv.appendChild(header);
+
+        const grid = document.createElement("div");
+        grid.className = "blocos-grid";
+        sessao.forEach((bloco, blocoIdx) => {
+            const globalIndex = sessaoIdx * bps + blocoIdx;
+            grid.appendChild(criarCardBloco(bloco, globalIndex));
+        });
+        sessaoDiv.appendChild(grid);
+        container.appendChild(sessaoDiv);
+
+        if (sessaoIdx < sessoes.length - 1) {
+            const intervalo = document.createElement("div");
+            intervalo.className = "sessao-intervalo";
+            intervalo.textContent = `Intervalo: ${configuracoes.intervaloEntreBlocos} min`;
+            container.appendChild(intervalo);
+        }
+    });
+    inicializarControlesTempo();
+}
+
+function criarCardBloco(bloco, index) {
+    const card = document.createElement("div");
+    card.className = "bloco-card";
+    card.setAttribute("data-index", index);
+    if (bloco.concluido) card.classList.add("concluido");
+
+    const duracao = bloco.duracaoEspecifica || configuracoes.duracaoBloco;
+    let infoConcluido = '';
+    if (bloco.assunto) infoConcluido += bloco.assunto;
+    if (bloco.questoes && bloco.questoes.feitas > 0) {
+        const pct = Math.round((bloco.questoes.corretas / bloco.questoes.feitas) * 1000) / 10;
+        infoConcluido += (infoConcluido ? ' | ' : '') + `${pct}% de acertos (${bloco.questoes.corretas}/${bloco.questoes.feitas})`;
+    }
+
+    card.innerHTML = `
+        <div class="bloco-card__header" style="background-color: ${bloco.cor}"></div>
+        <div class="bloco-card__sigla">${bloco.legenda}</div>
+        <div class="bloco-card__nome">${bloco.nome}</div>
+        <div class="bloco-card__duracao">${duracao} min</div>
+        <div class="bloco-card__footer">
+            <label class="bloco-card__check">
+                <input type="checkbox" ${bloco.concluido ? 'checked' : ''}>
+                <span>Concluir</span>
+            </label>
+            <button class="bloco-card__btn-timer" type="button">Cronometro</button>
+        </div>
+        <div class="bloco-card__info-concluido">${infoConcluido}</div>
+    `;
+
+    const checkbox = card.querySelector('input[type="checkbox"]');
+    checkbox.addEventListener('change', function(e) {
+        e.stopPropagation();
+        const idx = parseInt(card.getAttribute('data-index'));
+        if (this.checked && !blocosAtivos[idx].concluido) {
+            iniciarFluxoConclusao(idx, card);
+        } else if (!this.checked && blocosAtivos[idx].concluido) {
+            blocosAtivos[idx].concluido = false;
+            blocosAtivos[idx].assunto = null;
+            blocosAtivos[idx].questoes = null;
+            card.classList.remove('concluido');
+            card.querySelector('.bloco-card__info-concluido').textContent = '';
+            salvarEstado();
+        }
+    });
+
+    card.querySelector('.bloco-card__btn-timer').addEventListener('click', function(e) {
+        e.stopPropagation();
+        alternarAba('meuciclo');
+        document.getElementById('tempoControle').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    return card;
+}
+
+function verificarConclusao() {
+    const todosConcluidos = blocosAtivos.every(b => b.concluido);
+    if (todosConcluidos && blocosAtivos.length > 0) alert("Parabens! Voce completou todo o ciclo de estudos!");
+}
+
+function iniciarNovoEstudo() {
+    salvarAoSair = false;
+    localStorage.removeItem('cicloTesteOffline');
+    location.reload();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// QUESTOES (from js/questoes.js) - COM AS NOVAS ALTERACOES
+// ══════════════════════════════════════════════════════════════════════════
+
+let blocoEmConclusao = null;
+let cardEmConclusao = null;
+
+function inicializarModaisQuestoes() {
+    document.getElementById('btnConfirmarAssunto').addEventListener('click', function() {
+        const assunto = document.getElementById('assuntoSelecionado').value.trim();
+        if (!assunto) {
+            alert('Por favor, selecione ou informe o assunto estudado.');
+            return;
+        }
+        fecharModal('modalAssunto');
+        blocosAtivos[blocoEmConclusao].assunto = assunto;
+        abrirModal('modalQuestoes');
+    });
+
+    document.getElementById('btnSimQuestoes').addEventListener('click', function() {
+        fecharModal('modalQuestoes');
+        const bloco = blocosAtivos[blocoEmConclusao];
+        document.getElementById('modalRegMateria').textContent = bloco.nome;
+        document.getElementById('modalRegAssunto').textContent = bloco.assunto || '';
+        document.getElementById('inputQtdFeitas').value = '';
+        document.getElementById('inputQtdCorretas').value = '';
+        abrirModal('modalRegistrarQuestoes');
+    });
+
+    document.getElementById('btnNaoQuestoes').addEventListener('click', function() {
+        fecharModal('modalQuestoes');
+        finalizarConclusao(null);
+    });
+
+    document.getElementById('btnSalvarQuestoes').addEventListener('click', function() {
+        const feitas = parseInt(document.getElementById('inputQtdFeitas').value) || 0;
+        const corretas = parseInt(document.getElementById('inputQtdCorretas').value) || 0;
+        if (feitas <= 0) { alert('Informe a quantidade de questoes feitas.'); return; }
+        if (corretas > feitas) { alert('Corretas nao pode ser maior que feitas.'); return; }
+        fecharModal('modalRegistrarQuestoes');
+        finalizarConclusao({ feitas, corretas });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal(this.id);
+                if (blocoEmConclusao !== null && cardEmConclusao) {
+                    const checkbox = cardEmConclusao.querySelector('input[type="checkbox"]');
+                    if (checkbox) checkbox.checked = false;
+                    blocoEmConclusao = null;
+                    cardEmConclusao = null;
+                }
+            }
+        });
+    });
+}
+
+function iniciarFluxoConclusao(index, card) {
+    blocoEmConclusao = index;
+    cardEmConclusao = card;
+    const bloco = blocosAtivos[index];
+
+    document.getElementById('modalAssuntoMateria').textContent = bloco.nome;
+    document.getElementById('assuntoSelecionado').value = bloco.assunto || '';
+    document.getElementById('inputAssunto').value = '';
+
+    preencherListaAssuntosEdital(bloco.nome);
+    abrirModal('modalAssunto');
+}
+
+function normalizarTexto(texto) {
+    return (texto || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, '').trim();
+}
+
+function gerarChaveEdital(materia, topico, subtopico) {
+    return [materia, topico, subtopico || ''].join('|');
+}
+
+function preencherListaAssuntosEdital(materiaBloco) {
+    const lista = document.getElementById('listaAssuntosEdital');
+    const outroContainer = document.getElementById('assuntoOutroContainer');
+    const hiddenInput = document.getElementById('assuntoSelecionado');
+    lista.innerHTML = '';
+    outroContainer.style.display = 'none';
+
+    const itens = [];
+
+    if (planoAdotado?.edital) {
+        const materiaBlNorm = normalizarTexto(materiaBloco);
+        planoAdotado.edital.forEach(materiaObj => {
+            const materiaNorm = normalizarTexto(materiaObj.materia);
+            const mesmaMateria = materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm);
+            if (!mesmaMateria) return;
+
+            (materiaObj.topicos || []).forEach(topicoObj => {
+                const subtopicos = topicoObj.subtopicos || [];
+                if (subtopicos.length > 0) {
+                    subtopicos.forEach(sub => itens.push(sub));
+                } else {
+                    itens.push(topicoObj.nome);
+                }
+            });
+        });
+    }
+
+    itens.forEach(texto => {
+        const div = document.createElement('div');
+        div.className = 'assunto-item';
+        div.textContent = texto;
+        div.addEventListener('click', () => {
+            lista.querySelectorAll('.assunto-item').forEach(el => el.classList.remove('selected'));
+            div.classList.add('selected');
+            hiddenInput.value = texto;
+            outroContainer.style.display = 'none';
+            document.getElementById('inputAssunto').value = '';
+        });
+        lista.appendChild(div);
+    });
+
+    const outroDiv = document.createElement('div');
+    outroDiv.className = 'assunto-item assunto-item--outro';
+    outroDiv.textContent = 'Outros (digitar)';
+    outroDiv.addEventListener('click', () => {
+        lista.querySelectorAll('.assunto-item').forEach(el => el.classList.remove('selected'));
+        outroDiv.classList.add('selected');
+        outroContainer.style.display = 'block';
+        hiddenInput.value = '';
+        document.getElementById('inputAssunto').focus();
+    });
+    lista.appendChild(outroDiv);
+
+    const inputAssunto = document.getElementById('inputAssunto');
+    const newInput = inputAssunto.cloneNode(true);
+    inputAssunto.parentNode.replaceChild(newInput, inputAssunto);
+    newInput.addEventListener('input', function() {
+        hiddenInput.value = this.value.trim();
+    });
+
+    if (hiddenInput.value) {
+        let found = false;
+        lista.querySelectorAll('.assunto-item:not(.assunto-item--outro)').forEach(el => {
+            if (el.textContent === hiddenInput.value) { el.classList.add('selected'); found = true; }
+        });
+        if (!found) {
+            outroDiv.classList.add('selected');
+            outroContainer.style.display = 'block';
+            document.getElementById('inputAssunto').value = hiddenInput.value;
+        }
+    }
+}
+
+function finalizarConclusao(questoes) {
+    if (blocoEmConclusao === null) return;
+    const bloco = blocosAtivos[blocoEmConclusao];
+    bloco.concluido = true;
+    bloco.questoes = questoes;
+
+    if (cardEmConclusao) {
+        cardEmConclusao.classList.add('concluido');
+        const infoEl = cardEmConclusao.querySelector('.bloco-card__info-concluido');
+        if (infoEl) {
+            let info = bloco.assunto || '';
+            if (questoes && questoes.feitas > 0) {
+                const pct = Math.round((questoes.corretas / questoes.feitas) * 1000) / 10;
+                info += (info ? ' | ' : '') + `${pct}% de acertos (${questoes.corretas}/${questoes.feitas})`;
+            }
+            infoEl.textContent = info;
+        }
+    }
+
+    salvarEstado();
+    blocoEmConclusao = null;
+    cardEmConclusao = null;
+    verificarConclusao();
+}
+
+function abrirModal(id) { document.getElementById(id).classList.add('active'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// ══════════════════════════════════════════════════════════════════════════
+// EDITAL (renderizacao simplificada)
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderizarEdital() {
+    const arvore = document.getElementById('editalArvore');
+    const vazio = document.getElementById('editalVazio');
+    const resumo = document.getElementById('editalResumo');
+    if (!arvore) return;
+
+    const edital = planoAdotado?.edital;
+    if (!edital || edital.length === 0) {
+        arvore.innerHTML = '';
+        if (vazio) vazio.style.display = 'block';
+        if (resumo) resumo.style.display = 'none';
+        return;
+    }
+
+    if (vazio) vazio.style.display = 'none';
+    if (resumo) resumo.style.display = 'block';
+    document.getElementById('editalPlanoNome').textContent = planoAdotado.nome || 'Edital';
+
+    let totalItens = 0, itensConcluidos = 0;
+    arvore.innerHTML = '';
+
+    edital.forEach(materiaObj => {
+        const materiaDiv = document.createElement('div');
+        materiaDiv.className = 'edital-materia';
+        let materiaItens = 0, materiaConcluidos = 0, topicosHTML = '';
+
+        (materiaObj.topicos || []).forEach(topicoObj => {
+            const subtopicos = topicoObj.subtopicos || [];
+            if (subtopicos.length > 0) {
+                let subtopicosHTML = '';
+                subtopicos.forEach(sub => {
+                    const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
+                    const prog = editalProgresso[chave] || { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
+                    totalItens++; materiaItens++;
+                    if (prog.status === 'concluido') { itensConcluidos++; materiaConcluidos++; }
+                    subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, sub, prog);
+                });
+                topicosHTML += `<div class="edital-topico">
+                    <div class="edital-topico__header" onclick="toggleEditalTopico(this)">
+                        <span class="edital-topico__arrow">&#9654;</span>
+                        <span class="edital-topico__nome">${topicoObj.nome}</span>
+                    </div>
+                    <div class="edital-topico__subtopicos" style="display:none;">${subtopicosHTML}</div>
+                </div>`;
+            } else {
+                const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
+                const prog = editalProgresso[chave] || { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
+                totalItens++; materiaItens++;
+                if (prog.status === 'concluido') { itensConcluidos++; materiaConcluidos++; }
+                topicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, null, prog);
+            }
+        });
+
+        const materiaPct = materiaItens > 0 ? Math.round((materiaConcluidos / materiaItens) * 100) : 0;
+        materiaDiv.innerHTML = `
+            <div class="edital-materia__header" onclick="toggleEditalMateria(this)">
+                <span class="edital-materia__arrow">&#9654;</span>
+                <strong class="edital-materia__nome">${materiaObj.materia}</strong>
+                <span class="edital-materia__progresso">${materiaConcluidos}/${materiaItens} (${materiaPct}%)</span>
+                <div class="edital-barra-container"><div class="edital-barra" style="width:${materiaPct}%;"></div></div>
+            </div>
+            <div class="edital-materia__conteudo" style="display:none;">${topicosHTML}</div>`;
+        arvore.appendChild(materiaDiv);
+    });
+
+    const pctGeral = totalItens > 0 ? Math.round((itensConcluidos / totalItens) * 100) : 0;
+    document.getElementById('editalProgressoGeral').textContent = `${itensConcluidos}/${totalItens} concluidos (${pctGeral}%)`;
+    document.getElementById('editalBarraGeral').style.width = pctGeral + '%';
+}
+
+function criarItemEdital(materia, topico, subtopico, prog) {
+    const label = subtopico || topico;
+    const statusClass = `edital-status--${prog.status}`;
+    return `<div class="edital-item ${statusClass}" data-materia="${materia}" data-topico="${topico}" data-subtopico="${subtopico || ''}">
+        <div class="edital-item__info"><span class="edital-item__label">${label}</span></div>
+        <div class="edital-item__actions">
+            <select class="edital-item__select" onchange="alterarStatusEdital(this, '${materia}', '${topico}', '${subtopico || ''}')">
+                <option value="pendente" ${prog.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                <option value="em_andamento" ${prog.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
+                <option value="concluido" ${prog.status === 'concluido' ? 'selected' : ''}>Concluido</option>
+            </select>
+        </div>
+    </div>`;
+}
+
+function toggleEditalMateria(header) {
+    const conteudo = header.nextElementSibling;
+    const arrow = header.querySelector('.edital-materia__arrow');
+    const aberto = conteudo.style.display !== 'none';
+    conteudo.style.display = aberto ? 'none' : 'block';
+    arrow.style.transform = aberto ? '' : 'rotate(90deg)';
+}
+
+function toggleEditalTopico(header) {
+    const conteudo = header.nextElementSibling;
+    const arrow = header.querySelector('.edital-topico__arrow');
+    const aberto = conteudo.style.display !== 'none';
+    conteudo.style.display = aberto ? 'none' : 'block';
+    arrow.style.transform = aberto ? '' : 'rotate(90deg)';
+}
+
+function alterarStatusEdital(select, materia, topico, subtopico) {
+    const novoStatus = select.value;
+    const chave = gerarChaveEdital(materia, topico, subtopico || null);
+    if (!editalProgresso[chave]) editalProgresso[chave] = { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
+    editalProgresso[chave].status = novoStatus;
+    const item = select.closest('.edital-item');
+    if (item) item.className = `edital-item edital-status--${novoStatus}`;
+    renderizarEdital();
+}
+
+function atualizarVisibilidadeEdital() {
+    const tabEdital = document.querySelector('.tab[data-tab="edital"]');
+    if (!tabEdital) return;
+    const temEdital = planoAdotado?.edital && planoAdotado.edital.length > 0;
+    tabEdital.style.display = temEdital ? 'inline-block' : 'none';
+}
+
+function atualizarProgressoEdital() {}
+
+// ══════════════════════════════════════════════════════════════════════════
+// NOTES (simplified)
+// ══════════════════════════════════════════════════════════════════════════
+
+function salvarConfiguracoes() {
+    configuracoes.duracaoBloco = parseInt(document.getElementById('duracaoBloco').value) || 60;
+    configuracoes.intervaloEntreBlocos = parseInt(document.getElementById('intervaloEntreBlocos').value) || 5;
+    configuracoes.blocosPorSessao = parseInt(document.getElementById('blocosPorSessao').value) || 4;
+    salvarEstado();
+    alert('Configuracoes salvas!');
+}
+
+function carregarConfiguracoes() {
+    document.getElementById('duracaoBloco').value = configuracoes.duracaoBloco;
+    document.getElementById('intervaloEntreBlocos').value = configuracoes.intervaloEntreBlocos;
+    document.getElementById('blocosPorSessao').value = configuracoes.blocosPorSessao;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TESTE: funcoes auxiliares
+// ══════════════════════════════════════════════════════════════════════════
+
+function resetarTeste() {
+    localStorage.removeItem('cicloTesteOffline');
+    location.reload();
+}
+
+function testarLogout() {
+    sair();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// AUTO-RESUME (from js/app.js - nova funcionalidade)
+// ══════════════════════════════════════════════════════════════════════════
+
+function autoResumeIfActive() {
+    if (blocosAtivos && blocosAtivos.length > 0) {
+        exibirCicloVisual(blocosAtivos);
+        alternarAba('meuciclo');
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT (from js/app.js)
+// ══════════════════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab clicks
+    document.querySelectorAll('.tab-container > .tab').forEach(tab => {
+        tab.addEventListener('click', function() { alternarAba(this.getAttribute('data-tab')); });
+    });
+    document.querySelectorAll('.subtab').forEach(subtab => {
+        subtab.addEventListener('click', function() {
+            const subtabId = this.getAttribute('data-subtab');
+            const parentTab = this.closest('.tab-content');
+            if (parentTab) ativarSubTab(parentTab.id, subtabId);
+        });
+    });
+
+    // Forms
+    document.getElementById('horasForm').addEventListener('submit', avancarHorasSemanais);
+    document.getElementById('proximoMaterias').addEventListener('click', avancarSelecaoMaterias);
+    document.getElementById('calcularBlocos').addEventListener('click', calcularBlocos);
+    document.getElementById('ajustarBlocos').addEventListener('click', ajustarBlocos);
+
+    document.getElementById('adicionarMateria').addEventListener('click', function() {
+        const nome = document.getElementById('novaMateriaNome').value.trim();
+        const sigla = document.getElementById('novaMateriaSigla').value.trim().toUpperCase();
+        if (nome && sigla) {
+            if (sigla.length > 3) { alert('Sigla max 3 letras.'); return; }
+            if (materiasList.some(m => m.legenda === sigla)) { alert('Sigla ja existe.'); return; }
+            materiasList.push({nome, legenda: sigla});
+            adicionarMateriaAoDOM({nome, legenda: sigla});
+            document.getElementById('novaMateriaNome').value = '';
+            document.getElementById('novaMateriaSigla').value = '';
+        }
+    });
+
+    document.getElementById('tipoTempo').addEventListener('change', alternarModoTempo);
+    document.getElementById('iniciarPausar').addEventListener('click', iniciarPausarTempo);
+    document.getElementById('resetar').addEventListener('click', resetarTempo);
+    document.getElementById('salvarConfiguracoes').addEventListener('click', salvarConfiguracoes);
+    document.getElementById('novoEstudo').addEventListener('click', iniciarNovoEstudo);
+    document.getElementById('gerarPDF').addEventListener('click', gerarPDF);
+    document.getElementById('exportarExcel').addEventListener('click', exportarParaExcel);
+    document.getElementById('btnLogoutTop').addEventListener('click', sair);
+    document.getElementById('editalFiltroStatus').addEventListener('change', renderizarEdital);
+    document.getElementById('editalBusca').addEventListener('input', renderizarEdital);
+    document.getElementById('btnEscolherPlano').addEventListener('click', renderizarPlanosDisponiveis);
+    document.getElementById('btnCriarPlano').addEventListener('click', () => abrirEditorPlano(null));
+    document.getElementById('btnSalvarPlano').addEventListener('click', () => {});
+    document.getElementById('btnCancelarPlano').addEventListener('click', () => {});
+    document.getElementById('btnAddMateriaPlano').addEventListener('click', () => {});
+    document.getElementById('btnUploadMateriasPlano').addEventListener('click', () => {});
+    document.getElementById('btnBaixarModelo').addEventListener('click', baixarModeloExcel);
+    document.getElementById('btnUploadMaterias').addEventListener('click', () => {});
+    document.getElementById('btnBaixarModeloAluno').addEventListener('click', baixarModeloExcel);
+    document.getElementById('btnAddMateriaEdital').addEventListener('click', () => {});
+    document.getElementById('btnUploadEdital').addEventListener('click', () => {});
+    document.getElementById('btnBaixarModeloEdital').addEventListener('click', () => {});
+
+    inicializarModaisQuestoes();
+    inicializarSelecaoMaterias();
+    carregarConfiguracoes();
+    carregarEstado();
+    atualizarVisibilidadeEdital();
+    renderizarEdital();
+
+    // AUTO-RESUME: se ja tem ciclo ativo, mostra direto
+    autoResumeIfActive();
+});
+</script>
+</body>
+</html>
