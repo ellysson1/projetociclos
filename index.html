@@ -60,8 +60,8 @@
                     </form>
                 </div>
                 <div id="continuar" style="display: none;">
-                    <button id="continuarEstudo">Continuar Ultimo Estudo</button>
-                    <button id="novoEstudo">Iniciar Novo Estudo</button>
+                    <p style="margin-bottom:12px; color:#666;">Seu ciclo esta ativo na aba "Meu Ciclo".</p>
+                    <button id="novoEstudo" style="background:#FF6B6B;">Reiniciar Ciclo</button>
                 </div>
             </div>
 
@@ -312,9 +312,12 @@
         <div class="modal-card">
             <h3>Registrar Estudo</h3>
             <p>Materia: <strong id="modalAssuntoMateria"></strong></p>
-            <label for="inputAssunto" style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto voce estudou?</label>
-            <input type="text" id="inputAssunto" placeholder="Ex: Balanco Patrimonial" list="datalistTopicosEdital" autocomplete="off">
-            <datalist id="datalistTopicosEdital"></datalist>
+            <label style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto voce estudou?</label>
+            <div id="listaAssuntosEdital" class="assunto-lista"></div>
+            <div id="assuntoOutroContainer" style="display:none;">
+                <input type="text" id="inputAssunto" placeholder="Digite o assunto..." autocomplete="off">
+            </div>
+            <input type="hidden" id="assuntoSelecionado" value="">
             <div class="modal-actions">
                 <button id="btnConfirmarAssunto">Confirmar</button>
             </div>

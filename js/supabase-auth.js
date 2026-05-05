@@ -27,8 +27,8 @@ async function sair() {
         console.error(error);
         return;
     }
-    const base = getBaseUrl();
-    window.location.href = base + 'login.html';
+    alert('Você saiu da sua conta.');
+    location.reload();
 }
 
 async function atualizarUIAuth() {

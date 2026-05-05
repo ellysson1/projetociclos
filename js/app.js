@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('iniciarPausar').addEventListener('click', iniciarPausarTempo);
     document.getElementById('resetar').addEventListener('click', resetarTempo);
     document.getElementById('salvarConfiguracoes').addEventListener('click', salvarConfiguracoes);
-    document.getElementById('continuarEstudo').addEventListener('click', continuarEstudo);
     document.getElementById('novoEstudo').addEventListener('click', iniciarNovoEstudo);
     document.getElementById('gerarPDF').addEventListener('click', gerarPDF);
     document.getElementById('exportarExcel').addEventListener('click', exportarParaExcel);
@@ -105,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             await ensureProfile();
             atualizarUIRole();
             await carregarEstadoNuvem();
+            autoResumeIfActive();
             atualizarVisibilidadeEdital();
             if (planoAdotado?.edital) {
                 await carregarEditalProgresso();
@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 await ensureProfile();
                 atualizarUIRole();
                 await carregarEstadoNuvem();
+                autoResumeIfActive();
                 atualizarVisibilidadeEdital();
                 if (planoAdotado?.edital) {
                     await carregarEditalProgresso();
@@ -130,6 +131,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         alternarAba('home');
     }
 });
+
+function autoResumeIfActive() {
+    if (blocosAtivos && blocosAtivos.length > 0) {
+        exibirCicloVisual(blocosAtivos);
+        alternarAba('meuciclo');
+    }
+}
 
 setInterval(async () => { if (await getUsuarioLogado()) salvarEstado(); }, 30000);
 window.addEventListener('beforeunload', () => {

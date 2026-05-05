@@ -4,9 +4,9 @@ let cardEmConclusao = null;
 function inicializarModaisQuestoes() {
     // Etapa 1: Confirmar assunto
     document.getElementById('btnConfirmarAssunto').addEventListener('click', function() {
-        const assunto = document.getElementById('inputAssunto').value.trim();
+        const assunto = document.getElementById('assuntoSelecionado').value.trim();
         if (!assunto) {
-            alert('Por favor, informe o assunto estudado.');
+            alert('Por favor, selecione ou informe o assunto estudado.');
             return;
         }
         fecharModal('modalAssunto');
@@ -74,14 +74,92 @@ function iniciarFluxoConclusao(index, card) {
     const bloco = blocosAtivos[index];
 
     document.getElementById('modalAssuntoMateria').textContent = bloco.nome;
-    document.getElementById('inputAssunto').value = bloco.assunto || '';
+    document.getElementById('assuntoSelecionado').value = bloco.assunto || '';
+    document.getElementById('inputAssunto').value = '';
 
-    // Preencher autocomplete com tópicos do edital para esta matéria
-    if (typeof preencherDatalistEdital === 'function') {
-        preencherDatalistEdital(bloco.nome);
-    }
+    preencherListaAssuntosEdital(bloco.nome);
 
     abrirModal('modalAssunto');
+}
+
+function preencherListaAssuntosEdital(materiaBloco) {
+    const lista = document.getElementById('listaAssuntosEdital');
+    const outroContainer = document.getElementById('assuntoOutroContainer');
+    const hiddenInput = document.getElementById('assuntoSelecionado');
+    lista.innerHTML = '';
+    outroContainer.style.display = 'none';
+
+    const itens = [];
+
+    if (planoAdotado?.edital) {
+        const materiaBlNorm = normalizarTexto(materiaBloco);
+        planoAdotado.edital.forEach(materiaObj => {
+            const materiaNorm = normalizarTexto(materiaObj.materia);
+            const mesmaMateria = materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm);
+            if (!mesmaMateria) return;
+
+            (materiaObj.topicos || []).forEach(topicoObj => {
+                const subtopicos = topicoObj.subtopicos || [];
+                if (subtopicos.length > 0) {
+                    subtopicos.forEach(sub => itens.push(sub));
+                } else {
+                    itens.push(topicoObj.nome);
+                }
+            });
+        });
+    }
+
+    itens.forEach(texto => {
+        const div = document.createElement('div');
+        div.className = 'assunto-item';
+        div.textContent = texto;
+        div.addEventListener('click', () => {
+            lista.querySelectorAll('.assunto-item').forEach(el => el.classList.remove('selected'));
+            div.classList.add('selected');
+            hiddenInput.value = texto;
+            outroContainer.style.display = 'none';
+            document.getElementById('inputAssunto').value = '';
+        });
+        lista.appendChild(div);
+    });
+
+    // "Outros" option
+    const outroDiv = document.createElement('div');
+    outroDiv.className = 'assunto-item assunto-item--outro';
+    outroDiv.textContent = 'Outros (digitar)';
+    outroDiv.addEventListener('click', () => {
+        lista.querySelectorAll('.assunto-item').forEach(el => el.classList.remove('selected'));
+        outroDiv.classList.add('selected');
+        outroContainer.style.display = 'block';
+        hiddenInput.value = '';
+        document.getElementById('inputAssunto').focus();
+    });
+    lista.appendChild(outroDiv);
+
+    // Sync free-text input with hidden field (replace to avoid duplicates)
+    const inputAssunto = document.getElementById('inputAssunto');
+    const newInput = inputAssunto.cloneNode(true);
+    inputAssunto.parentNode.replaceChild(newInput, inputAssunto);
+    newInput.addEventListener('input', function() {
+        hiddenInput.value = this.value.trim();
+    });
+
+    // Pre-select if bloco already has assunto
+    if (hiddenInput.value) {
+        const match = lista.querySelector(`.assunto-item:not(.assunto-item--outro)`);
+        let found = false;
+        lista.querySelectorAll('.assunto-item:not(.assunto-item--outro)').forEach(el => {
+            if (el.textContent === hiddenInput.value) {
+                el.classList.add('selected');
+                found = true;
+            }
+        });
+        if (!found && hiddenInput.value) {
+            outroDiv.classList.add('selected');
+            outroContainer.style.display = 'block';
+            document.getElementById('inputAssunto').value = hiddenInput.value;
+        }
+    }
 }
 
 function finalizarConclusao(questoes) {
