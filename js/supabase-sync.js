@@ -10,6 +10,7 @@ async function salvarEstadoNuvem() {
         tempoDecorrido,
         modoCronometro,
         configuracoes,
+        planoAdotado,
         horasSemanais: document.getElementById('horasSemanais')?.value || null
     };
 
@@ -54,6 +55,7 @@ async function carregarEstadoNuvem() {
         tempoDecorrido = data.estado.tempoDecorrido || 0;
         modoCronometro = data.estado.modoCronometro ?? true;
         configuracoes = data.estado.configuracoes || configuracoes;
+        if (data.estado.planoAdotado) planoAdotado = data.estado.planoAdotado;
 
         if (data.estado.horasSemanais) {
             document.getElementById('horasSemanais').value = data.estado.horasSemanais;

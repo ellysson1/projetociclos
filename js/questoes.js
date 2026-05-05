@@ -109,6 +109,22 @@ function preencherListaAssuntosEdital(materiaBloco) {
         });
     }
 
+    // Sync free-text input with hidden field (replace to avoid duplicate listeners)
+    const inputAssunto = document.getElementById('inputAssunto');
+    const newInput = inputAssunto.cloneNode(true);
+    inputAssunto.parentNode.replaceChild(newInput, inputAssunto);
+    newInput.addEventListener('input', function() {
+        hiddenInput.value = this.value.trim();
+    });
+
+    // If no edital topics found for this materia, go straight to free-text
+    if (itens.length === 0) {
+        outroContainer.style.display = 'block';
+        newInput.focus();
+        if (hiddenInput.value) newInput.value = hiddenInput.value;
+        return;
+    }
+
     itens.forEach(texto => {
         const div = document.createElement('div');
         div.className = 'assunto-item';
@@ -118,12 +134,12 @@ function preencherListaAssuntosEdital(materiaBloco) {
             div.classList.add('selected');
             hiddenInput.value = texto;
             outroContainer.style.display = 'none';
-            document.getElementById('inputAssunto').value = '';
+            newInput.value = '';
         });
         lista.appendChild(div);
     });
 
-    // "Outros" option
+    // "Outros" option at bottom
     const outroDiv = document.createElement('div');
     outroDiv.className = 'assunto-item assunto-item--outro';
     outroDiv.textContent = 'Outros (digitar)';
@@ -132,32 +148,21 @@ function preencherListaAssuntosEdital(materiaBloco) {
         outroDiv.classList.add('selected');
         outroContainer.style.display = 'block';
         hiddenInput.value = '';
-        document.getElementById('inputAssunto').focus();
+        newInput.value = '';
+        newInput.focus();
     });
     lista.appendChild(outroDiv);
 
-    // Sync free-text input with hidden field (replace to avoid duplicates)
-    const inputAssunto = document.getElementById('inputAssunto');
-    const newInput = inputAssunto.cloneNode(true);
-    inputAssunto.parentNode.replaceChild(newInput, inputAssunto);
-    newInput.addEventListener('input', function() {
-        hiddenInput.value = this.value.trim();
-    });
-
     // Pre-select if bloco already has assunto
     if (hiddenInput.value) {
-        const match = lista.querySelector(`.assunto-item:not(.assunto-item--outro)`);
         let found = false;
         lista.querySelectorAll('.assunto-item:not(.assunto-item--outro)').forEach(el => {
-            if (el.textContent === hiddenInput.value) {
-                el.classList.add('selected');
-                found = true;
-            }
+            if (el.textContent === hiddenInput.value) { el.classList.add('selected'); found = true; }
         });
-        if (!found && hiddenInput.value) {
+        if (!found) {
             outroDiv.classList.add('selected');
             outroContainer.style.display = 'block';
-            document.getElementById('inputAssunto').value = hiddenInput.value;
+            newInput.value = hiddenInput.value;
         }
     }
 }

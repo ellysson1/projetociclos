@@ -380,6 +380,11 @@
     border-left-color: #E0E0E0;
 }
 
+.edital-status--visto {
+    border-left-color: #42A5F5;
+    background: #E3F2FD;
+}
+
 .edital-status--em_andamento {
     border-left-color: #FFA726;
     background: #FFF8E1;

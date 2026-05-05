@@ -115,7 +115,7 @@ function renderizarEdital() {
                     const prog = editalProgresso[chave] || { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
                     totalItens++;
                     materiaItens++;
-                    if (prog.status === 'concluido') { itensConcluidos++; materiaConcluidos++; }
+                    if (prog.status === 'concluido' || prog.status === 'visto') { itensConcluidos++; materiaConcluidos++; }
 
                     if (filtroStatus !== 'todos' && prog.status !== filtroStatus) return;
                     if (busca && !sub.toLowerCase().includes(busca) && !topicoObj.nome.toLowerCase().includes(busca)) return;
@@ -188,7 +188,6 @@ function renderizarEdital() {
 function criarItemEdital(materia, topico, subtopico, prog) {
     const label = subtopico || topico;
     const statusClass = `edital-status--${prog.status}`;
-    const statusLabel = { pendente: 'Pendente', em_andamento: 'Em andamento', concluido: 'Concluído' }[prog.status] || 'Pendente';
 
     let questoesInfo = '';
     if (prog.questoes_feitas > 0) {
@@ -207,6 +206,7 @@ function criarItemEdital(materia, topico, subtopico, prog) {
             <div class="edital-item__actions">
                 <select class="edital-item__select" onchange="alterarStatusEdital(this, '${materia}', '${topico}', '${subtopico || ''}')">
                     <option value="pendente" ${prog.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                    <option value="visto" ${prog.status === 'visto' ? 'selected' : ''}>Visto</option>
                     <option value="em_andamento" ${prog.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
                     <option value="concluido" ${prog.status === 'concluido' ? 'selected' : ''}>Concluído</option>
                 </select>
@@ -221,7 +221,7 @@ function calcularProgressoTopico(materia, topico, subtopicos) {
     subtopicos.forEach(sub => {
         const chave = gerarChaveEdital(materia, topico, sub);
         const prog = editalProgresso[chave];
-        if (prog && prog.status === 'concluido') concluidos++;
+        if (prog && (prog.status === 'concluido' || prog.status === 'visto')) concluidos++;
     });
     return {
         total,
@@ -281,13 +281,17 @@ function atualizarProgressoEdital(materia, assunto, questoes) {
             editalProgresso[chave] = { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
         }
 
-        editalProgresso[chave].status = 'concluido';
+        // Only auto-set "visto"; never downgrade from "concluido" (manual only)
+        if (editalProgresso[chave].status !== 'concluido') {
+            editalProgresso[chave].status = 'visto';
+        }
         if (questoes && questoes.feitas > 0) {
             editalProgresso[chave].questoes_feitas += questoes.feitas;
             editalProgresso[chave].questoes_corretas += questoes.corretas;
         }
 
         salvarEditalProgressoItem(match.materia, match.topico, match.subtopico, editalProgresso[chave]);
+        if (typeof renderizarEdital === 'function') renderizarEdital();
     }
 }
 

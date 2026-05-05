@@ -170,6 +170,7 @@
                 <select id="editalFiltroStatus" style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px;">
                     <option value="todos">Todos os status</option>
                     <option value="pendente">Pendente</option>
+                    <option value="visto">Visto</option>
                     <option value="em_andamento">Em andamento</option>
                     <option value="concluido">Concluido</option>
                 </select>
@@ -936,6 +937,18 @@ function preencherListaAssuntosEdital(materiaBloco) {
         });
     }
 
+    const inputAssunto = document.getElementById('inputAssunto');
+    const newInput = inputAssunto.cloneNode(true);
+    inputAssunto.parentNode.replaceChild(newInput, inputAssunto);
+    newInput.addEventListener('input', function() { hiddenInput.value = this.value.trim(); });
+
+    if (itens.length === 0) {
+        outroContainer.style.display = 'block';
+        newInput.focus();
+        if (hiddenInput.value) newInput.value = hiddenInput.value;
+        return;
+    }
+
     itens.forEach(texto => {
         const div = document.createElement('div');
         div.className = 'assunto-item';
@@ -945,7 +958,7 @@ function preencherListaAssuntosEdital(materiaBloco) {
             div.classList.add('selected');
             hiddenInput.value = texto;
             outroContainer.style.display = 'none';
-            document.getElementById('inputAssunto').value = '';
+            newInput.value = '';
         });
         lista.appendChild(div);
     });
@@ -958,16 +971,10 @@ function preencherListaAssuntosEdital(materiaBloco) {
         outroDiv.classList.add('selected');
         outroContainer.style.display = 'block';
         hiddenInput.value = '';
-        document.getElementById('inputAssunto').focus();
+        newInput.value = '';
+        newInput.focus();
     });
     lista.appendChild(outroDiv);
-
-    const inputAssunto = document.getElementById('inputAssunto');
-    const newInput = inputAssunto.cloneNode(true);
-    inputAssunto.parentNode.replaceChild(newInput, inputAssunto);
-    newInput.addEventListener('input', function() {
-        hiddenInput.value = this.value.trim();
-    });
 
     if (hiddenInput.value) {
         let found = false;
@@ -977,7 +984,7 @@ function preencherListaAssuntosEdital(materiaBloco) {
         if (!found) {
             outroDiv.classList.add('selected');
             outroContainer.style.display = 'block';
-            document.getElementById('inputAssunto').value = hiddenInput.value;
+            newInput.value = hiddenInput.value;
         }
     }
 }
@@ -1002,6 +1009,7 @@ function finalizarConclusao(questoes) {
     }
 
     salvarEstado();
+    atualizarProgressoEdital(bloco.nome, bloco.assunto, questoes);
     blocoEmConclusao = null;
     cardEmConclusao = null;
     verificarConclusao();
@@ -1048,7 +1056,7 @@ function renderizarEdital() {
                     const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
                     const prog = editalProgresso[chave] || { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
                     totalItens++; materiaItens++;
-                    if (prog.status === 'concluido') { itensConcluidos++; materiaConcluidos++; }
+                    if (prog.status === 'concluido' || prog.status === 'visto') { itensConcluidos++; materiaConcluidos++; }
                     subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, sub, prog);
                 });
                 topicosHTML += `<div class="edital-topico">
@@ -1062,7 +1070,7 @@ function renderizarEdital() {
                 const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
                 const prog = editalProgresso[chave] || { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
                 totalItens++; materiaItens++;
-                if (prog.status === 'concluido') { itensConcluidos++; materiaConcluidos++; }
+                if (prog.status === 'concluido' || prog.status === 'visto') { itensConcluidos++; materiaConcluidos++; }
                 topicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, null, prog);
             }
         });
@@ -1092,6 +1100,7 @@ function criarItemEdital(materia, topico, subtopico, prog) {
         <div class="edital-item__actions">
             <select class="edital-item__select" onchange="alterarStatusEdital(this, '${materia}', '${topico}', '${subtopico || ''}')">
                 <option value="pendente" ${prog.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                <option value="visto" ${prog.status === 'visto' ? 'selected' : ''}>Visto</option>
                 <option value="em_andamento" ${prog.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
                 <option value="concluido" ${prog.status === 'concluido' ? 'selected' : ''}>Concluido</option>
             </select>
@@ -1132,7 +1141,39 @@ function atualizarVisibilidadeEdital() {
     tabEdital.style.display = temEdital ? 'inline-block' : 'none';
 }
 
-function atualizarProgressoEdital() {}
+function atualizarProgressoEdital(materia, assunto, questoes) {
+    if (!planoAdotado?.edital || !assunto) return;
+    const materiaBlNorm = normalizarTexto(materia);
+    let match = null;
+    planoAdotado.edital.forEach(materiaObj => {
+        const materiaNorm = normalizarTexto(materiaObj.materia);
+        if (!materiaNorm.includes(materiaBlNorm) && !materiaBlNorm.includes(materiaNorm)) return;
+        (materiaObj.topicos || []).forEach(topicoObj => {
+            const subtopicos = topicoObj.subtopicos || [];
+            if (subtopicos.length > 0) {
+                subtopicos.forEach(sub => {
+                    if (normalizarTexto(sub) === normalizarTexto(assunto)) {
+                        match = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: sub };
+                    }
+                });
+            } else {
+                if (normalizarTexto(topicoObj.nome) === normalizarTexto(assunto)) {
+                    match = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: null };
+                }
+            }
+        });
+    });
+    if (match) {
+        const chave = gerarChaveEdital(match.materia, match.topico, match.subtopico);
+        if (!editalProgresso[chave]) editalProgresso[chave] = { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
+        if (editalProgresso[chave].status !== 'concluido') editalProgresso[chave].status = 'visto';
+        if (questoes && questoes.feitas > 0) {
+            editalProgresso[chave].questoes_feitas += questoes.feitas;
+            editalProgresso[chave].questoes_corretas += questoes.corretas;
+        }
+        renderizarEdital();
+    }
+}
 
 // ══════════════════════════════════════════════════════════════════════════
 // NOTES (simplified)
