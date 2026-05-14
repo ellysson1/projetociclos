@@ -128,10 +128,13 @@ async function renderizarVideosTab() {
     const user = await getUsuarioLogado();
     if (!user) return;
 
-    const role = user.user_metadata?.role;
-    if (role === 'professor') {
+    if (isTeacher()) {
+        document.getElementById('videosAluno').style.display = 'none';
+        document.getElementById('videosProfessor').style.display = 'block';
         await renderizarVideosProfessor();
     } else {
+        document.getElementById('videosAluno').style.display = 'block';
+        document.getElementById('videosProfessor').style.display = 'none';
         await renderizarVideosAluno();
     }
     videosCarregados = true;
