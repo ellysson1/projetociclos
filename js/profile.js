@@ -65,17 +65,22 @@ async function promoverParaProfessor(userId) {
 function atualizarUIRole() {
     const planosAluno = document.getElementById('planosAluno');
     const planosProfessor = document.getElementById('planosProfessor');
+    const videosAluno = document.getElementById('videosAluno');
+    const videosProfessor = document.getElementById('videosProfessor');
 
     if (isTeacher()) {
         if (planosAluno) planosAluno.style.display = 'none';
         if (planosProfessor) planosProfessor.style.display = 'block';
+        if (videosAluno) videosAluno.style.display = 'none';
+        if (videosProfessor) videosProfessor.style.display = 'block';
         renderizarListaPlanosProfessor();
     } else {
         if (planosAluno) planosAluno.style.display = 'block';
         if (planosProfessor) planosProfessor.style.display = 'none';
+        if (videosAluno) videosAluno.style.display = 'block';
+        if (videosProfessor) videosProfessor.style.display = 'none';
     }
 
-    // Atualizar visibilidade da aba Edital
     if (typeof atualizarVisibilidadeEdital === 'function') {
         atualizarVisibilidadeEdital();
     }

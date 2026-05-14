@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/forms.css">
     <link rel="stylesheet" href="css/blocks.css">
     <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/videos.css">
 </head>
 <body>
     <div class="container">
@@ -34,6 +35,7 @@
             <button class="tab active" data-tab="ciclo">Ciclo</button>
             <button class="tab" data-tab="edital" style="display:none;">Edital</button>
             <button class="tab" data-tab="desempenho">Desempenho</button>
+            <button class="tab" data-tab="videos">Videos</button>
             <button class="tab" data-tab="planos">Planos</button>
             <button class="tab" data-tab="exportar">Exportar</button>
         </div>
@@ -212,6 +214,57 @@
             </div>
         </div>
 
+        <!-- ============ VIDEOS TAB ============ -->
+        <div id="videos" class="tab-content">
+            <!-- Student view -->
+            <div id="videosAluno">
+                <h2>Videos / Aulas</h2>
+                <p style="margin-bottom:12px; font-size:14px; color:#666;">Assista as aulas disponibilizadas pelos professores.</p>
+                <div id="videosPlayer" style="display:none; margin-bottom:16px;">
+                    <div class="video-player-wrapper">
+                        <iframe id="vimeoEmbed" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                        <strong id="videoPlayerTitulo" style="font-size:14px;"></strong>
+                        <button id="btnFecharPlayer" type="button" style="background:#999; font-size:12px; padding:4px 12px;">Fechar</button>
+                    </div>
+                </div>
+                <div id="videosArvore"></div>
+                <div id="videosVazio" style="text-align:center; padding:40px 20px; color:#999;">
+                    <p style="font-size:16px; margin-bottom:8px;">Nenhum video disponivel</p>
+                    <p style="font-size:13px;">Aguarde seu professor adicionar aulas.</p>
+                </div>
+            </div>
+
+            <!-- Teacher view -->
+            <div id="videosProfessor" style="display:none;">
+                <h2>Gerenciar Videos</h2>
+                <div style="border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:16px; background:#fafafa;">
+                    <h4 style="margin-bottom:12px; color:var(--primary-color);">Adicionar Video</h4>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div>
+                            <label for="videoCurso">Curso:</label>
+                            <input type="text" id="videoCurso" placeholder="Ex: Direito Constitucional">
+                        </div>
+                        <div>
+                            <label for="videoAssunto">Assunto/Modulo:</label>
+                            <input type="text" id="videoAssunto" placeholder="Ex: Controle de Constitucionalidade">
+                        </div>
+                        <div>
+                            <label for="videoTitulo">Titulo da Aula:</label>
+                            <input type="text" id="videoTitulo" placeholder="Ex: Aula 1 - Introducao">
+                        </div>
+                        <div>
+                            <label for="videoUrl">URL do Vimeo:</label>
+                            <input type="text" id="videoUrl" placeholder="https://vimeo.com/123456789">
+                        </div>
+                    </div>
+                    <button id="btnAddVideo" type="button" style="margin-top:10px; background:#4CAF50;">Adicionar Video</button>
+                </div>
+                <div id="videosListaProfessor"></div>
+            </div>
+        </div>
+
         <!-- ============ PLANOS TAB ============ -->
         <div id="planos" class="tab-content">
             <!-- Student view -->
@@ -365,6 +418,7 @@
     <script src="js/questoes.js"></script>
     <script src="js/planos.js"></script>
     <script src="js/edital.js"></script>
+    <script src="js/videos.js"></script>
     <script src="js/desempenho.js"></script>
     <script src="js/batch-upload.js"></script>
     <script src="js/timer.js"></script>

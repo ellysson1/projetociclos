@@ -90,6 +90,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('editalFiltroStatus').addEventListener('change', renderizarEdital);
     document.getElementById('editalBusca').addEventListener('input', renderizarEdital);
 
+    // Videos
+    document.getElementById('btnAddVideo').addEventListener('click', adicionarVideo);
+    document.getElementById('btnFecharPlayer').addEventListener('click', fecharPlayer);
+
     // Escolher plano (aluno)
     document.getElementById('btnEscolherPlano').addEventListener('click', renderizarPlanosDisponiveis);
 

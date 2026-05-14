@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/forms.css">
     <link rel="stylesheet" href="css/blocks.css">
     <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/videos.css">
     <style>
         #testeBanner {
             background: #FF9800;
@@ -57,6 +58,7 @@
             <button class="tab active" data-tab="ciclo">Ciclo</button>
             <button class="tab" data-tab="edital">Edital</button>
             <button class="tab" data-tab="desempenho">Desempenho</button>
+            <button class="tab" data-tab="videos">Videos</button>
             <button class="tab" data-tab="planos">Planos</button>
             <button class="tab" data-tab="exportar">Exportar</button>
         </div>
@@ -210,6 +212,28 @@
                 <h3 style="margin-bottom:12px;">Progresso no Edital</h3>
                 <div id="desempenhoEditalConteudo"></div>
             </div>
+        </div>
+
+        <!-- ============ VIDEOS TAB ============ -->
+        <div id="videos" class="tab-content">
+            <div id="videosAluno">
+                <h2>Videos / Aulas</h2>
+                <p style="margin-bottom:12px; font-size:14px; color:#666;">Assista as aulas disponibilizadas pelos professores.</p>
+                <div id="videosPlayer" style="display:none; margin-bottom:16px;">
+                    <div class="video-player-wrapper">
+                        <iframe id="vimeoEmbed" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                        <strong id="videoPlayerTitulo" style="font-size:14px;"></strong>
+                        <button id="btnFecharPlayer" type="button" style="background:#999; font-size:12px; padding:4px 12px;">Fechar</button>
+                    </div>
+                </div>
+                <div id="videosArvore"></div>
+                <div id="videosVazio" style="display:none; text-align:center; padding:40px 20px; color:#999;">
+                    <p style="font-size:16px; margin-bottom:8px;">Nenhum video disponivel</p>
+                </div>
+            </div>
+            <div id="videosProfessor" style="display:none;"></div>
         </div>
 
         <!-- ============ PLANOS TAB ============ -->
@@ -538,6 +562,7 @@ function ativarMainTab(tabName) {
     const tab = document.querySelector(`.tab-container > .tab[data-tab="${tabName}"]`);
     if (tab) tab.classList.add('active');
     if (tabName === 'desempenho') renderizarDesempenho();
+    if (tabName === 'videos') renderizarVideosTab();
 }
 
 function ativarSubTab(parentTabId, subtabId) {
@@ -1218,6 +1243,110 @@ function autoResumeIfActive() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// VIDEOS (mock offline)
+// ══════════════════════════════════════════════════════════════════════════
+
+let videosAssistidos = new Set();
+const videosMock = [
+    { id: 'v1', curso: 'Direito Constitucional', assunto: 'Principios Fundamentais', titulo: 'Aula 1 - Fundamentos da Republica', vimeo_url: 'https://vimeo.com/76979871' },
+    { id: 'v2', curso: 'Direito Constitucional', assunto: 'Principios Fundamentais', titulo: 'Aula 2 - Separacao dos Poderes', vimeo_url: 'https://vimeo.com/76979871' },
+    { id: 'v3', curso: 'Direito Constitucional', assunto: 'Direitos Fundamentais', titulo: 'Aula 1 - Direitos Individuais', vimeo_url: 'https://vimeo.com/76979871' },
+    { id: 'v4', curso: 'Direito Constitucional', assunto: 'Direitos Fundamentais', titulo: 'Aula 2 - Direitos Sociais', vimeo_url: 'https://vimeo.com/76979871' },
+    { id: 'v5', curso: 'AFO', assunto: 'Orcamento Publico', titulo: 'Aula 1 - Conceitos e Principios', vimeo_url: 'https://vimeo.com/76979871' },
+    { id: 'v6', curso: 'AFO', assunto: 'Orcamento Publico', titulo: 'Aula 2 - Ciclo Orcamentario', vimeo_url: 'https://vimeo.com/76979871' },
+    { id: 'v7', curso: 'AFO', assunto: 'Receita e Despesa', titulo: 'Aula 1 - Classificacao da Receita', vimeo_url: 'https://vimeo.com/76979871' },
+];
+
+function extrairVimeoId(url) {
+    if (!url) return null;
+    const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    return match ? match[1] : null;
+}
+
+function gerarEmbedUrl(url) {
+    const id = extrairVimeoId(url);
+    if (!id) return null;
+    const hashMatch = url.match(/vimeo\.com\/\d+\/([a-f0-9]+)/);
+    const hash = hashMatch ? `?h=${hashMatch[1]}` : '';
+    return `https://player.vimeo.com/video/${id}${hash}`;
+}
+
+function renderizarVideosTab() {
+    const arvore = document.getElementById('videosArvore');
+    const vazio = document.getElementById('videosVazio');
+    if (!arvore) return;
+
+    if (videosMock.length === 0) { vazio.style.display = 'block'; return; }
+    vazio.style.display = 'none';
+
+    const cursos = {};
+    videosMock.forEach(v => {
+        if (!cursos[v.curso]) cursos[v.curso] = {};
+        if (!cursos[v.curso][v.assunto]) cursos[v.curso][v.assunto] = [];
+        cursos[v.curso][v.assunto].push(v);
+    });
+
+    let html = '';
+    Object.entries(cursos).forEach(([cursoNome, assuntos]) => {
+        let total = 0, assistidas = 0;
+        let assuntosHTML = '';
+        Object.entries(assuntos).forEach(([assuntoNome, aulas]) => {
+            let aulasHTML = '';
+            aulas.forEach(aula => {
+                total++;
+                const foiAssistida = videosAssistidos.has(aula.id);
+                if (foiAssistida) assistidas++;
+                const embedUrl = gerarEmbedUrl(aula.vimeo_url) || '';
+                aulasHTML += `<div class="video-aula ${foiAssistida ? 'video-aula--assistida' : ''}">
+                    <label class="video-aula__check"><input type="checkbox" ${foiAssistida ? 'checked' : ''} onchange="videosAssistidos[this.checked?'add':'delete']('${aula.id}'); this.closest('.video-aula').classList.toggle('video-aula--assistida'); renderizarVideosTab();"></label>
+                    <span class="video-aula__titulo" onclick="abrirPlayer('${embedUrl}', '${aula.titulo}')">&#9654; ${aula.titulo}</span>
+                </div>`;
+            });
+            assuntosHTML += `<div class="video-assunto">
+                <div class="video-assunto__header" onclick="toggleVideoAssunto(this)"><span class="video-assunto__arrow">&#9654;</span><span class="video-assunto__nome">${assuntoNome}</span><span class="video-assunto__count">${aulas.length} aula(s)</span></div>
+                <div class="video-assunto__aulas" style="display:none;">${aulasHTML}</div>
+            </div>`;
+        });
+        html += `<div class="video-curso">
+            <div class="video-curso__header" onclick="toggleVideoCurso(this)"><span class="video-curso__arrow">&#9654;</span><strong class="video-curso__nome">${cursoNome}</strong><span class="video-curso__count">${assistidas}/${total} assistida(s)</span></div>
+            <div class="video-curso__conteudo" style="display:none;">${assuntosHTML}</div>
+        </div>`;
+    });
+    arvore.innerHTML = html;
+}
+
+function abrirPlayer(embedUrl, titulo) {
+    if (!embedUrl) { alert('URL invalida.'); return; }
+    document.getElementById('vimeoEmbed').src = embedUrl;
+    document.getElementById('videoPlayerTitulo').textContent = titulo;
+    document.getElementById('videosPlayer').style.display = 'block';
+    document.getElementById('videosPlayer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function fecharPlayer() {
+    document.getElementById('videosPlayer').style.display = 'none';
+    document.getElementById('vimeoEmbed').src = '';
+}
+
+function toggleVideoCurso(header) {
+    const c = header.nextElementSibling;
+    const a = header.querySelector('.video-curso__arrow');
+    const aberto = c.style.display !== 'none';
+    c.style.display = aberto ? 'none' : 'block';
+    a.style.transform = aberto ? '' : 'rotate(90deg)';
+}
+
+function toggleVideoAssunto(header) {
+    const c = header.nextElementSibling;
+    const a = header.querySelector('.video-assunto__arrow');
+    const aberto = c.style.display !== 'none';
+    c.style.display = aberto ? 'none' : 'block';
+    a.style.transform = aberto ? '' : 'rotate(90deg)';
+}
+
+function adicionarVideo() { alert('Modo offline.'); }
+
+// ══════════════════════════════════════════════════════════════════════════
 // INIT (from js/app.js)
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -1263,6 +1392,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnLogoutTop').addEventListener('click', sair);
     document.getElementById('editalFiltroStatus').addEventListener('change', renderizarEdital);
     document.getElementById('editalBusca').addEventListener('input', renderizarEdital);
+    document.getElementById('btnFecharPlayer').addEventListener('click', fecharPlayer);
+
     document.getElementById('btnEscolherPlano').addEventListener('click', renderizarPlanosDisponiveis);
     document.getElementById('btnCriarPlano').addEventListener('click', () => abrirEditorPlano(null));
     document.getElementById('btnSalvarPlano').addEventListener('click', () => {});
