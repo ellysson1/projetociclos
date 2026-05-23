@@ -91,11 +91,19 @@ function criarCardBloco(bloco, index) {
         infoConcluido += (infoConcluido ? ' | ' : '') + `${pct}% de acertos (${bloco.questoes.corretas}/${bloco.questoes.feitas})`;
     }
 
+    const modo = modosMateria && modosMateria[bloco.legenda];
+    const modoBadge = modo === 'questoes'
+        ? '<span class="bloco-modo bloco-modo--questoes">Só Questões</span>'
+        : modo === 'revisao'
+            ? '<span class="bloco-modo bloco-modo--revisao">Só Revisão</span>'
+            : '';
+
     card.innerHTML = `
         <div class="bloco-card__header" style="background-color: ${bloco.cor}"></div>
         <div class="bloco-card__sigla">${bloco.legenda}</div>
         <div class="bloco-card__nome">${bloco.nome}</div>
         <div class="bloco-card__duracao">${duracao} min</div>
+        ${modoBadge}
         <div class="bloco-card__footer">
             <label class="bloco-card__check">
                 <input type="checkbox" ${bloco.concluido ? 'checked' : ''}>

@@ -361,6 +361,52 @@
         </div>
     </div>
 
+    <!-- Modal: Atribuir Plano a Aluno -->
+    <div id="modalAtribuirPlano" class="modal-overlay">
+        <div class="modal-card" style="max-width:560px; width:94%;">
+            <!-- Step 1: Selecionar aluno -->
+            <div id="atribuirStep1">
+                <h3>Atribuir Plano</h3>
+                <p id="atribuirPlanoNome" style="color:#7C4DFF; font-weight:600;"></p>
+                <label for="atribuirAlunoSelect">Selecionar Aluno:</label>
+                <select id="atribuirAlunoSelect" style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:15px; margin-bottom:4px;"></select>
+                <div class="modal-actions">
+                    <button id="btnAtribuirNext" style="background:#7C4DFF;">Próximo →</button>
+                    <button id="btnAtribuirCancelar1" style="background:#999;">Cancelar</button>
+                </div>
+            </div>
+            <!-- Step 2: Personalizar -->
+            <div id="atribuirStep2" style="display:none;">
+                <h3>Personalizar Plano</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                    <div>
+                        <label for="atribuirDuracaoBloco">Duração do bloco (min):</label>
+                        <input type="number" id="atribuirDuracaoBloco" min="10" value="60">
+                    </div>
+                    <div>
+                        <label for="atribuirIntervalo">Intervalo entre blocos (min):</label>
+                        <input type="number" id="atribuirIntervalo" min="0" value="5">
+                    </div>
+                    <div>
+                        <label for="atribuirBlocosSessao">Blocos por sessão:</label>
+                        <input type="number" id="atribuirBlocosSessao" min="1" value="4">
+                    </div>
+                    <div>
+                        <label for="atribuirHorasSemanais">Horas semanais:</label>
+                        <input type="number" id="atribuirHorasSemanais" min="1" placeholder="Ex: 20">
+                    </div>
+                </div>
+                <h4 style="margin-bottom:8px; font-size:14px;">Modo por Matéria</h4>
+                <div id="atribuirModosMateria" style="max-height:220px; overflow-y:auto; border:1px solid var(--border-color); border-radius:8px; margin-bottom:16px;"></div>
+                <div class="modal-actions">
+                    <button id="btnAtribuirConfirmar" style="background:#4CAF50;">Atribuir</button>
+                    <button id="btnAtribuirVoltar" style="background:#888;">← Voltar</button>
+                    <button id="btnAtribuirCancelar2" style="background:#999;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modais de conclusao -->
     <div id="modalAssunto" class="modal-overlay">
         <div class="modal-card">

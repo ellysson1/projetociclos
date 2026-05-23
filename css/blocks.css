@@ -129,6 +129,30 @@
     border-bottom: 2px solid var(--primary-color);
 }
 
+/* Badges de modo (só questões / só revisão) */
+.bloco-modo {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin: 6px 0 2px;
+}
+
+.bloco-modo--questoes {
+    background: #FFF3E0;
+    color: #E65100;
+    border: 1px solid #FFCC80;
+}
+
+.bloco-modo--revisao {
+    background: #E3F2FD;
+    color: #1565C0;
+    border: 1px solid #90CAF9;
+}
+
 /* Separador de intervalo entre sessoes */
 .sessao-intervalo {
     display: flex;

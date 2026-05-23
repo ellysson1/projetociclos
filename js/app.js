@@ -97,6 +97,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Escolher plano (aluno)
     document.getElementById('btnEscolherPlano').addEventListener('click', renderizarPlanosDisponiveis);
 
+    // Modal: atribuir plano a aluno
+    document.getElementById('btnAtribuirNext').addEventListener('click', atribuirPassoNext);
+    document.getElementById('btnAtribuirVoltar').addEventListener('click', atribuirPassoBack);
+    document.getElementById('btnAtribuirConfirmar').addEventListener('click', confirmarAtribuicao);
+    document.getElementById('btnAtribuirCancelar1').addEventListener('click', fecharModalAtribuir);
+    document.getElementById('btnAtribuirCancelar2').addEventListener('click', fecharModalAtribuir);
+
     inicializarSelecaoMaterias();
     carregarConfiguracoes();
     carregarEstado();

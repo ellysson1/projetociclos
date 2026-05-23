@@ -111,7 +111,8 @@ async function renderizarListaPlanosProfessor() {
                     <p style="font-size:13px; color:#666; margin-top:4px;">${plano.descricao || 'Sem descrição'}</p>
                     <p style="font-size:12px; color:#999; margin-top:4px;">${materiasCount} matéria(s) | ${plano.publico ? 'Público' : 'Privado'}</p>
                 </div>
-                <div style="display:flex; gap:8px; flex-shrink:0;">
+                <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
+                    <button class="btn-atribuir-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Atribuir</button>
                     <button class="btn-editar-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px;">Editar</button>
                     <button class="btn-excluir-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#FF6B6B;">Excluir</button>
                 </div>
@@ -120,6 +121,12 @@ async function renderizarListaPlanosProfessor() {
         container.appendChild(card);
     });
 
+    container.querySelectorAll('.btn-atribuir-plano').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const plano = planos.find(p => p.id === btn.dataset.id);
+            if (plano) abrirModalAtribuir(plano);
+        });
+    });
     container.querySelectorAll('.btn-editar-plano').forEach(btn => {
         btn.addEventListener('click', () => abrirEditorPlano(btn.dataset.id));
     });
@@ -131,6 +138,126 @@ async function renderizarListaPlanosProfessor() {
             }
         });
     });
+}
+
+// ── Atribuição de Plano a Aluno ────────────────────────────────────────────
+
+let _atribuirPlano = null; // plano sendo atribuído
+
+async function abrirModalAtribuir(plano) {
+    _atribuirPlano = plano;
+
+    const modal = document.getElementById('modalAtribuirPlano');
+    document.getElementById('atribuirPlanoNome').textContent = `Plano: ${plano.nome}`;
+    document.getElementById('atribuirStep1').style.display = 'block';
+    document.getElementById('atribuirStep2').style.display = 'none';
+
+    // Carregar alunos
+    const select = document.getElementById('atribuirAlunoSelect');
+    select.innerHTML = '<option value="">Carregando...</option>';
+    modal.classList.add('active');
+
+    const { data: alunos, error } = await supabaseClient
+        .from('profiles')
+        .select('user_id, nome')
+        .eq('role', 'aluno')
+        .order('nome');
+
+    if (error || !alunos || alunos.length === 0) {
+        select.innerHTML = '<option value="">Nenhum aluno encontrado</option>';
+        return;
+    }
+
+    select.innerHTML = '<option value="">Selecione um aluno...</option>';
+    alunos.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.user_id;
+        opt.textContent = a.nome || a.user_id;
+        select.appendChild(opt);
+    });
+}
+
+function fecharModalAtribuir() {
+    document.getElementById('modalAtribuirPlano').classList.remove('active');
+    _atribuirPlano = null;
+}
+
+function atribuirPassoNext() {
+    const alunoId = document.getElementById('atribuirAlunoSelect').value;
+    if (!alunoId) { alert('Selecione um aluno.'); return; }
+
+    // Pré-preencher configs com valores do plano
+    const cfg = _atribuirPlano.configuracoes || {};
+    document.getElementById('atribuirDuracaoBloco').value = cfg.duracaoBloco || 60;
+    document.getElementById('atribuirIntervalo').value = cfg.intervaloEntreBlocos ?? 5;
+    document.getElementById('atribuirBlocosSessao').value = cfg.blocosPorSessao || 4;
+    document.getElementById('atribuirHorasSemanais').value = cfg.horasSemanais || '';
+
+    // Construir seletores de modo por matéria
+    const container = document.getElementById('atribuirModosMateria');
+    const materias = _atribuirPlano.materias || [];
+    if (materias.length === 0) {
+        container.innerHTML = '<p style="color:#999; font-size:13px; padding:8px;">Este plano não tem matérias definidas.</p>';
+    } else {
+        container.innerHTML = materias.map(m => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid #f0f0f0;">
+                <span style="font-size:14px; font-weight:600;">${m.legenda} <span style="color:#888; font-weight:400;">– ${m.nome}</span></span>
+                <select class="atribuir-modo-select" data-legenda="${m.legenda}" style="font-size:13px; padding:4px 8px; border:1px solid var(--border-color); border-radius:6px;">
+                    <option value="">Normal</option>
+                    <option value="questoes">Só Questões</option>
+                    <option value="revisao">Só Revisão</option>
+                </select>
+            </div>
+        `).join('');
+    }
+
+    document.getElementById('atribuirStep1').style.display = 'none';
+    document.getElementById('atribuirStep2').style.display = 'block';
+}
+
+function atribuirPassoBack() {
+    document.getElementById('atribuirStep1').style.display = 'block';
+    document.getElementById('atribuirStep2').style.display = 'none';
+}
+
+async function confirmarAtribuicao() {
+    const alunoId = document.getElementById('atribuirAlunoSelect').value;
+    if (!alunoId || !_atribuirPlano) return;
+
+    const user = await getUsuarioLogado();
+    if (!user) return;
+
+    const configuracoes = {
+        duracaoBloco: parseInt(document.getElementById('atribuirDuracaoBloco').value) || 60,
+        intervaloEntreBlocos: parseInt(document.getElementById('atribuirIntervalo').value) ?? 5,
+        blocosPorSessao: parseInt(document.getElementById('atribuirBlocosSessao').value) || 4,
+        horasSemanais: parseInt(document.getElementById('atribuirHorasSemanais').value) || null
+    };
+
+    const modos_materia = {};
+    document.querySelectorAll('.atribuir-modo-select').forEach(sel => {
+        if (sel.value) modos_materia[sel.dataset.legenda] = sel.value;
+    });
+
+    const { error } = await supabaseClient
+        .from('plano_atribuicoes')
+        .upsert({
+            plano_id: _atribuirPlano.id,
+            professor_id: user.id,
+            aluno_id: alunoId,
+            configuracoes,
+            modos_materia
+        }, { onConflict: 'plano_id,aluno_id' });
+
+    if (error) {
+        console.error('Erro ao atribuir plano:', error);
+        alert('Erro ao atribuir plano.');
+        return;
+    }
+
+    const alunoNome = document.getElementById('atribuirAlunoSelect').selectedOptions[0]?.text || 'aluno';
+    alert(`Plano atribuído a ${alunoNome} com sucesso!`);
+    fecharModalAtribuir();
 }
 
 let planoEditando = null;
@@ -263,14 +390,54 @@ async function renderizarPlanosDisponiveis() {
     if (!container) return;
     container.innerHTML = '<p style="color:#999;">Carregando...</p>';
 
-    const planos = await carregarPlanosPublicos();
+    const user = await getUsuarioLogado();
+    const [planos, atribuicoesResp] = await Promise.all([
+        carregarPlanosPublicos(),
+        user && supabaseConfigurado()
+            ? supabaseClient.from('plano_atribuicoes').select('*, planos(*)').eq('aluno_id', user.id)
+            : Promise.resolve({ data: [] })
+    ]);
 
-    if (planos.length === 0) {
+    const atribuicoes = atribuicoesResp.data || [];
+
+    if (planos.length === 0 && atribuicoes.length === 0) {
         container.innerHTML = '<p style="color:#999;">Nenhum plano disponível no momento.</p>';
         return;
     }
 
     container.innerHTML = '';
+
+    // Planos atribuídos pelo professor aparecem primeiro
+    atribuicoes.forEach(atr => {
+        const plano = atr.planos;
+        if (!plano) return;
+        const card = document.createElement('div');
+        card.style.cssText = 'border:2px solid #7C4DFF; border-radius:8px; padding:14px; margin-bottom:10px; background:#F3E5FF; cursor:pointer; transition: box-shadow 0.2s;';
+        card.onmouseenter = () => card.style.boxShadow = '0 2px 8px rgba(124,77,255,0.2)';
+        card.onmouseleave = () => card.style.boxShadow = 'none';
+
+        const materiasCount = (plano.materias || []).length;
+        const cfg = atr.configuracoes || {};
+        const modos = atr.modos_materia || {};
+        const modosTexto = Object.entries(modos).map(([leg, modo]) =>
+            `${leg}: ${modo === 'questoes' ? 'Só Questões' : 'Só Revisão'}`
+        ).join(', ');
+
+        card.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="background:#7C4DFF; color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:uppercase;">Atribuído pelo Professor</span>
+            </div>
+            <strong style="font-size:15px; color:#5E35B1;">${plano.nome}</strong>
+            <p style="font-size:13px; color:#666; margin:4px 0;">${plano.descricao || ''}</p>
+            <p style="font-size:12px; color:#888;">${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}${cfg.duracaoBloco ? ' | ' + cfg.duracaoBloco + 'min/bloco' : ''}</p>
+            ${modosTexto ? `<p style="font-size:12px; color:#7C4DFF; margin-top:4px;">${modosTexto}</p>` : ''}
+            <button class="btn-adotar-atribuido" data-atr-id="${atr.id}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
+        `;
+        container.appendChild(card);
+    });
+
+    // Planos públicos
+    const idsAtribuidos = new Set(atribuicoes.map(a => a.plano_id));
     planos.forEach(plano => {
         const card = document.createElement('div');
         card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:white; cursor:pointer; transition: box-shadow 0.2s;';
@@ -285,9 +452,18 @@ async function renderizarPlanosDisponiveis() {
             <strong style="font-size:15px; color:var(--primary-color);">${plano.nome}</strong>
             <p style="font-size:13px; color:#666; margin:4px 0;">${plano.descricao || ''}</p>
             <p style="font-size:12px; color:#999;">Por: ${profNome} | ${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}</p>
-            <button class="btn-adotar-plano" data-id="${plano.id}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#4CAF50;">Adotar Este Plano</button>
+            <button class="btn-adotar-plano" data-id="${plano.id}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
         `;
         container.appendChild(card);
+    });
+
+    container.querySelectorAll('.btn-adotar-atribuido').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const atrId = btn.dataset.atrId;
+            const atr = atribuicoes.find(a => a.id === atrId);
+            if (atr) adotarPlano(atr.plano_id, atr);
+        });
     });
 
     container.querySelectorAll('.btn-adotar-plano').forEach(btn => {
@@ -298,9 +474,15 @@ async function renderizarPlanosDisponiveis() {
     });
 }
 
-async function adotarPlano(planoId) {
-    const planos = await carregarPlanosPublicos();
-    const plano = planos.find(p => p.id === planoId);
+async function adotarPlano(planoId, atribuicao = null) {
+    // Busca o plano (em planos públicos ou via atribuição)
+    let plano = null;
+    if (atribuicao?.planos) {
+        plano = atribuicao.planos;
+    } else {
+        const planos = await carregarPlanosPublicos();
+        plano = planos.find(p => p.id === planoId);
+    }
     if (!plano) { alert('Plano não encontrado.'); return; }
 
     if (!confirm(`Deseja adotar o plano "${plano.nome}"? Suas configurações atuais serão substituídas.`)) return;
@@ -321,12 +503,18 @@ async function adotarPlano(planoId) {
         cor: gerarCorUnica()
     }));
 
-    // Aplicar configurações
-    const cfg = plano.configuracoes || {};
+    // Aplicar configurações do plano, depois sobrescrever com as da atribuição se existir
+    const cfgPlano = plano.configuracoes || {};
+    const cfgAtrib = atribuicao?.configuracoes || {};
+    const cfg = { ...cfgPlano, ...cfgAtrib };
+
     if (cfg.duracaoBloco) configuracoes.duracaoBloco = cfg.duracaoBloco;
     if (cfg.intervaloEntreBlocos !== undefined) configuracoes.intervaloEntreBlocos = cfg.intervaloEntreBlocos;
     if (cfg.blocosPorSessao) configuracoes.blocosPorSessao = cfg.blocosPorSessao;
     if (cfg.horasSemanais) document.getElementById('horasSemanais').value = cfg.horasSemanais;
+
+    // Aplicar modos de matéria da atribuição
+    modosMateria = atribuicao?.modos_materia || {};
 
     // Atualizar UI
     inicializarSelecaoMaterias();
