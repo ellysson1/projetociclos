@@ -1,7 +1,7 @@
 // Mapping of legacy tab names to new main-tab + sub-tab structure
 const subtabMap = {
-    'home':           { tab: 'ciclo', subtab: 'subtab-inicio' },
-    'materias':       { tab: 'ciclo', subtab: 'subtab-materias' },
+    'home':           { tab: 'ciclo', subtab: 'subtab-meuciclo' },
+    'materias':       { tab: 'ciclo', subtab: 'subtab-variaveis' },
     'variaveis':      { tab: 'ciclo', subtab: 'subtab-variaveis' },
     'ajustes':        { tab: 'ciclo', subtab: 'subtab-ajustes' },
     'meuciclo':       { tab: 'ciclo', subtab: 'subtab-meuciclo' },
@@ -52,4 +52,30 @@ function ativarSubTab(parentTabId, subtabId) {
 
     const subtabBtn = parentTab.querySelector(`.subtab[data-subtab="${subtabId}"]`);
     if (subtabBtn) subtabBtn.classList.add('active');
+
+    // Sync horasSemanaisEdit when navigating to Meu Ciclo
+    if (subtabId === 'subtab-meuciclo') {
+        const editInput = document.getElementById('horasSemanaisEdit');
+        const mainInput = document.getElementById('horasSemanais');
+        if (editInput && mainInput && mainInput.value) editInput.value = mainInput.value;
+    }
+
+    // Auto-populate variables table when navigating to Variaveis
+    if (subtabId === 'subtab-variaveis') {
+        const tbody = document.getElementById('tabelaVariaveis')?.getElementsByTagName('tbody')[0];
+        if (tbody && tbody.rows.length === 0 && typeof materiasSelecionadas !== 'undefined' && materiasSelecionadas.length > 0 && typeof preencherTabelaVariaveis === 'function') {
+            preencherTabelaVariaveis();
+        }
+    }
+
+    // Auto-populate adjustments table when navigating to Ajustes
+    if (subtabId === 'subtab-ajustes') {
+        const tbody = document.getElementById('tabelaAjustes')?.getElementsByTagName('tbody')[0];
+        if (tbody && tbody.rows.length === 0 && typeof blocosAtivos !== 'undefined' && blocosAtivos && blocosAtivos.length > 0 && typeof preencherTabelaAjustes === 'function') {
+            const contagem = {};
+            blocosAtivos.forEach(b => { contagem[b.legenda] = (contagem[b.legenda] || 0) + 1; });
+            const blocosPara = (materiasSelecionadas || []).map(m => ({ ...m, quantidadeBlocos: contagem[m.legenda] || 0 }));
+            if (blocosPara.some(b => b.quantidadeBlocos > 0)) preencherTabelaAjustes(blocosPara);
+        }
+    }
 }

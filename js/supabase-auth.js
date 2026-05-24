@@ -7,12 +7,9 @@ function setAuthStatus(msg, isError = false) {
 
 async function getUsuarioLogado() {
     if (!supabaseConfigurado()) return null;
-    const { data, error } = await supabaseClient.auth.getUser();
-    if (error) {
-        console.error(error);
-        return null;
-    }
-    return data.user || null;
+    // getSession() reads from localStorage cache — fast, no network round-trip
+    const { data } = await supabaseClient.auth.getSession();
+    return data.session?.user || null;
 }
 
 async function redirecionarParaLogin() {

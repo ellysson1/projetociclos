@@ -114,6 +114,58 @@ function preencherTabelaAjustes(blocos) {
     });
 }
 
+function redimensionarCiclo(novasHoras) {
+    if (!blocosAtivos || blocosAtivos.length === 0) {
+        alert('Não há ciclo ativo para redimensionar.');
+        return;
+    }
+
+    const horasAntigas = parseInt(document.getElementById('horasSemanais').value) || 0;
+    if (!horasAntigas || horasAntigas <= 0) return;
+    if (novasHoras === horasAntigas) return;
+
+    const fator = novasHoras / horasAntigas;
+
+    // Group blocks by materia legenda
+    const grupos = {};
+    blocosAtivos.forEach(bloco => {
+        const key = bloco.legenda;
+        if (!grupos[key]) grupos[key] = { template: bloco, concluidos: [], pendentes: [] };
+        if (bloco.concluido) grupos[key].concluidos.push(bloco);
+        else grupos[key].pendentes.push(bloco);
+    });
+
+    const concluidos = [];
+    const novosPendentes = [];
+
+    Object.values(grupos).forEach(({ template, concluidos: c, pendentes: p }) => {
+        const totalAtual = c.length + p.length;
+        const novoTotal = Math.max(c.length, Math.round(totalAtual * fator));
+        const qtdPendentes = novoTotal - c.length;
+
+        concluidos.push(...c);
+
+        for (let i = 0; i < qtdPendentes; i++) {
+            novosPendentes.push(i < p.length ? p[i] : { ...template, concluido: false, assunto: null, questoes: null });
+        }
+    });
+
+    // Shuffle pending blocks (Fisher-Yates)
+    for (let i = novosPendentes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [novosPendentes[i], novosPendentes[j]] = [novosPendentes[j], novosPendentes[i]];
+    }
+
+    blocosAtivos = [...concluidos, ...novosPendentes];
+
+    document.getElementById('horasSemanais').value = novasHoras;
+    const editInput = document.getElementById('horasSemanaisEdit');
+    if (editInput) editInput.value = novasHoras;
+
+    salvarEstado();
+    exibirCicloVisual(blocosAtivos);
+}
+
 function ajustarBlocos() {
     let blocos = [];
 

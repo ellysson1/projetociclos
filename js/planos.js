@@ -474,6 +474,90 @@ async function renderizarPlanosDisponiveis() {
     });
 }
 
+async function verificarEAplicarPlanoAtribuido() {
+    if (!supabaseConfigurado()) return;
+    const user = await getUsuarioLogado();
+    if (!user || (typeof isTeacher === 'function' && isTeacher())) return;
+
+    const { data: atribuicoes, error } = await supabaseClient
+        .from('plano_atribuicoes')
+        .select('*, planos(*)')
+        .eq('aluno_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+    if (error || !atribuicoes?.length) return;
+
+    const atr = atribuicoes[0];
+    const plano = atr.planos;
+    if (!plano) return;
+
+    // Skip if student already has this plan applied
+    if (planoAdotado?.id === plano.id) return;
+
+    // Apply plan reference
+    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null };
+
+    // Apply materias (list only, don't touch blocosAtivos)
+    const materiasDoPlano = plano.materias || [];
+    materiasList = materiasDoPlano.map(m => ({ nome: m.nome, legenda: m.legenda }));
+
+    // Merge configs (plan defaults < atribuicao overrides)
+    const cfg = { ...(plano.configuracoes || {}), ...(atr.configuracoes || {}) };
+    if (cfg.duracaoBloco) configuracoes.duracaoBloco = cfg.duracaoBloco;
+    if (cfg.intervaloEntreBlocos !== undefined) configuracoes.intervaloEntreBlocos = cfg.intervaloEntreBlocos;
+    if (cfg.blocosPorSessao) configuracoes.blocosPorSessao = cfg.blocosPorSessao;
+
+    // Apply subject modes
+    modosMateria = atr.modos_materia || {};
+
+    // Refresh UI
+    inicializarSelecaoMaterias();
+    carregarConfiguracoes();
+
+    // Update edital
+    if (typeof atualizarVisibilidadeEdital === 'function') atualizarVisibilidadeEdital();
+    if (planoAdotado.edital && typeof carregarEditalProgresso === 'function') {
+        await carregarEditalProgresso();
+        if (typeof renderizarEdital === 'function') renderizarEdital();
+    }
+
+    // If no active cycle, generate one from the plan
+    if ((!blocosAtivos || blocosAtivos.length === 0) && materiasDoPlano.length > 0 && cfg.horasSemanais) {
+        const horasSemanais = cfg.horasSemanais;
+        document.getElementById('horasSemanais').value = horasSemanais;
+
+        const minutosTotais = horasSemanais * 60;
+        const totalBlocos = Math.floor(minutosTotais / (configuracoes.duracaoBloco || 60));
+
+        coresUsadas = [];
+        let totalPonderado = 0;
+        const blocos = materiasDoPlano.map(m => {
+            const vp = (m.peso || 5) * 0.5 + (m.extensao || 5) * 0.25 + (m.dificuldade || 5) * 0.25;
+            totalPonderado += vp;
+            return { ...m, cor: gerarCorUnica(), valorPonderado: vp };
+        });
+
+        let allocated = 0;
+        blocos.forEach((b, idx) => {
+            if (idx === blocos.length - 1) {
+                b.quantidadeBlocos = Math.max(1, totalBlocos - allocated);
+            } else {
+                b.quantidadeBlocos = Math.max(1, Math.ceil((b.valorPonderado / totalPonderado) * totalBlocos));
+                if (allocated + b.quantidadeBlocos > totalBlocos) b.quantidadeBlocos = Math.max(1, totalBlocos - allocated);
+            }
+            allocated += b.quantidadeBlocos;
+        });
+
+        materiasSelecionadas = blocos;
+        blocosAtivos = distribuirBlocosAleatoriamente(blocos);
+        exibirCicloVisual(blocosAtivos);
+        alternarAba('meuciclo');
+    }
+
+    salvarEstado();
+}
+
 async function adotarPlano(planoId, atribuicao = null) {
     // Busca o plano (em planos públicos ou via atribuição)
     let plano = null;

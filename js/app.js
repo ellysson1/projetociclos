@@ -50,6 +50,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('resetar').addEventListener('click', resetarTempo);
     document.getElementById('salvarConfiguracoes').addEventListener('click', salvarConfiguracoes);
     document.getElementById('novoEstudo').addEventListener('click', iniciarNovoEstudo);
+    document.getElementById('btnRecalcularCiclo').addEventListener('click', function() {
+        const novasHoras = parseInt(document.getElementById('horasSemanaisEdit').value);
+        if (!novasHoras || novasHoras <= 0) {
+            alert('Por favor, insira um número válido de horas semanais.');
+            return;
+        }
+        redimensionarCiclo(novasHoras);
+    });
     document.getElementById('gerarPDF').addEventListener('click', gerarPDF);
     document.getElementById('exportarExcel').addEventListener('click', exportarParaExcel);
     const btnLogoutTop = document.getElementById('btnLogoutTop');
@@ -119,6 +127,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             await ensureProfile();
             atualizarUIRole();
             await carregarEstadoNuvem();
+            await verificarEAplicarPlanoAtribuido();
             autoResumeIfActive();
             atualizarVisibilidadeEdital();
             if (planoAdotado?.edital) {
@@ -131,6 +140,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 await ensureProfile();
                 atualizarUIRole();
                 await carregarEstadoNuvem();
+                await verificarEAplicarPlanoAtribuido();
                 autoResumeIfActive();
                 atualizarVisibilidadeEdital();
                 if (planoAdotado?.edital) {

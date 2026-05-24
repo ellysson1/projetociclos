@@ -44,77 +44,35 @@
         <!-- ============ CICLO TAB (with sub-tabs) ============ -->
         <div id="ciclo" class="tab-content active">
             <div class="subtab-container">
-                <button class="subtab active" data-subtab="subtab-inicio">Inicio</button>
-                <button class="subtab" data-subtab="subtab-materias">Materias</button>
+                <button class="subtab active" data-subtab="subtab-meuciclo">Meu Ciclo</button>
                 <button class="subtab" data-subtab="subtab-variaveis">Variaveis</button>
                 <button class="subtab" data-subtab="subtab-ajustes">Ajustes</button>
-                <button class="subtab" data-subtab="subtab-meuciclo">Meu Ciclo</button>
                 <button class="subtab" data-subtab="subtab-config">Configuracoes</button>
             </div>
 
-            <!-- Sub-tab: Inicio -->
-            <div id="subtab-inicio" class="subtab-content active">
-                <h2>Configuracao do Ciclo</h2>
+            <!-- Sub-tab: Meu Ciclo (default) -->
+            <div id="subtab-meuciclo" class="subtab-content active">
+                <h2>Seu Ciclo de Estudos</h2>
+
+                <!-- Setup: shown when no active cycle -->
                 <div id="inicio">
                     <form id="horasForm">
                         <label for="horasSemanais">Quantas horas por semana voce pode dedicar aos estudos?</label>
                         <input type="number" id="horasSemanais" name="horasSemanais" min="1" required>
-                        <button type="submit">Proximo</button>
+                        <button type="submit">Calcular Ciclo →</button>
                     </form>
                 </div>
-                <div id="continuar" style="display: none;">
-                    <p style="margin-bottom:12px; color:#666;">Seu ciclo esta ativo na aba "Meu Ciclo".</p>
-                    <button id="novoEstudo" style="background:#FF6B6B;">Reiniciar Ciclo</button>
+
+                <!-- Active cycle controls -->
+                <div id="continuar" style="display:none;">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:#f9f9f9;">
+                        <label for="horasSemanaisEdit" style="margin:0; font-size:14px; white-space:nowrap;">Horas semanais:</label>
+                        <input type="number" id="horasSemanaisEdit" min="1" style="width:70px; margin:0;">
+                        <button id="btnRecalcularCiclo" type="button" style="margin:0; font-size:13px; padding:6px 14px;">Recalcular</button>
+                        <button id="novoEstudo" type="button" style="background:#FF6B6B; margin:0; font-size:13px; padding:6px 14px;">Reiniciar Ciclo</button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Sub-tab: Materias -->
-            <div id="subtab-materias" class="subtab-content">
-                <h2>Selecionar Materias</h2>
-                <div id="materiasLista"></div>
-                <input type="text" id="novaMateriaNome" placeholder="Nome da Materia">
-                <input type="text" id="novaMateriaSigla" placeholder="Sigla (ate 3 letras)" maxlength="3">
-                <button id="adicionarMateria">Adicionar Materia</button>
-                <button id="btnUploadMaterias" type="button" style="background:#26A69A;">Importar Excel/CSV</button>
-                <button id="btnBaixarModeloAluno" type="button" style="background:#FF9800;">Baixar Modelo</button>
-                <button id="proximoMaterias">Proximo</button>
-            </div>
-
-            <!-- Sub-tab: Variaveis -->
-            <div id="subtab-variaveis" class="subtab-content">
-                <h2>Definir Variaveis por Materia</h2>
-                <table id="tabelaVariaveis">
-                    <thead>
-                        <tr>
-                            <th>Materia</th>
-                            <th>Peso (1-10)</th>
-                            <th>Extensao/Volume (1-10)</th>
-                            <th>Dificuldade (1-10)</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <button id="calcularBlocos">Calcular Blocos</button>
-            </div>
-
-            <!-- Sub-tab: Ajustes -->
-            <div id="subtab-ajustes" class="subtab-content">
-                <h2>Ajustar Quantidade de Blocos por Materia</h2>
-                <table id="tabelaAjustes">
-                    <thead>
-                        <tr>
-                            <th>Materia</th>
-                            <th>Blocos</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <button id="ajustarBlocos">Ajustar Blocos</button>
-            </div>
-
-            <!-- Sub-tab: Meu Ciclo -->
-            <div id="subtab-meuciclo" class="subtab-content">
-                <h2>Seu Ciclo de Estudos</h2>
                 <div id="blocosContainer"></div>
                 <div id="tempoControle">
                     <select id="tipoTempo">
@@ -129,6 +87,40 @@
                     <button id="iniciarPausar">Iniciar</button>
                     <button id="resetar">Resetar</button>
                 </div>
+            </div>
+
+            <!-- Sub-tab: Variaveis (always editable) -->
+            <div id="subtab-variaveis" class="subtab-content">
+                <h2>Pesos por Materia</h2>
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">Ajuste os pesos e clique em Calcular para gerar um novo ciclo.</p>
+                <table id="tabelaVariaveis">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Peso (1-10)</th>
+                            <th>Extensao/Volume (1-10)</th>
+                            <th>Dificuldade (1-10)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button id="calcularBlocos">Calcular Blocos</button>
+            </div>
+
+            <!-- Sub-tab: Ajustes (always editable) -->
+            <div id="subtab-ajustes" class="subtab-content">
+                <h2>Ajustar Blocos por Materia</h2>
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">Edite manualmente a quantidade de blocos e confirme.</p>
+                <table id="tabelaAjustes">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Blocos</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button id="ajustarBlocos">Confirmar Ajuste</button>
             </div>
 
             <!-- Sub-tab: Configuracoes -->
@@ -148,6 +140,18 @@
                 </div>
                 <button id="salvarConfiguracoes">Salvar Configuracoes</button>
             </div>
+
+            <!-- Hidden: kept for backward compat (DOM references) -->
+            <div id="subtab-inicio" style="display:none;">
+                <div id="materiasLista"></div>
+                <input type="text" id="novaMateriaNome" style="display:none;">
+                <input type="text" id="novaMateriaSigla" style="display:none;" maxlength="3">
+                <button id="adicionarMateria" style="display:none;">Adicionar Materia</button>
+                <button id="btnUploadMaterias" style="display:none;">Importar Excel/CSV</button>
+                <button id="btnBaixarModeloAluno" style="display:none;">Baixar Modelo</button>
+                <button id="proximoMaterias" style="display:none;">Proximo</button>
+            </div>
+            <div id="subtab-materias" style="display:none;"></div>
         </div>
 
         <!-- ============ EDITAL TAB ============ -->
