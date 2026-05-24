@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 renderizarEdital();
             }
             autoResumeIfActive();
+            if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
         }
         supabaseClient.auth.onAuthStateChange(async (_event, session) => {
             if (session) {
@@ -147,6 +148,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     renderizarEdital();
                 }
                 autoResumeIfActive();
+                if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
             }
             await atualizarUIAuth();
         });

@@ -205,6 +205,25 @@ function verificarConclusao() {
     }
 }
 
+function atualizarSugestoesBlocos() {
+    if (typeof obterAssuntoSugerido !== 'function' || !blocosAtivos) return;
+    document.querySelectorAll('.bloco-card').forEach(card => {
+        if (card.classList.contains('concluido')) return;
+        if (card.querySelector('.bloco-card__sugestao')) return;
+        const idx = parseInt(card.getAttribute('data-index'));
+        const bloco = blocosAtivos[idx];
+        if (!bloco) return;
+        const sugestao = obterAssuntoSugerido(bloco.nome);
+        if (sugestao) {
+            const div = document.createElement('div');
+            div.className = 'bloco-card__sugestao';
+            div.title = sugestao;
+            div.textContent = sugestao;
+            card.appendChild(div);
+        }
+    });
+}
+
 function continuarEstudo() {
     exibirCicloVisual(blocosAtivos);
     alternarAba('meuciclo');
