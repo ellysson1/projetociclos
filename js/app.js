@@ -90,6 +90,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('editalFiltroStatus').addEventListener('change', renderizarEdital);
     document.getElementById('editalBusca').addEventListener('input', renderizarEdital);
 
+    // Filtros da aba Revisão
+    document.getElementById('revisaoFiltroMateria').addEventListener('change', renderizarRevisao);
+    document.getElementById('revisaoBusca').addEventListener('input', renderizarRevisao);
+
     // Videos
     document.getElementById('btnAddVideo').addEventListener('click', adicionarVideo);
     document.getElementById('btnFecharPlayer').addEventListener('click', fecharPlayer);

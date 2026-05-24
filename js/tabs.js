@@ -35,6 +35,9 @@ function ativarMainTab(tabName) {
     if (tabName === 'videos' && typeof renderizarVideosTab === 'function') {
         renderizarVideosTab();
     }
+    if (tabName === 'revisao' && typeof renderizarRevisao === 'function') {
+        renderizarRevisao();
+    }
 }
 
 function ativarSubTab(parentTabId, subtabId) {

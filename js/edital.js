@@ -102,7 +102,9 @@ function renderizarEdital() {
         let topicosHTML = '';
         let temItemVisivel = false;
 
-        (materiaObj.topicos || []).forEach((topicoObj, topicoIdx) => {
+        const topicosOrdenados = [...(materiaObj.topicos || [])].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
+
+        topicosOrdenados.forEach((topicoObj, topicoIdx) => {
             const subtopicos = topicoObj.subtopicos || [];
             const temSubtopicos = subtopicos.length > 0;
 
@@ -122,14 +124,15 @@ function renderizarEdital() {
 
                     topicoVisivel = true;
                     temItemVisivel = true;
-                    subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, sub, prog);
+                    subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, sub, prog, undefined, undefined);
                 });
 
                 if (topicoVisivel || (!busca && filtroStatus === 'todos')) {
                     const topicoProgresso = calcularProgressoTopico(materiaObj.materia, topicoObj.nome, subtopicos);
                     topicosHTML += `
-                        <div class="edital-topico">
+                        <div class="edital-topico" draggable="true" data-materia-idx="${materiaIdx}" data-topico-idx="${topicoIdx}">
                             <div class="edital-topico__header" onclick="toggleEditalTopico(this)">
+                                <span class="edital-topico__drag" style="cursor:grab; color:#bbb; margin-right:4px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>
                                 <span class="edital-topico__arrow">&#9654;</span>
                                 <span class="edital-topico__nome">${topicoObj.nome}</span>
                                 <span class="edital-topico__progresso">${topicoProgresso.concluidos}/${topicoProgresso.total}</span>
@@ -149,13 +152,13 @@ function renderizarEdital() {
                 const prog = editalProgresso[chave] || { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
                 totalItens++;
                 materiaItens++;
-                if (prog.status === 'concluido') { itensConcluidos++; materiaConcluidos++; }
+                if (prog.status === 'concluido' || prog.status === 'visto') { itensConcluidos++; materiaConcluidos++; }
 
                 if (filtroStatus !== 'todos' && prog.status !== filtroStatus) return;
                 if (busca && !topicoObj.nome.toLowerCase().includes(busca)) return;
 
                 temItemVisivel = true;
-                topicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, null, prog);
+                topicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, null, prog, topicoIdx, materiaIdx);
             }
         });
 
@@ -183,9 +186,69 @@ function renderizarEdital() {
     const pctGeral = totalItens > 0 ? Math.round((itensConcluidos / totalItens) * 100) : 0;
     document.getElementById('editalProgressoGeral').textContent = `${itensConcluidos}/${totalItens} concluídos (${pctGeral}%)`;
     document.getElementById('editalBarraGeral').style.width = pctGeral + '%';
+
+    // Drag and drop para reordenar tópicos
+    inicializarDragDropEdital(arvore);
 }
 
-function criarItemEdital(materia, topico, subtopico, prog) {
+function inicializarDragDropEdital(container) {
+    const draggables = container.querySelectorAll('[draggable="true"]');
+
+    draggables.forEach(el => {
+        el.addEventListener('dragstart', function(e) {
+            e.stopPropagation();
+            this.classList.add('edital-dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                materiaIdx: parseInt(this.dataset.materiaIdx),
+                topicoIdx: parseInt(this.dataset.topicoIdx)
+            }));
+        });
+
+        el.addEventListener('dragend', function() {
+            this.classList.remove('edital-dragging');
+            container.querySelectorAll('.edital-drag-over').forEach(o => o.classList.remove('edital-drag-over'));
+        });
+
+        el.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('edital-drag-over');
+        });
+
+        el.addEventListener('dragleave', function() {
+            this.classList.remove('edital-drag-over');
+        });
+
+        el.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('edital-drag-over');
+
+            const source = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const targetMateriaIdx = parseInt(this.dataset.materiaIdx);
+            const targetTopicoIdx = parseInt(this.dataset.topicoIdx);
+
+            if (source.materiaIdx !== targetMateriaIdx) return;
+            if (source.topicoIdx === targetTopicoIdx) return;
+
+            const edital = planoAdotado?.edital;
+            if (!edital) return;
+
+            const topicos = edital[source.materiaIdx].topicos;
+            const [moved] = topicos.splice(source.topicoIdx, 1);
+            topicos.splice(targetTopicoIdx, 0, moved);
+
+            // Update ordem values to reflect new positions
+            topicos.forEach((t, i) => { t.ordem = i + 1; });
+
+            salvarEstado();
+            renderizarEdital();
+        });
+    });
+}
+
+function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx) {
     const label = subtopico || topico;
     const statusClass = `edital-status--${prog.status}`;
 
@@ -196,9 +259,16 @@ function criarItemEdital(materia, topico, subtopico, prog) {
     }
 
     const dataAttrs = `data-materia="${materia}" data-topico="${topico}" data-subtopico="${subtopico || ''}"`;
+    const dragAttrs = !subtopico && topicoIdx !== undefined
+        ? `draggable="true" data-materia-idx="${materiaIdx}" data-topico-idx="${topicoIdx}"`
+        : '';
+    const dragHandle = !subtopico && topicoIdx !== undefined
+        ? '<span style="cursor:grab; color:#bbb; margin-right:6px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>'
+        : '';
 
     return `
-        <div class="edital-item ${statusClass}" ${dataAttrs}>
+        <div class="edital-item ${statusClass}" ${dataAttrs} ${dragAttrs}>
+            ${dragHandle}
             <div class="edital-item__info">
                 <span class="edital-item__label">${label}</span>
                 ${questoesInfo}
@@ -206,8 +276,8 @@ function criarItemEdital(materia, topico, subtopico, prog) {
             <div class="edital-item__actions">
                 <select class="edital-item__select" onchange="alterarStatusEdital(this, '${materia}', '${topico}', '${subtopico || ''}')">
                     <option value="pendente" ${prog.status === 'pendente' ? 'selected' : ''}>Pendente</option>
-                    <option value="visto" ${prog.status === 'visto' ? 'selected' : ''}>Visto</option>
                     <option value="em_andamento" ${prog.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
+                    <option value="visto" ${prog.status === 'visto' ? 'selected' : ''}>Visto</option>
                     <option value="concluido" ${prog.status === 'concluido' ? 'selected' : ''}>Concluído</option>
                 </select>
             </div>
@@ -269,7 +339,7 @@ async function alterarStatusEdital(select, materia, topico, subtopico) {
 
 // ── Match automático: assunto → tópico do edital ────────────────────────────
 
-function atualizarProgressoEdital(materia, assunto, questoes) {
+function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
     if (!planoAdotado?.edital || !assunto) return;
 
     const edital = planoAdotado.edital;
@@ -281,9 +351,11 @@ function atualizarProgressoEdital(materia, assunto, questoes) {
             editalProgresso[chave] = { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
         }
 
-        // Only auto-set "visto"; never downgrade from "concluido" (manual only)
-        if (editalProgresso[chave].status !== 'concluido') {
-            editalProgresso[chave].status = 'visto';
+        const atual = editalProgresso[chave].status;
+        const novoStatus = statusDesejado || 'visto';
+        // Never downgrade from 'concluido' (manual only), and 'visto' > 'em_andamento'
+        if (atual !== 'concluido' && !(atual === 'visto' && novoStatus === 'em_andamento')) {
+            editalProgresso[chave].status = novoStatus;
         }
         if (questoes && questoes.feitas > 0) {
             editalProgresso[chave].questoes_feitas += questoes.feitas;
@@ -292,6 +364,7 @@ function atualizarProgressoEdital(materia, assunto, questoes) {
 
         salvarEditalProgressoItem(match.materia, match.topico, match.subtopico, editalProgresso[chave]);
         if (typeof renderizarEdital === 'function') renderizarEdital();
+        if (typeof renderizarRevisao === 'function') renderizarRevisao();
     }
 }
 
@@ -416,6 +489,10 @@ function atualizarVisibilidadeEdital() {
 
     const temEdital = planoAdotado?.edital && planoAdotado.edital.length > 0;
     tabEdital.style.display = temEdital ? 'inline-block' : 'none';
+
+    if (typeof atualizarVisibilidadeRevisao === 'function') {
+        atualizarVisibilidadeRevisao();
+    }
 }
 
 // ── Editor de Edital (professor) ────────────────────────────────────────────
@@ -527,16 +604,16 @@ function removerSubtopicoEdital(mIdx, tIdx, sIdx) {
 }
 
 function coletarEditalDoEditor() {
-    // Limpar itens vazios
     return editalEditando
         .filter(m => m.materia && m.materia.trim())
         .map(m => ({
             materia: m.materia.trim(),
             topicos: (m.topicos || [])
                 .filter(t => t.nome && t.nome.trim())
-                .map(t => ({
+                .map((t, idx) => ({
                     nome: t.nome.trim(),
-                    subtopicos: (t.subtopicos || []).filter(s => s && s.trim()).map(s => s.trim())
+                    subtopicos: (t.subtopicos || []).filter(s => s && s.trim()).map(s => s.trim()),
+                    ordem: t.ordem || (idx + 1)
                 }))
         }));
 }
@@ -590,16 +667,23 @@ function processarArquivoEdital(file) {
 
 function converterLinhasParaEdital(rows) {
     const mapa = {};
+    const ordemMapa = {};
 
     rows.forEach(row => {
         const materia = (row['Materia'] || row['materia'] || row['MATERIA'] || row['Matéria'] || row['matéria'] || '').trim();
         const topico = (row['Topico'] || row['topico'] || row['TOPICO'] || row['Tópico'] || row['tópico'] || '').trim();
         const subtopico = (row['Subtopico'] || row['subtopico'] || row['SUBTOPICO'] || row['Subtópico'] || row['subtópico'] || '').trim();
+        const ordem = parseInt(row['Ordem'] || row['ordem'] || row['ORDEM'] || '') || 999;
 
         if (!materia || !topico) return;
 
         if (!mapa[materia]) mapa[materia] = {};
         if (!mapa[materia][topico]) mapa[materia][topico] = [];
+        if (!ordemMapa[materia]) ordemMapa[materia] = {};
+        if (!ordemMapa[materia][topico]) ordemMapa[materia][topico] = ordem;
+        // Keep the lowest ordem value for this topic
+        if (ordem < ordemMapa[materia][topico]) ordemMapa[materia][topico] = ordem;
+
         if (subtopico && !mapa[materia][topico].includes(subtopico)) {
             mapa[materia][topico].push(subtopico);
         }
@@ -607,10 +691,13 @@ function converterLinhasParaEdital(rows) {
 
     return Object.entries(mapa).map(([materia, topicos]) => ({
         materia,
-        topicos: Object.entries(topicos).map(([nome, subtopicos]) => ({
-            nome,
-            subtopicos
-        }))
+        topicos: Object.entries(topicos)
+            .map(([nome, subtopicos]) => ({
+                nome,
+                subtopicos,
+                ordem: ordemMapa[materia]?.[nome] || 999
+            }))
+            .sort((a, b) => a.ordem - b.ordem)
     }));
 }
 
@@ -676,18 +763,18 @@ function mostrarPreviewEdital(editalImportado) {
 function baixarModeloEdital() {
     const wb = XLSX.utils.book_new();
     const dados = [
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Ativo Circulante' },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Passivo Circulante' },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Patrimônio Líquido' },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Receitas' },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Despesas' },
-        { Materia: 'AFO', Topico: 'Orçamento Público', Subtopico: '' },
-        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'PPA' },
-        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LDO' },
-        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LOA' }
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Ativo Circulante', Ordem: 1 },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Passivo Circulante', Ordem: 1 },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Patrimônio Líquido', Ordem: 1 },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Receitas', Ordem: 2 },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Despesas', Ordem: 2 },
+        { Materia: 'AFO', Topico: 'Orçamento Público', Subtopico: '', Ordem: 1 },
+        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'PPA', Ordem: 2 },
+        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LDO', Ordem: 2 },
+        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LOA', Ordem: 2 }
     ];
     const ws = XLSX.utils.json_to_sheet(dados);
-    ws['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 25 }];
+    ws['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 10 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Edital');
     XLSX.writeFile(wb, 'modelo_edital.xlsx');
 }

@@ -1,5 +1,6 @@
 let blocoEmConclusao = null;
 let cardEmConclusao = null;
+let concluiuAssunto = false; // did student finish studying the topic?
 
 function inicializarModaisQuestoes() {
     // Etapa 1: Confirmar assunto
@@ -12,11 +13,25 @@ function inicializarModaisQuestoes() {
         fecharModal('modalAssunto');
         blocosAtivos[blocoEmConclusao].assunto = assunto;
 
-        // Etapa 2: Fez questões?
+        // Etapa 2: Concluiu o estudo desse assunto?
+        abrirModal('modalConcluiuEstudo');
+    });
+
+    // Etapa 2: Sim, concluiu
+    document.getElementById('btnSimConcluiu').addEventListener('click', function() {
+        concluiuAssunto = true;
+        fecharModal('modalConcluiuEstudo');
         abrirModal('modalQuestoes');
     });
 
-    // Etapa 2: Sim - fez questões
+    // Etapa 2: Não concluiu (em andamento)
+    document.getElementById('btnNaoConcluiu').addEventListener('click', function() {
+        concluiuAssunto = false;
+        fecharModal('modalConcluiuEstudo');
+        abrirModal('modalQuestoes');
+    });
+
+    // Etapa 3: Sim - fez questões
     document.getElementById('btnSimQuestoes').addEventListener('click', function() {
         fecharModal('modalQuestoes');
         const bloco = blocosAtivos[blocoEmConclusao];
@@ -27,13 +42,13 @@ function inicializarModaisQuestoes() {
         abrirModal('modalRegistrarQuestoes');
     });
 
-    // Etapa 2: Não - apenas estudou
+    // Etapa 3: Não - apenas estudou
     document.getElementById('btnNaoQuestoes').addEventListener('click', function() {
         fecharModal('modalQuestoes');
         finalizarConclusao(null);
     });
 
-    // Etapa 3: Salvar questões
+    // Etapa 4: Salvar questões
     document.getElementById('btnSalvarQuestoes').addEventListener('click', function() {
         const feitas = parseInt(document.getElementById('inputQtdFeitas').value) || 0;
         const corretas = parseInt(document.getElementById('inputQtdCorretas').value) || 0;
@@ -56,7 +71,6 @@ function inicializarModaisQuestoes() {
         overlay.addEventListener('click', function(e) {
             if (e.target === this) {
                 fecharModal(this.id);
-                // Se cancelou, desfaz a conclusão
                 if (blocoEmConclusao !== null && cardEmConclusao) {
                     const checkbox = cardEmConclusao.querySelector('input[type="checkbox"]');
                     if (checkbox) checkbox.checked = false;
@@ -71,15 +85,73 @@ function inicializarModaisQuestoes() {
 function iniciarFluxoConclusao(index, card) {
     blocoEmConclusao = index;
     cardEmConclusao = card;
+    concluiuAssunto = false;
     const bloco = blocosAtivos[index];
 
     document.getElementById('modalAssuntoMateria').textContent = bloco.nome;
     document.getElementById('assuntoSelecionado').value = bloco.assunto || '';
     document.getElementById('inputAssunto').value = '';
 
+    mostrarAssuntoSugerido(bloco.nome);
     preencherListaAssuntosEdital(bloco.nome);
 
     abrirModal('modalAssunto');
+}
+
+function mostrarAssuntoSugerido(materiaBloco) {
+    const container = document.getElementById('assuntoSugeridoContainer');
+    const texto = document.getElementById('assuntoSugeridoTexto');
+    container.style.display = 'none';
+
+    if (!planoAdotado?.edital) return;
+
+    const materiaBlNorm = normalizarTexto(materiaBloco);
+    let sugerido = null;
+
+    for (const materiaObj of planoAdotado.edital) {
+        const materiaNorm = normalizarTexto(materiaObj.materia);
+        const mesmaMateria = materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm);
+        if (!mesmaMateria) continue;
+
+        const topicos = materiaObj.topicos || [];
+        // Sort by ordem if available
+        const topicosOrdenados = [...topicos].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
+
+        for (const topicoObj of topicosOrdenados) {
+            const subtopicos = topicoObj.subtopicos || [];
+            if (subtopicos.length > 0) {
+                for (const sub of subtopicos) {
+                    const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
+                    const prog = editalProgresso[chave];
+                    if (!prog || prog.status === 'pendente') {
+                        sugerido = sub;
+                        break;
+                    }
+                }
+            } else {
+                const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
+                const prog = editalProgresso[chave];
+                if (!prog || prog.status === 'pendente') {
+                    sugerido = topicoObj.nome;
+                }
+            }
+            if (sugerido) break;
+        }
+        if (sugerido) break;
+    }
+
+    if (sugerido) {
+        texto.textContent = sugerido;
+        container.style.display = 'block';
+        container.onclick = () => {
+            document.getElementById('assuntoSelecionado').value = sugerido;
+            const lista = document.getElementById('listaAssuntosEdital');
+            lista.querySelectorAll('.assunto-item').forEach(el => {
+                el.classList.toggle('selected', el.textContent === sugerido);
+            });
+            document.getElementById('assuntoOutroContainer').style.display = 'none';
+        };
+    }
 }
 
 function preencherListaAssuntosEdital(materiaBloco) {
@@ -98,7 +170,10 @@ function preencherListaAssuntosEdital(materiaBloco) {
             const mesmaMateria = materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm);
             if (!mesmaMateria) return;
 
-            (materiaObj.topicos || []).forEach(topicoObj => {
+            const topicos = materiaObj.topicos || [];
+            const topicosOrdenados = [...topicos].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
+
+            topicosOrdenados.forEach(topicoObj => {
                 const subtopicos = topicoObj.subtopicos || [];
                 if (subtopicos.length > 0) {
                     subtopicos.forEach(sub => itens.push(sub));
@@ -117,7 +192,6 @@ function preencherListaAssuntosEdital(materiaBloco) {
         hiddenInput.value = this.value.trim();
     });
 
-    // If no edital topics found for this materia, go straight to free-text
     if (itens.length === 0) {
         outroContainer.style.display = 'block';
         newInput.focus();
@@ -126,9 +200,23 @@ function preencherListaAssuntosEdital(materiaBloco) {
     }
 
     itens.forEach(texto => {
+        const chave = encontrarChaveParaTexto(texto);
+        const prog = chave ? editalProgresso[chave] : null;
+        const status = prog?.status || 'pendente';
+
         const div = document.createElement('div');
         div.className = 'assunto-item';
-        div.textContent = texto;
+        if (status === 'visto' || status === 'concluido') {
+            div.classList.add('assunto-item--done');
+        } else if (status === 'em_andamento') {
+            div.classList.add('assunto-item--progress');
+        }
+
+        const statusLabel = status === 'visto' ? ' (visto)' :
+            status === 'concluido' ? ' (concluído)' :
+            status === 'em_andamento' ? ' (em andamento)' : '';
+
+        div.innerHTML = `<span>${texto}</span>${statusLabel ? `<small style="color:#888; margin-left:6px;">${statusLabel}</small>` : ''}`;
         div.addEventListener('click', () => {
             lista.querySelectorAll('.assunto-item').forEach(el => el.classList.remove('selected'));
             div.classList.add('selected');
@@ -157,7 +245,10 @@ function preencherListaAssuntosEdital(materiaBloco) {
     if (hiddenInput.value) {
         let found = false;
         lista.querySelectorAll('.assunto-item:not(.assunto-item--outro)').forEach(el => {
-            if (el.textContent === hiddenInput.value) { el.classList.add('selected'); found = true; }
+            if (el.querySelector('span')?.textContent === hiddenInput.value || el.textContent === hiddenInput.value) {
+                el.classList.add('selected');
+                found = true;
+            }
         });
         if (!found) {
             outroDiv.classList.add('selected');
@@ -165,6 +256,23 @@ function preencherListaAssuntosEdital(materiaBloco) {
             newInput.value = hiddenInput.value;
         }
     }
+}
+
+function encontrarChaveParaTexto(texto) {
+    if (!planoAdotado?.edital) return null;
+    for (const materiaObj of planoAdotado.edital) {
+        for (const topicoObj of (materiaObj.topicos || [])) {
+            const subtopicos = topicoObj.subtopicos || [];
+            if (subtopicos.length > 0) {
+                for (const sub of subtopicos) {
+                    if (sub === texto) return gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
+                }
+            } else if (topicoObj.nome === texto) {
+                return gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
+            }
+        }
+    }
+    return null;
 }
 
 function finalizarConclusao(questoes) {
@@ -190,13 +298,15 @@ function finalizarConclusao(questoes) {
     salvarEstado();
     salvarQuestoesNuvem(bloco, questoes);
 
-    // Atualizar progresso no edital
+    // Atualizar progresso no edital with the new status
     if (typeof atualizarProgressoEdital === 'function') {
-        atualizarProgressoEdital(bloco.nome, bloco.assunto, questoes);
+        const statusEdital = concluiuAssunto ? 'visto' : 'em_andamento';
+        atualizarProgressoEdital(bloco.nome, bloco.assunto, questoes, statusEdital);
     }
 
     blocoEmConclusao = null;
     cardEmConclusao = null;
+    concluiuAssunto = false;
 
     verificarConclusao();
 }

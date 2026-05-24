@@ -34,6 +34,7 @@ function salvarEstado() {
         configuracoes,
         planoAdotado,
         modosMateria,
+        revisoesContador: typeof revisoesContador !== 'undefined' ? revisoesContador : {},
         horasSemanais: document.getElementById('horasSemanais')?.value || null
     };
     localStorage.setItem('cicloEstudosEstado', JSON.stringify(estado));
@@ -52,6 +53,7 @@ function carregarEstado() {
         configuracoes = estado.configuracoes;
         planoAdotado = estado.planoAdotado || null;
         modosMateria = estado.modosMateria || {};
+        if (typeof revisoesContador !== 'undefined') revisoesContador = estado.revisoesContador || {};
 
         document.getElementById('horasSemanais').value = estado.horasSemanais || '';
         document.getElementById('inicio').style.display = 'none';

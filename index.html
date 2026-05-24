@@ -34,6 +34,7 @@
         <div class="tab-container">
             <button class="tab active" data-tab="ciclo">Ciclo</button>
             <button class="tab" data-tab="edital" style="display:none;">Edital</button>
+            <button class="tab" data-tab="revisao" style="display:none;">Revisão</button>
             <button class="tab" data-tab="desempenho">Desempenho</button>
             <button class="tab" data-tab="videos">Videos</button>
             <button class="tab" data-tab="planos">Planos</button>
@@ -177,6 +178,23 @@
             <div id="editalVazio" style="display:none; text-align:center; padding:40px 20px; color:#999;">
                 <p style="font-size:16px; margin-bottom:8px;">Nenhum edital configurado</p>
                 <p style="font-size:13px;">Adote um plano que contenha edital para acompanhar seu progresso no conteudo programatico.</p>
+            </div>
+        </div>
+
+        <!-- ============ REVISÃO TAB ============ -->
+        <div id="revisao" class="tab-content">
+            <h2>Revisão de Assuntos</h2>
+            <p style="font-size:14px; color:#666; margin-bottom:16px;">Assuntos que voce ja estudou. Marque quantas revisoes fez em cada um.</p>
+            <div id="revisaoFiltros" style="margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <select id="revisaoFiltroMateria" style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px;">
+                    <option value="todas">Todas as materias</option>
+                </select>
+                <input type="text" id="revisaoBusca" placeholder="Buscar assunto..." style="padding:6px 10px; border-radius:4px; border:1px solid var(--border-color); font-size:13px; flex:1; min-width:150px;">
+            </div>
+            <div id="revisaoLista"></div>
+            <div id="revisaoVazio" style="display:none; text-align:center; padding:40px 20px; color:#999;">
+                <p style="font-size:16px; margin-bottom:8px;">Nenhum assunto estudado ainda</p>
+                <p style="font-size:13px;">Complete blocos de estudo no seu ciclo para que os assuntos aparecam aqui.</p>
             </div>
         </div>
 
@@ -412,6 +430,10 @@
         <div class="modal-card">
             <h3>Registrar Estudo</h3>
             <p>Materia: <strong id="modalAssuntoMateria"></strong></p>
+            <div id="assuntoSugeridoContainer" style="display:none; margin:10px 0; padding:10px 14px; border-radius:8px; background:#E8F5E9; border:1px solid #A5D6A7; cursor:pointer;">
+                <span style="font-size:11px; color:#388E3C; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Proximo assunto sugerido</span>
+                <p id="assuntoSugeridoTexto" style="font-size:14px; color:#2E7D32; margin-top:4px; font-weight:600;"></p>
+            </div>
             <label style="display:block; margin:12px 0 6px; font-weight:bold;">Qual assunto voce estudou?</label>
             <div id="listaAssuntosEdital" class="assunto-lista"></div>
             <div id="assuntoOutroContainer" style="display:none;">
@@ -420,6 +442,18 @@
             <input type="hidden" id="assuntoSelecionado" value="">
             <div class="modal-actions">
                 <button id="btnConfirmarAssunto">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalConcluiuEstudo" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Progresso do Assunto</h3>
+            <p>Voce concluiu o estudo deste assunto?</p>
+            <p style="font-size:12px; color:#888;">Se ainda nao terminou, o assunto ficara como "em andamento".</p>
+            <div class="modal-actions">
+                <button id="btnSimConcluiu" style="background:#4CAF50;">Sim, concluí</button>
+                <button id="btnNaoConcluiu" style="background:#FFA726;">Ainda não</button>
             </div>
         </div>
     </div>
@@ -464,6 +498,7 @@
     <script src="js/questoes.js"></script>
     <script src="js/planos.js"></script>
     <script src="js/edital.js"></script>
+    <script src="js/revisao.js"></script>
     <script src="js/videos.js"></script>
     <script src="js/desempenho.js"></script>
     <script src="js/batch-upload.js"></script>

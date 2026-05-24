@@ -423,3 +423,98 @@
     text-decoration: line-through;
     color: #666;
 }
+
+/* Drag and drop edital */
+.edital-dragging {
+    opacity: 0.4;
+}
+
+.edital-drag-over {
+    border: 2px dashed var(--primary-color) !important;
+    background: #f0f7ff !important;
+}
+
+/* Revisão tab */
+.revisao-grupo {
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.revisao-grupo__header {
+    background: #f5f5f5;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.revisao-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.revisao-item:last-child {
+    border-bottom: none;
+}
+
+.revisao-item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.revisao-item__status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.revisao-item__status--visto {
+    background: #E3F2FD;
+    color: #1565C0;
+}
+
+.revisao-item__status--concluido {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.revisao-item__status--em_andamento {
+    background: #FFF8E1;
+    color: #E65100;
+}
+
+.revisao-item__revisoes {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #666;
+}
+
+.revisao-item__revisoes select {
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+/* Assunto list status indicators */
+.assunto-item--done {
+    color: #388E3C;
+}
+
+.assunto-item--progress {
+    color: #E65100;
+}
