@@ -95,7 +95,8 @@ function criarCardBloco(bloco, index) {
     } else if (typeof obterAssuntoSugerido === 'function') {
         const sugestao = obterAssuntoSugerido(bloco.nome);
         if (sugestao) {
-            sugestaoHTML = `<div class="bloco-card__sugestao" title="${sugestao}">${sugestao}</div>`;
+            const safeTitle = sugestao.replace(/"/g, '&quot;');
+            sugestaoHTML = `<div class="bloco-card__sugestao" title="${safeTitle}">${sugestao}</div>`;
         }
     }
 

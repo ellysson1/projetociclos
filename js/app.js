@@ -128,12 +128,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             atualizarUIRole();
             await carregarEstadoNuvem();
             await verificarEAplicarPlanoAtribuido();
-            autoResumeIfActive();
             atualizarVisibilidadeEdital();
             if (planoAdotado?.edital) {
                 await carregarEditalProgresso();
                 renderizarEdital();
             }
+            autoResumeIfActive();
         }
         supabaseClient.auth.onAuthStateChange(async (_event, session) => {
             if (session) {
@@ -141,12 +141,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 atualizarUIRole();
                 await carregarEstadoNuvem();
                 await verificarEAplicarPlanoAtribuido();
-                autoResumeIfActive();
                 atualizarVisibilidadeEdital();
                 if (planoAdotado?.edital) {
                     await carregarEditalProgresso();
                     renderizarEdital();
                 }
+                autoResumeIfActive();
             }
             await atualizarUIAuth();
         });
