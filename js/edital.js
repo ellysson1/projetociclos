@@ -483,6 +483,35 @@ function preencherDatalistEdital(materiaBloco) {
 
 // ── Visibilidade da aba Edital ──────────────────────────────────────────────
 
+function obterAssuntoSugerido(materiaBloco) {
+    if (!planoAdotado?.edital) return null;
+
+    const materiaBlNorm = normalizarTexto(materiaBloco);
+
+    for (const materiaObj of planoAdotado.edital) {
+        const materiaNorm = normalizarTexto(materiaObj.materia);
+        if (!materiaNorm.includes(materiaBlNorm) && !materiaBlNorm.includes(materiaNorm)) continue;
+
+        const topicos = [...(materiaObj.topicos || [])].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
+
+        for (const topicoObj of topicos) {
+            const subtopicos = topicoObj.subtopicos || [];
+            if (subtopicos.length > 0) {
+                for (const sub of subtopicos) {
+                    const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
+                    const prog = editalProgresso[chave];
+                    if (!prog || prog.status === 'pendente') return sub;
+                }
+            } else {
+                const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
+                const prog = editalProgresso[chave];
+                if (!prog || prog.status === 'pendente') return topicoObj.nome;
+            }
+        }
+    }
+    return null;
+}
+
 function atualizarVisibilidadeEdital() {
     const tabEdital = document.querySelector('.tab[data-tab="edital"]');
     if (!tabEdital) return;

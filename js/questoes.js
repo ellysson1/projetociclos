@@ -103,42 +103,8 @@ function mostrarAssuntoSugerido(materiaBloco) {
     const texto = document.getElementById('assuntoSugeridoTexto');
     container.style.display = 'none';
 
-    if (!planoAdotado?.edital) return;
-
-    const materiaBlNorm = normalizarTexto(materiaBloco);
-    let sugerido = null;
-
-    for (const materiaObj of planoAdotado.edital) {
-        const materiaNorm = normalizarTexto(materiaObj.materia);
-        const mesmaMateria = materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm);
-        if (!mesmaMateria) continue;
-
-        const topicos = materiaObj.topicos || [];
-        // Sort by ordem if available
-        const topicosOrdenados = [...topicos].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
-
-        for (const topicoObj of topicosOrdenados) {
-            const subtopicos = topicoObj.subtopicos || [];
-            if (subtopicos.length > 0) {
-                for (const sub of subtopicos) {
-                    const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
-                    const prog = editalProgresso[chave];
-                    if (!prog || prog.status === 'pendente') {
-                        sugerido = sub;
-                        break;
-                    }
-                }
-            } else {
-                const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
-                const prog = editalProgresso[chave];
-                if (!prog || prog.status === 'pendente') {
-                    sugerido = topicoObj.nome;
-                }
-            }
-            if (sugerido) break;
-        }
-        if (sugerido) break;
-    }
+    if (typeof obterAssuntoSugerido !== 'function') return;
+    const sugerido = obterAssuntoSugerido(materiaBloco);
 
     if (sugerido) {
         texto.textContent = sugerido;
@@ -147,7 +113,9 @@ function mostrarAssuntoSugerido(materiaBloco) {
             document.getElementById('assuntoSelecionado').value = sugerido;
             const lista = document.getElementById('listaAssuntosEdital');
             lista.querySelectorAll('.assunto-item').forEach(el => {
-                el.classList.toggle('selected', el.textContent === sugerido);
+                const span = el.querySelector('span');
+                const t = span ? span.textContent : el.textContent;
+                el.classList.toggle('selected', t === sugerido);
             });
             document.getElementById('assuntoOutroContainer').style.display = 'none';
         };

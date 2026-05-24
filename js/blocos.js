@@ -81,14 +81,22 @@ function criarCardBloco(bloco, index) {
 
     const duracao = bloco.duracaoEspecifica || configuracoes.duracaoBloco;
 
-    // Info concluido
+    // Info concluido or suggested topic
     let infoConcluido = '';
-    if (bloco.assunto) {
-        infoConcluido += bloco.assunto;
-    }
-    if (bloco.questoes && bloco.questoes.feitas > 0) {
-        const pct = Math.round((bloco.questoes.corretas / bloco.questoes.feitas) * 1000) / 10;
-        infoConcluido += (infoConcluido ? ' | ' : '') + `${pct}% de acertos (${bloco.questoes.corretas}/${bloco.questoes.feitas})`;
+    let sugestaoHTML = '';
+    if (bloco.concluido) {
+        if (bloco.assunto) {
+            infoConcluido += bloco.assunto;
+        }
+        if (bloco.questoes && bloco.questoes.feitas > 0) {
+            const pct = Math.round((bloco.questoes.corretas / bloco.questoes.feitas) * 1000) / 10;
+            infoConcluido += (infoConcluido ? ' | ' : '') + `${pct}% de acertos (${bloco.questoes.corretas}/${bloco.questoes.feitas})`;
+        }
+    } else if (typeof obterAssuntoSugerido === 'function') {
+        const sugestao = obterAssuntoSugerido(bloco.nome);
+        if (sugestao) {
+            sugestaoHTML = `<div class="bloco-card__sugestao" title="${sugestao}">${sugestao}</div>`;
+        }
     }
 
     const modo = modosMateria && modosMateria[bloco.legenda];
@@ -112,6 +120,7 @@ function criarCardBloco(bloco, index) {
             <button class="bloco-card__btn-timer" type="button">Cronômetro</button>
         </div>
         <div class="bloco-card__info-concluido">${infoConcluido}</div>
+        ${sugestaoHTML}
     `;
 
     // Checkbox handler - fluxo de conclusão

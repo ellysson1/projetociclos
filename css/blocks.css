@@ -107,6 +107,20 @@
     display: block;
 }
 
+.bloco-card__sugestao {
+    margin-top: 6px;
+    font-size: 11px;
+    font-style: italic;
+    color: #7C4DFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bloco-card.concluido .bloco-card__sugestao {
+    display: none;
+}
+
 /* Grid de blocos */
 .blocos-grid {
     display: grid;
