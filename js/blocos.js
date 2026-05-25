@@ -2,7 +2,11 @@ function distribuirBlocosAleatoriamente(blocos) {
     let blocosDistribuidos = [];
     blocos.forEach(bloco => {
         for (let i = 0; i < bloco.quantidadeBlocos; i++) {
-            blocosDistribuidos.push({ ...bloco });
+            const copia = { ...bloco };
+            if (bloco.meioBloco && !copia.duracaoEspecifica) {
+                copia.duracaoEspecifica = Math.round(configuracoes.duracaoBloco / 2);
+            }
+            blocosDistribuidos.push(copia);
         }
     });
 

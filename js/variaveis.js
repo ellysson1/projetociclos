@@ -34,8 +34,8 @@ function calcularBlocos() {
     const totalBlocos = Math.floor(minutosTotais / duracaoBloco);
     let blocos = [];
     let totalPonderado = 0;
-
     let valido = true;
+
     materiasSelecionadas.forEach(materia => {
         if (!valido) return;
         const peso = parseFloat(document.getElementsByName(`peso-${materia.legenda}`)[0].value);
@@ -50,43 +50,79 @@ function calcularBlocos() {
 
         const valorPonderado = (peso * 0.5 + extensao * 0.25 + dificuldade * 0.25);
         totalPonderado += valorPonderado;
-        blocos.push({ ...materia, valorPonderado });
+        blocos.push({ ...materia, valorPonderado, meioBloco: false });
     });
 
     if (!valido) return;
-
     if (blocos.length === 0) {
         alert("Não há matérias selecionadas para calcular os blocos.");
         return;
     }
 
-    let blocosAlocados = 0;
-    blocos.forEach((bloco, index) => {
-        if (index === blocos.length - 1) {
-            bloco.quantidadeBlocos = totalBlocos - blocosAlocados;
-        } else {
-            bloco.quantidadeBlocos = Math.ceil((bloco.valorPonderado / totalPonderado) * totalBlocos);
-            if (blocosAlocados + bloco.quantidadeBlocos > totalBlocos) {
-                bloco.quantidadeBlocos = totalBlocos - blocosAlocados;
-            }
-        }
-        blocosAlocados += bloco.quantidadeBlocos;
+    // Exact proportional share per subject (can be fractional)
+    blocos.forEach(bloco => {
+        bloco._share = (bloco.valorPonderado / totalPonderado) * totalBlocos;
     });
 
-    if (blocosAlocados < totalBlocos) {
-        const diferenca = totalBlocos - blocosAlocados;
-        for (let i = 0; i < diferenca; i++) {
-            blocos[i % blocos.length].quantidadeBlocos++;
+    // Subjects with 0 < share < 1 are candidates for a half block
+    const candidatosMeio = blocos.filter(b => b._share > 0 && b._share < 1);
+    const usarMeioBloco = candidatosMeio.length >= 2;
+
+    // Initial allocation using Math.round — avoids penalizing last subjects
+    let minutosUsados = 0;
+    blocos.forEach(bloco => {
+        if (bloco._share >= 1) {
+            bloco.quantidadeBlocos = Math.round(bloco._share);
+            bloco.meioBloco = false;
+            minutosUsados += bloco.quantidadeBlocos * duracaoBloco;
+        } else if (bloco._share > 0) {
+            bloco.quantidadeBlocos = 1;
+            bloco.meioBloco = usarMeioBloco;
+            minutosUsados += usarMeioBloco ? duracaoBloco / 2 : duracaoBloco;
+        } else {
+            bloco.quantidadeBlocos = 0;
         }
-    } else if (blocosAlocados > totalBlocos) {
-        const excesso = blocosAlocados - totalBlocos;
-        for (let i = 0; i < excesso; i++) {
-            const idx = blocos.length - 1 - (i % blocos.length);
-            if (blocos[idx].quantidadeBlocos > 1) {
-                blocos[idx].quantidadeBlocos--;
+    });
+
+    const minutosDisponiveis = totalBlocos * duracaoBloco;
+
+    // Reduce over-allocation from subjects with the most full blocks
+    if (minutosUsados > minutosDisponiveis) {
+        const candidatos = blocos
+            .filter(b => !b.meioBloco && b.quantidadeBlocos > 1)
+            .sort((a, b) => b.quantidadeBlocos - a.quantidadeBlocos);
+        let i = 0;
+        while (minutosUsados > minutosDisponiveis && candidatos.length > 0) {
+            const b = candidatos[i % candidatos.length];
+            if (b.quantidadeBlocos > 1) {
+                b.quantidadeBlocos--;
+                minutosUsados -= duracaoBloco;
             }
+            i++;
+            if (i > candidatos.length * totalBlocos) break;
         }
     }
+
+    // Fill under-allocation into subjects with highest fractional remainder
+    if (minutosUsados < minutosDisponiveis) {
+        const candidatos = blocos
+            .filter(b => !b.meioBloco && b.quantidadeBlocos > 0)
+            .sort((a, b) => (b._share % 1) - (a._share % 1));
+        let i = 0;
+        while (minutosUsados + duracaoBloco <= minutosDisponiveis && candidatos.length > 0) {
+            candidatos[i % candidatos.length].quantidadeBlocos++;
+            minutosUsados += duracaoBloco;
+            i++;
+            if (i > candidatos.length * totalBlocos) break;
+        }
+    }
+
+    // Propagate meioBloco flag back to materiasSelecionadas for use in ajustarBlocos
+    blocos.forEach(bloco => {
+        const m = materiasSelecionadas.find(m => m.legenda === bloco.legenda);
+        if (m) m.meioBloco = bloco.meioBloco;
+        delete bloco._share;
+    });
 
     const materiasSemBlocos = blocos.filter(bloco => bloco.quantidadeBlocos === 0);
     if (materiasSemBlocos.length > 0) {
@@ -103,7 +139,8 @@ function preencherTabelaAjustes(blocos) {
     tabela.innerHTML = "";
     blocos.forEach(bloco => {
         const row = tabela.insertRow();
-        row.insertCell(0).innerText = bloco.nome;
+        const nomeCell = row.insertCell(0);
+        nomeCell.innerText = bloco.nome + (bloco.meioBloco ? ' (½ bloco)' : '');
         const cell = row.insertCell(1);
         const input = document.createElement("input");
         input.type = "number";
