@@ -206,20 +206,14 @@ function verificarConclusao() {
 }
 
 function atualizarSugestoesBlocos() {
-    if (typeof obterAssuntoSugerido !== 'function' || !blocosAtivos) {
-        console.log('[sugestoes] skip: fn=' + (typeof obterAssuntoSugerido) + ' blocos=' + !!blocosAtivos);
-        return;
-    }
-    const cards = document.querySelectorAll('.bloco-card');
-    console.log('[sugestoes] cards=' + cards.length + ' edital=' + !!planoAdotado?.edital);
-    cards.forEach(card => {
+    if (typeof obterAssuntoSugerido !== 'function' || !blocosAtivos) return;
+    document.querySelectorAll('.bloco-card').forEach(card => {
         if (card.classList.contains('concluido')) return;
         if (card.querySelector('.bloco-card__sugestao')) return;
         const idx = parseInt(card.getAttribute('data-index'));
         const bloco = blocosAtivos[idx];
         if (!bloco) return;
         const sugestao = obterAssuntoSugerido(bloco.nome);
-        console.log('[sugestoes] ' + bloco.nome + ' -> ' + (sugestao || 'null'));
         if (sugestao) {
             const div = document.createElement('div');
             div.className = 'bloco-card__sugestao';
