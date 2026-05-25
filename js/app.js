@@ -157,6 +157,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!logado) {
         alternarAba('home');
     }
+
+    // Fallback: retry suggestions after all async settles
+    setTimeout(() => {
+        if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
+    }, 3000);
 });
 
 function autoResumeIfActive() {

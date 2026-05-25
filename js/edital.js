@@ -189,6 +189,9 @@ function renderizarEdital() {
 
     // Drag and drop para reordenar tópicos
     inicializarDragDropEdital(arvore);
+
+    // Atualizar sugestões nos cards de blocos (edital agora confirmado carregado)
+    if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
 }
 
 function inicializarDragDropEdital(container) {
