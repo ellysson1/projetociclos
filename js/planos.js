@@ -151,6 +151,7 @@ async function abrirModalAtribuir(plano) {
     document.getElementById('atribuirPlanoNome').textContent = `Plano: ${plano.nome}`;
     document.getElementById('atribuirStep1').style.display = 'block';
     document.getElementById('atribuirStep2').style.display = 'none';
+    document.getElementById('atribuirStep3').style.display = 'none';
 
     // Carregar alunos
     const select = document.getElementById('atribuirAlunoSelect');
@@ -220,6 +221,110 @@ function atribuirPassoBack() {
     document.getElementById('atribuirStep2').style.display = 'none';
 }
 
+function atribuirPassoNext2() {
+    const horasSemanais = parseInt(document.getElementById('atribuirHorasSemanais').value);
+    const duracaoBloco = parseInt(document.getElementById('atribuirDuracaoBloco').value) || 60;
+
+    if (!horasSemanais || horasSemanais <= 0) {
+        alert('Informe as horas semanais para calcular os blocos.');
+        return;
+    }
+
+    const materias = _atribuirPlano.materias || [];
+    if (materias.length === 0) {
+        alert('Este plano não tem matérias definidas.');
+        return;
+    }
+
+    // Same proportional allocation algorithm as calcularBlocos
+    const totalBlocos = Math.floor((horasSemanais * 60) / duracaoBloco);
+    let totalPonderado = 0;
+    const blocos = materias.map(m => {
+        const vp = (m.peso || 5) * 0.5 + (m.extensao || 5) * 0.25 + (m.dificuldade || 5) * 0.25;
+        totalPonderado += vp;
+        return { ...m, _vp: vp, _share: 0, meioBloco: false, quantidadeBlocos: 0 };
+    });
+
+    blocos.forEach(b => { b._share = (b._vp / totalPonderado) * totalBlocos; });
+
+    const candidatosMeio = blocos.filter(b => b._share > 0 && b._share < 1);
+    const usarMeioBloco = candidatosMeio.length >= 2;
+
+    let minutosUsados = 0;
+    blocos.forEach(b => {
+        if (b._share >= 1) {
+            b.quantidadeBlocos = Math.round(b._share);
+            minutosUsados += b.quantidadeBlocos * duracaoBloco;
+        } else if (b._share > 0) {
+            b.quantidadeBlocos = 1;
+            b.meioBloco = usarMeioBloco;
+            minutosUsados += usarMeioBloco ? duracaoBloco / 2 : duracaoBloco;
+        }
+    });
+
+    const minutosDisponiveis = totalBlocos * duracaoBloco;
+    if (minutosUsados > minutosDisponiveis) {
+        const candidatos = blocos.filter(b => !b.meioBloco && b.quantidadeBlocos > 1)
+            .sort((a, b) => b.quantidadeBlocos - a.quantidadeBlocos);
+        let i = 0;
+        while (minutosUsados > minutosDisponiveis && candidatos.length > 0) {
+            const b = candidatos[i % candidatos.length];
+            if (b.quantidadeBlocos > 1) { b.quantidadeBlocos--; minutosUsados -= duracaoBloco; }
+            if (++i > candidatos.length * totalBlocos) break;
+        }
+    }
+    if (minutosUsados < minutosDisponiveis) {
+        const candidatos = blocos.filter(b => !b.meioBloco && b.quantidadeBlocos > 0)
+            .sort((a, b) => (b._share % 1) - (a._share % 1));
+        let i = 0;
+        while (minutosUsados + duracaoBloco <= minutosDisponiveis && candidatos.length > 0) {
+            candidatos[i % candidatos.length].quantidadeBlocos++;
+            minutosUsados += duracaoBloco;
+            if (++i > candidatos.length * totalBlocos) break;
+        }
+    }
+
+    // Fill step 3 table
+    const tbody = document.getElementById('atribuirBlocosTbody');
+    tbody.innerHTML = '';
+    blocos.forEach(b => {
+        const nomeTd = document.createElement('td');
+        nomeTd.style.cssText = 'padding:8px 4px; border-bottom:1px solid #f0f0f0; font-size:14px;';
+        nomeTd.textContent = b.nome;
+        if (b.meioBloco) {
+            const tag = document.createElement('span');
+            tag.style.cssText = 'color:#7C4DFF; font-size:11px; margin-left:6px;';
+            tag.textContent = '(½ bloco)';
+            nomeTd.appendChild(tag);
+        }
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.value = b.quantidadeBlocos;
+        input.dataset.legenda = b.legenda;
+        input.dataset.meioBloco = b.meioBloco ? '1' : '0';
+        input.style.cssText = 'width:70px; text-align:center;';
+
+        const numTd = document.createElement('td');
+        numTd.style.cssText = 'padding:8px 4px; border-bottom:1px solid #f0f0f0; text-align:center;';
+        numTd.appendChild(input);
+
+        const tr = document.createElement('tr');
+        tr.appendChild(nomeTd);
+        tr.appendChild(numTd);
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('atribuirStep2').style.display = 'none';
+    document.getElementById('atribuirStep3').style.display = 'block';
+}
+
+function atribuirPassoBack2() {
+    document.getElementById('atribuirStep3').style.display = 'none';
+    document.getElementById('atribuirStep2').style.display = 'block';
+}
+
 async function confirmarAtribuicao() {
     const alunoId = document.getElementById('atribuirAlunoSelect').value;
     if (!alunoId || !_atribuirPlano) return;
@@ -227,12 +332,22 @@ async function confirmarAtribuicao() {
     const user = await getUsuarioLogado();
     if (!user) return;
 
-    const configuracoes = {
+    const cfg = {
         duracaoBloco: parseInt(document.getElementById('atribuirDuracaoBloco').value) || 60,
         intervaloEntreBlocos: parseInt(document.getElementById('atribuirIntervalo').value) ?? 5,
         blocosPorSessao: parseInt(document.getElementById('atribuirBlocosSessao').value) || 4,
         horasSemanais: parseInt(document.getElementById('atribuirHorasSemanais').value) || null
     };
+
+    // Collect block quantities defined by professor in step 3
+    const blocos_por_materia = {};
+    const meio_bloco_legendas = [];
+    document.querySelectorAll('#atribuirBlocosTbody input[type="number"]').forEach(input => {
+        blocos_por_materia[input.dataset.legenda] = parseInt(input.value) || 0;
+        if (input.dataset.meioBloco === '1') meio_bloco_legendas.push(input.dataset.legenda);
+    });
+    cfg.blocos_por_materia = blocos_por_materia;
+    if (meio_bloco_legendas.length > 0) cfg.meio_bloco_legendas = meio_bloco_legendas;
 
     const modos_materia = {};
     document.querySelectorAll('.atribuir-modo-select').forEach(sel => {
@@ -245,7 +360,7 @@ async function confirmarAtribuicao() {
             plano_id: _atribuirPlano.id,
             professor_id: user.id,
             aluno_id: alunoId,
-            configuracoes,
+            configuracoes: cfg,
             modos_materia
         }, { onConflict: 'plano_id,aluno_id' });
 
@@ -522,32 +637,68 @@ async function verificarEAplicarPlanoAtribuido() {
         if (typeof renderizarEdital === 'function') renderizarEdital();
     }
 
-    // If no active cycle, generate one from the plan
-    if ((!blocosAtivos || blocosAtivos.length === 0) && materiasDoPlano.length > 0 && cfg.horasSemanais) {
+    // If no active cycle, generate from professor-defined quantities or auto-calculate
+    if ((!blocosAtivos || blocosAtivos.length === 0) && materiasDoPlano.length > 0) {
+        const blocos_por_materia = cfg.blocos_por_materia || null;
+        const meio_bloco_legendas = new Set(cfg.meio_bloco_legendas || []);
         const horasSemanais = cfg.horasSemanais;
-        document.getElementById('horasSemanais').value = horasSemanais;
-
-        const minutosTotais = horasSemanais * 60;
-        const totalBlocos = Math.floor(minutosTotais / (configuracoes.duracaoBloco || 60));
+        const duracaoBloco = configuracoes.duracaoBloco || 60;
 
         coresUsadas = [];
-        let totalPonderado = 0;
-        const blocos = materiasDoPlano.map(m => {
-            const vp = (m.peso || 5) * 0.5 + (m.extensao || 5) * 0.25 + (m.dificuldade || 5) * 0.25;
-            totalPonderado += vp;
-            return { ...m, cor: gerarCorUnica(), valorPonderado: vp };
-        });
+        const blocos = materiasDoPlano.map(m => ({
+            ...m,
+            cor: gerarCorUnica(),
+            meioBloco: meio_bloco_legendas.has(m.legenda),
+            quantidadeBlocos: 0
+        }));
 
-        let allocated = 0;
-        blocos.forEach((b, idx) => {
-            if (idx === blocos.length - 1) {
-                b.quantidadeBlocos = Math.max(1, totalBlocos - allocated);
-            } else {
-                b.quantidadeBlocos = Math.max(1, Math.ceil((b.valorPonderado / totalPonderado) * totalBlocos));
-                if (allocated + b.quantidadeBlocos > totalBlocos) b.quantidadeBlocos = Math.max(1, totalBlocos - allocated);
+        if (blocos_por_materia) {
+            blocos.forEach(b => { b.quantidadeBlocos = blocos_por_materia[b.legenda] || 0; });
+        } else if (horasSemanais) {
+            if (document.getElementById('horasSemanais')) document.getElementById('horasSemanais').value = horasSemanais;
+            const totalBlocos = Math.floor((horasSemanais * 60) / duracaoBloco);
+            let totalPonderado = 0;
+            blocos.forEach(b => {
+                b._vp = (b.peso || 5) * 0.5 + (b.extensao || 5) * 0.25 + (b.dificuldade || 5) * 0.25;
+                totalPonderado += b._vp;
+            });
+            blocos.forEach(b => { b._share = (b._vp / totalPonderado) * totalBlocos; });
+            const candidatosMeio = blocos.filter(b => b._share > 0 && b._share < 1);
+            const usarMeioBloco = candidatosMeio.length >= 2;
+            let minutosUsados = 0;
+            blocos.forEach(b => {
+                if (b._share >= 1) {
+                    b.quantidadeBlocos = Math.round(b._share);
+                    minutosUsados += b.quantidadeBlocos * duracaoBloco;
+                } else if (b._share > 0) {
+                    b.quantidadeBlocos = 1;
+                    b.meioBloco = usarMeioBloco;
+                    minutosUsados += usarMeioBloco ? duracaoBloco / 2 : duracaoBloco;
+                }
+            });
+            const minutosDisponiveis = totalBlocos * duracaoBloco;
+            if (minutosUsados > minutosDisponiveis) {
+                const cands = blocos.filter(b => !b.meioBloco && b.quantidadeBlocos > 1).sort((a, b) => b.quantidadeBlocos - a.quantidadeBlocos);
+                let i = 0;
+                while (minutosUsados > minutosDisponiveis && cands.length > 0) {
+                    const b = cands[i % cands.length];
+                    if (b.quantidadeBlocos > 1) { b.quantidadeBlocos--; minutosUsados -= duracaoBloco; }
+                    if (++i > cands.length * totalBlocos) break;
+                }
             }
-            allocated += b.quantidadeBlocos;
-        });
+            if (minutosUsados < minutosDisponiveis) {
+                const cands = blocos.filter(b => !b.meioBloco && b.quantidadeBlocos > 0).sort((a, b) => (b._share % 1) - (a._share % 1));
+                let i = 0;
+                while (minutosUsados + duracaoBloco <= minutosDisponiveis && cands.length > 0) {
+                    cands[i % cands.length].quantidadeBlocos++;
+                    minutosUsados += duracaoBloco;
+                    if (++i > cands.length * totalBlocos) break;
+                }
+            }
+            blocos.forEach(b => { delete b._vp; delete b._share; });
+        } else {
+            return; // Sem horas e sem blocos definidos, não é possível gerar ciclo
+        }
 
         materiasSelecionadas = blocos;
         blocosAtivos = distribuirBlocosAleatoriamente(blocos);

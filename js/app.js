@@ -111,10 +111,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Modal: atribuir plano a aluno
     document.getElementById('btnAtribuirNext').addEventListener('click', atribuirPassoNext);
+    document.getElementById('btnAtribuirNext2').addEventListener('click', atribuirPassoNext2);
     document.getElementById('btnAtribuirVoltar').addEventListener('click', atribuirPassoBack);
+    document.getElementById('btnAtribuirVoltar2').addEventListener('click', atribuirPassoBack2);
     document.getElementById('btnAtribuirConfirmar').addEventListener('click', confirmarAtribuicao);
     document.getElementById('btnAtribuirCancelar1').addEventListener('click', fecharModalAtribuir);
     document.getElementById('btnAtribuirCancelar2').addEventListener('click', fecharModalAtribuir);
+    document.getElementById('btnAtribuirCancelar3').addEventListener('click', fecharModalAtribuir);
 
     inicializarSelecaoMaterias();
     carregarConfiguracoes();

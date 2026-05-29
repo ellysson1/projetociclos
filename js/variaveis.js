@@ -12,6 +12,7 @@ function preencherTabelaVariaveis() {
             input.max = "10";
             input.required = true;
             input.name = `${variavel}-${materia.legenda}`;
+            if (materia[variavel]) input.value = materia[variavel];
             cell.appendChild(input);
         });
     });

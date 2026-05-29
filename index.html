@@ -421,9 +421,28 @@
                 <h4 style="margin-bottom:8px; font-size:14px;">Modo por Matéria</h4>
                 <div id="atribuirModosMateria" style="max-height:220px; overflow-y:auto; border:1px solid var(--border-color); border-radius:8px; margin-bottom:16px;"></div>
                 <div class="modal-actions">
-                    <button id="btnAtribuirConfirmar" style="background:#4CAF50;">Atribuir</button>
+                    <button id="btnAtribuirNext2" style="background:#7C4DFF;">Próximo →</button>
                     <button id="btnAtribuirVoltar" style="background:#888;">← Voltar</button>
                     <button id="btnAtribuirCancelar2" style="background:#999;">Cancelar</button>
+                </div>
+            </div>
+            <!-- Step 3: Ajustar blocos por matéria -->
+            <div id="atribuirStep3" style="display:none;">
+                <h3>Ajustar Blocos por Matéria</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">Edite as quantidades antes de confirmar a atribuição.</p>
+                <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px 4px; border-bottom:2px solid var(--border-color); font-size:14px;">Matéria</th>
+                            <th style="text-align:center; padding:8px 4px; border-bottom:2px solid var(--border-color); font-size:14px;">Blocos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="atribuirBlocosTbody"></tbody>
+                </table>
+                <div class="modal-actions">
+                    <button id="btnAtribuirConfirmar" style="background:#4CAF50;">Atribuir ✓</button>
+                    <button id="btnAtribuirVoltar2" style="background:#888;">← Voltar</button>
+                    <button id="btnAtribuirCancelar3" style="background:#999;">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -497,10 +516,10 @@
     <script src="js/supabase-sync.js?v=1"></script>
     <script src="js/profile.js?v=1"></script>
     <script src="js/materias.js?v=1"></script>
-    <script src="js/variaveis.js?v=3"></script>
+    <script src="js/variaveis.js?v=5"></script>
     <script src="js/blocos.js?v=4"></script>
     <script src="js/questoes.js?v=1"></script>
-    <script src="js/planos.js?v=1"></script>
+    <script src="js/planos.js?v=3"></script>
     <script src="js/edital.js?v=1"></script>
     <script src="js/revisao.js?v=1"></script>
     <script src="js/videos.js?v=1"></script>
@@ -509,6 +528,6 @@
     <script src="js/timer.js?v=1"></script>
     <script src="js/notes.js?v=1"></script>
     <script src="js/export.js?v=1"></script>
-    <script src="js/app.js?v=1"></script>
+    <script src="js/app.js?v=3"></script>
 </body>
 </html>
