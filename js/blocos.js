@@ -35,6 +35,16 @@ function exibirCicloVisual(blocos) {
     const container = document.getElementById("blocosContainer");
     container.innerHTML = "";
 
+    if (planoAdotado?.maxFase > 1) {
+        const faseBanner = document.createElement('div');
+        faseBanner.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:14px; border-radius:8px; background:#E8EAF6; border:1px solid #C5CAE9; font-size:14px;';
+        const proximaFaseInfo = faseAtual < planoAdotado.maxFase
+            ? ` — próximas matérias entram com 60% do edital concluído`
+            : ' — todas as matérias incluídas';
+        faseBanner.innerHTML = `<strong style="color:#3F51B5;">Fase ${faseAtual}/${planoAdotado.maxFase}</strong><span style="color:#666;">${proximaFaseInfo}</span>`;
+        container.appendChild(faseBanner);
+    }
+
     const bps = configuracoes.blocosPorSessao;
     const sessoes = [];
     for (let i = 0; i < blocos.length; i += bps) {

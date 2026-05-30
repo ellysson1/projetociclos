@@ -12,6 +12,7 @@ async function salvarEstadoNuvem() {
         configuracoes,
         planoAdotado,
         modosMateria,
+        faseAtual,
         revisoesContador: typeof revisoesContador !== 'undefined' ? revisoesContador : {},
         horasSemanais: document.getElementById('horasSemanais')?.value || null
     };
@@ -59,6 +60,7 @@ async function carregarEstadoNuvem() {
         configuracoes = data.estado.configuracoes || configuracoes;
         if (data.estado.planoAdotado) planoAdotado = data.estado.planoAdotado;
         if (data.estado.modosMateria) modosMateria = data.estado.modosMateria;
+        if (data.estado.faseAtual) faseAtual = data.estado.faseAtual;
         if (data.estado.revisoesContador && typeof revisoesContador !== 'undefined') revisoesContador = data.estado.revisoesContador;
 
         if (data.estado.horasSemanais) {

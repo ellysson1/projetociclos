@@ -17,6 +17,7 @@ let modoCronometro = true;
 let salvarAoSair = true;
 let planoAdotado = null; // { id, nome, edital }
 let modosMateria = {}; // { legenda: 'questoes' | 'revisao' }
+let faseAtual = 1; // Progressive cycle: current phase
 
 let configuracoes = {
     duracaoBloco: 60,
@@ -34,6 +35,7 @@ function salvarEstado() {
         configuracoes,
         planoAdotado,
         modosMateria,
+        faseAtual,
         revisoesContador: typeof revisoesContador !== 'undefined' ? revisoesContador : {},
         horasSemanais: document.getElementById('horasSemanais')?.value || null
     };
@@ -53,6 +55,7 @@ function carregarEstado() {
         configuracoes = estado.configuracoes;
         planoAdotado = estado.planoAdotado || null;
         modosMateria = estado.modosMateria || {};
+        faseAtual = estado.faseAtual || 1;
         if (typeof revisoesContador !== 'undefined') revisoesContador = estado.revisoesContador || {};
 
         document.getElementById('horasSemanais').value = estado.horasSemanais || '';

@@ -277,6 +277,10 @@ function finalizarConclusao(questoes) {
     concluiuAssunto = false;
 
     verificarConclusao();
+
+    if (typeof verificarProgressoFase === 'function') {
+        setTimeout(() => verificarProgressoFase(), 500);
+    }
 }
 
 async function salvarQuestoesNuvem(bloco, questoes) {

@@ -818,3 +818,107 @@ function baixarModeloEdital() {
     XLSX.utils.book_append_sheet(wb, ws, 'Edital');
     XLSX.writeFile(wb, 'modelo_edital.xlsx');
 }
+
+// ── Ciclo Progressivo: verificação de avanço de fase ─────────────────────────
+
+function verificarProgressoFase() {
+    if (!planoAdotado?.materias || !planoAdotado.maxFase || planoAdotado.maxFase <= 1) return;
+    if (faseAtual >= planoAdotado.maxFase) return;
+    if (!planoAdotado.edital || planoAdotado.edital.length === 0) return;
+
+    const legendasFaseAtual = new Set(
+        planoAdotado.materias
+            .filter(m => (m.fase || 1) <= faseAtual)
+            .map(m => m.legenda)
+    );
+
+    const pctFase = calcularPercentualPorLegendasEdital(legendasFaseAtual);
+    if (pctFase < 60) return;
+
+    // Advance to next phase
+    faseAtual++;
+
+    const novasMaterias = planoAdotado.materias.filter(m => (m.fase || 1) === faseAtual);
+    if (novasMaterias.length === 0) return;
+
+    // Add new materias to active lists
+    coresUsadas = coresUsadas || [];
+    novasMaterias.forEach(m => {
+        if (!materiasList.some(ml => ml.legenda === m.legenda)) {
+            materiasList.push({ nome: m.nome, legenda: m.legenda });
+        }
+        if (!materiasSelecionadas.some(ms => ms.legenda === m.legenda)) {
+            materiasSelecionadas.push({ ...m, cor: gerarCorUnica() });
+        }
+    });
+
+    // Add blocks for new materias to the active cycle
+    if (blocosAtivos && blocosAtivos.length > 0) {
+        const duracaoBloco = configuracoes.duracaoBloco || 60;
+        const horasSemanais = parseInt(document.getElementById('horasSemanais')?.value) || 0;
+        const totalBlocosAtual = blocosAtivos.length;
+
+        novasMaterias.forEach(m => {
+            const vp = (m.peso || 5) * 0.5 + (m.extensao || 5) * 0.25 + (m.dificuldade || 5) * 0.25;
+            const totalPond = materiasSelecionadas.reduce((sum, ms) =>
+                sum + ((ms.peso || 5) * 0.5 + (ms.extensao || 5) * 0.25 + (ms.dificuldade || 5) * 0.25), 0);
+            let qtd = Math.max(1, Math.round((vp / totalPond) * totalBlocosAtual));
+
+            for (let i = 0; i < qtd; i++) {
+                blocosAtivos.push({
+                    nome: m.nome,
+                    legenda: m.legenda,
+                    cor: materiasSelecionadas.find(ms => ms.legenda === m.legenda)?.cor || gerarCorUnica(),
+                    concluido: false,
+                    assunto: null,
+                    questoes: null,
+                    meioBloco: false
+                });
+            }
+        });
+
+        exibirCicloVisual(blocosAtivos);
+    }
+
+    inicializarSelecaoMaterias();
+
+    const nomesMaterias = novasMaterias.map(m => m.nome).join(', ');
+    const msg = `Parabéns! Você avançou para a Fase ${faseAtual}!\nNovas matérias incluídas: ${nomesMaterias}`;
+    alert(msg);
+
+    salvarEstado();
+}
+
+function calcularPercentualPorLegendasEdital(legendasSet) {
+    if (!planoAdotado?.edital) return 0;
+
+    let totalItens = 0;
+    let itensConcluidos = 0;
+
+    planoAdotado.edital.forEach(materiaObj => {
+        const materiaNorm = normalizarTexto(materiaObj.materia);
+        const matchLegenda = [...legendasSet].some(leg => {
+            const matSel = (planoAdotado.materias || []).find(m => m.legenda === leg);
+            if (!matSel) return false;
+            return calcularSimilaridade(normalizarTexto(matSel.nome), materiaNorm) >= 0.4;
+        });
+        if (!matchLegenda) return;
+
+        (materiaObj.topicos || []).forEach(topico => {
+            const subtopicos = topico.subtopicos || [];
+            if (subtopicos.length > 0) {
+                subtopicos.forEach(sub => {
+                    totalItens++;
+                    const chave = gerarChaveEdital(materiaObj.materia, topico.nome, sub);
+                    if (editalProgresso[chave]?.status === 'visto') itensConcluidos++;
+                });
+            } else {
+                totalItens++;
+                const chave = gerarChaveEdital(materiaObj.materia, topico.nome, '');
+                if (editalProgresso[chave]?.status === 'visto') itensConcluidos++;
+            }
+        });
+    });
+
+    return totalItens === 0 ? 100 : Math.round((itensConcluidos / totalItens) * 100);
+}

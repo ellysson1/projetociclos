@@ -433,6 +433,7 @@ function renderizarMateriasPlano(materias) {
         row.innerHTML = `
             <td><input type="text" value="${m.nome || ''}" data-field="nome" data-idx="${idx}" class="plano-materia-input" style="width:100%;"></td>
             <td><input type="text" value="${m.legenda || ''}" data-field="legenda" data-idx="${idx}" class="plano-materia-input" maxlength="3" style="width:60px;"></td>
+            <td><input type="number" value="${m.fase || 1}" data-field="fase" data-idx="${idx}" class="plano-materia-input" min="1" max="10" style="width:50px;"></td>
             <td><input type="number" value="${m.peso || 5}" data-field="peso" data-idx="${idx}" class="plano-materia-input" min="1" max="10" style="width:60px;"></td>
             <td><input type="number" value="${m.extensao || 5}" data-field="extensao" data-idx="${idx}" class="plano-materia-input" min="1" max="10" style="width:60px;"></td>
             <td><input type="number" value="${m.dificuldade || 5}" data-field="dificuldade" data-idx="${idx}" class="plano-materia-input" min="1" max="10" style="width:60px;"></td>
@@ -459,7 +460,13 @@ function coletarDadosPlano() {
         const m = {};
         inputs.forEach(input => {
             const field = input.dataset.field;
-            m[field] = field === 'nome' || field === 'legenda' ? input.value.trim() : (parseInt(input.value) || 5);
+            if (field === 'nome' || field === 'legenda') {
+                m[field] = input.value.trim();
+            } else if (field === 'fase') {
+                m[field] = parseInt(input.value) || 1;
+            } else {
+                m[field] = parseInt(input.value) || 5;
+            }
         });
         if (m.nome && m.legenda) materias.push(m);
     });
@@ -490,11 +497,17 @@ function adicionarMateriaAoPlano() {
         const m = {};
         inputs.forEach(input => {
             const field = input.dataset.field;
-            m[field] = field === 'nome' || field === 'legenda' ? input.value.trim() : (parseInt(input.value) || 5);
+            if (field === 'nome' || field === 'legenda') {
+                m[field] = input.value.trim();
+            } else if (field === 'fase') {
+                m[field] = parseInt(input.value) || 1;
+            } else {
+                m[field] = parseInt(input.value) || 5;
+            }
         });
         materias.push(m);
     });
-    materias.push({ nome: '', legenda: '', peso: 5, extensao: 5, dificuldade: 5 });
+    materias.push({ nome: '', legenda: '', fase: 1, peso: 5, extensao: 5, dificuldade: 5 });
     renderizarMateriasPlano(materias);
 }
 
@@ -610,11 +623,13 @@ async function verificarEAplicarPlanoAtribuido() {
     // Skip if student already has this plan applied
     if (planoAdotado?.id === plano.id) return;
 
-    // Apply plan reference
-    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null };
+    // Apply plan reference (store all materias for progressive phases)
+    const todasMaterias = plano.materias || [];
+    const maxFase = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
+    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase };
 
-    // Apply materias (list only, don't touch blocosAtivos)
-    const materiasDoPlano = plano.materias || [];
+    // Only include current-phase matérias in active lists
+    const materiasDoPlano = todasMaterias.filter(m => (m.fase || 1) <= faseAtual);
     materiasList = materiasDoPlano.map(m => ({ nome: m.nome, legenda: m.legenda }));
 
     // Merge configs (plan defaults < atribuicao overrides)
@@ -640,6 +655,8 @@ async function verificarEAplicarPlanoAtribuido() {
     // If no active cycle, generate from professor-defined quantities or auto-calculate
     if ((!blocosAtivos || blocosAtivos.length === 0) && materiasDoPlano.length > 0) {
         const blocos_por_materia = cfg.blocos_por_materia || null;
+        // When using professor-defined blocks, only include matérias from current phases
+        const legendasFase = new Set(materiasDoPlano.map(m => m.legenda));
         const meio_bloco_legendas = new Set(cfg.meio_bloco_legendas || []);
         const horasSemanais = cfg.horasSemanais;
         const duracaoBloco = configuracoes.duracaoBloco || 60;
@@ -722,15 +739,20 @@ async function adotarPlano(planoId, atribuicao = null) {
 
     if (!confirm(`Deseja adotar o plano "${plano.nome}"? Suas configurações atuais serão substituídas.`)) return;
 
-    // Salvar referência ao plano adotado
+    // Salvar referência ao plano adotado (store all materias for progressive phases)
+    const todasMaterias = plano.materias || [];
+    const maxFase = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
+    faseAtual = 1;
     planoAdotado = {
         id: plano.id,
         nome: plano.nome,
-        edital: plano.edital || null
+        edital: plano.edital || null,
+        materias: todasMaterias,
+        maxFase
     };
 
-    // Aplicar matérias do plano
-    const materiasDoPlano = plano.materias || [];
+    // Only include phase 1 matérias initially
+    const materiasDoPlano = todasMaterias.filter(m => (m.fase || 1) <= faseAtual);
     materiasList = materiasDoPlano.map(m => ({ nome: m.nome, legenda: m.legenda }));
     coresUsadas = [];
     materiasSelecionadas = materiasDoPlano.map(m => ({
