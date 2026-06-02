@@ -89,6 +89,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('btnUploadMaterias').addEventListener('click', uploadMateriasAluno);
     document.getElementById('btnBaixarModeloAluno').addEventListener('click', baixarModeloExcel);
 
+    // Painel de alunos (professor)
+    document.getElementById('btnFecharPainel').addEventListener('click', fecharPainelAlunos);
+
+    // Notificacoes
+    document.getElementById('notificacaoBadge').addEventListener('click', () => {
+        const dd = document.getElementById('notificacaoDropdown');
+        dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('btnMarcarTodasLidas').addEventListener('click', marcarTodasNotificacoesLidas);
+
     // Editor de edital (professor)
     document.getElementById('btnAddMateriaEdital').addEventListener('click', adicionarMateriaEdital);
     document.getElementById('btnUploadEdital').addEventListener('click', uploadEditalExcel);
@@ -138,6 +148,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             autoResumeIfActive();
             if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
+            if (typeof carregarNotificacoes === 'function') carregarNotificacoes();
         }
         supabaseClient.auth.onAuthStateChange(async (_event, session) => {
             if (session) {
@@ -152,6 +163,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
                 autoResumeIfActive();
                 if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
+                if (typeof carregarNotificacoes === 'function') carregarNotificacoes();
             }
             await atualizarUIAuth();
         });

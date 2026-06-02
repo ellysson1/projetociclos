@@ -886,6 +886,10 @@ function verificarProgressoFase() {
     const msg = `Parabéns! Você avançou para a Fase ${faseAtual}!\nNovas matérias incluídas: ${nomesMaterias}`;
     alert(msg);
 
+    if (typeof notificarAvancoFase === 'function') {
+        notificarAvancoFase(faseAtual, nomesMaterias);
+    }
+
     salvarEstado();
 }
 

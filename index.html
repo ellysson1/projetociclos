@@ -16,9 +16,23 @@
         <h1>Ciclo de Estudos</h1>
         <div id="topAuthBar" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; padding:12px 14px; border:1px solid var(--border-color); border-radius:8px; background:#fff;">
             <div id="usuarioInfo" style="font-size:14px; color:#333;">Verificando sessao...</div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <div id="notificacaoBadge" style="display:none; position:relative; cursor:pointer;" title="Notificacoes">
+                    <span style="font-size:20px;">&#128276;</span>
+                    <span id="notificacaoCount" style="position:absolute; top:-4px; right:-6px; background:#FF6B6B; color:white; font-size:10px; font-weight:700; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center;">0</span>
+                </div>
                 <a id="btnIrLogin" href="login.html" style="display:none; background-color:var(--primary-color); color:#fff; padding:10px 15px; border-radius:4px; text-decoration:none;">Entrar</a>
                 <button id="btnLogoutTop" type="button" style="display:none;">Sair</button>
+            </div>
+        </div>
+        <!-- Notification dropdown -->
+        <div id="notificacaoDropdown" style="display:none; position:relative; margin-bottom:12px;">
+            <div style="border:1px solid var(--border-color); border-radius:8px; background:white; box-shadow:0 4px 16px rgba(0,0,0,.1); max-height:300px; overflow-y:auto; padding:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 8px; margin-bottom:4px;">
+                    <strong style="font-size:14px;">Notificacoes</strong>
+                    <button id="btnMarcarTodasLidas" type="button" style="font-size:11px; padding:2px 8px; background:#999;">Marcar todas como lidas</button>
+                </div>
+                <div id="notificacaoLista"></div>
             </div>
         </div>
         <div id="bloqueioAuth" style="display:none; margin-bottom:20px; padding:18px; border:1px solid var(--border-color); border-radius:8px; background:#fff;">
@@ -373,6 +387,13 @@
                         <button id="btnCancelarPlano" type="button" style="background:#999;">Cancelar</button>
                     </div>
                 </div>
+
+                <!-- Painel de Alunos (Professor Dashboard) -->
+                <div id="painelAlunos" style="display:none; margin-top:24px;">
+                    <h3 style="margin-bottom:12px; color:#3F51B5;">Painel de Alunos</h3>
+                    <button id="btnFecharPainel" type="button" style="font-size:12px; padding:4px 12px; background:#999; margin-bottom:12px;">Fechar Painel</button>
+                    <div id="painelAlunosConteudo"></div>
+                </div>
             </div>
         </div>
 
@@ -520,8 +541,9 @@
     <script src="js/variaveis.js?v=5"></script>
     <script src="js/blocos.js?v=6"></script>
     <script src="js/questoes.js?v=3"></script>
-    <script src="js/planos.js?v=5"></script>
-    <script src="js/edital.js?v=3"></script>
+    <script src="js/planos.js?v=7"></script>
+    <script src="js/edital.js?v=5"></script>
+    <script src="js/notificacoes.js?v=2"></script>
     <script src="js/revisao.js?v=1"></script>
     <script src="js/videos.js?v=1"></script>
     <script src="js/desempenho.js?v=1"></script>
@@ -529,6 +551,6 @@
     <script src="js/timer.js?v=1"></script>
     <script src="js/notes.js?v=1"></script>
     <script src="js/export.js?v=1"></script>
-    <script src="js/app.js?v=3"></script>
+    <script src="js/app.js?v=5"></script>
 </body>
 </html>

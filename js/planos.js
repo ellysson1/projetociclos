@@ -112,6 +112,7 @@ async function renderizarListaPlanosProfessor() {
                     <p style="font-size:12px; color:#999; margin-top:4px;">${materiasCount} matéria(s) | ${plano.publico ? 'Público' : 'Privado'}</p>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
+                    <button class="btn-painel-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#3F51B5; color:white; border:none; border-radius:6px; cursor:pointer;">Painel</button>
                     <button class="btn-atribuir-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Atribuir</button>
                     <button class="btn-editar-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px;">Editar</button>
                     <button class="btn-excluir-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#FF6B6B;">Excluir</button>
@@ -121,6 +122,12 @@ async function renderizarListaPlanosProfessor() {
         container.appendChild(card);
     });
 
+    container.querySelectorAll('.btn-painel-plano').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const plano = planos.find(p => p.id === btn.dataset.id);
+            if (plano) abrirPainelAlunos(plano);
+        });
+    });
     container.querySelectorAll('.btn-atribuir-plano').forEach(btn => {
         btn.addEventListener('click', () => {
             const plano = planos.find(p => p.id === btn.dataset.id);
@@ -806,4 +813,158 @@ async function adotarPlano(planoId, atribuicao = null) {
 
     alert(`Plano "${plano.nome}" adotado com sucesso! Prosseguindo para calcular blocos.`);
     calcularBlocos();
+}
+
+// ── Painel de Alunos (Professor Dashboard) ──────────────────────────────────
+
+async function abrirPainelAlunos(plano) {
+    const painel = document.getElementById('painelAlunos');
+    const conteudo = document.getElementById('painelAlunosConteudo');
+    painel.style.display = 'block';
+    conteudo.innerHTML = '<p style="color:#999;">Carregando dados dos alunos...</p>';
+
+    const { data: atribuicoes, error } = await supabaseClient
+        .from('plano_atribuicoes')
+        .select('aluno_id, configuracoes, modos_materia, created_at')
+        .eq('plano_id', plano.id);
+
+    if (error || !atribuicoes?.length) {
+        conteudo.innerHTML = '<p style="color:#999;">Nenhum aluno atribuído a este plano.</p>';
+        return;
+    }
+
+    const alunoIds = atribuicoes.map(a => a.aluno_id);
+
+    const [profilesResp, progressoResp, editalResp] = await Promise.all([
+        supabaseClient.from('profiles').select('user_id, nome').in('user_id', alunoIds),
+        supabaseClient.from('progresso').select('user_id, estado, updated_at').in('user_id', alunoIds),
+        supabaseClient.from('edital_progresso').select('user_id, materia, topico, subtopico, status').eq('plano_id', plano.id).in('user_id', alunoIds)
+    ]);
+
+    const profiles = {};
+    (profilesResp.data || []).forEach(p => { profiles[p.user_id] = p.nome || 'Aluno'; });
+
+    const progressos = {};
+    (progressoResp.data || []).forEach(p => { progressos[p.user_id] = p; });
+
+    const editalPorAluno = {};
+    (editalResp.data || []).forEach(row => {
+        if (!editalPorAluno[row.user_id]) editalPorAluno[row.user_id] = [];
+        editalPorAluno[row.user_id].push(row);
+    });
+
+    const editalTotal = contarItensEdital(plano.edital || []);
+    const materiasPlano = plano.materias || [];
+    const maxFase = Math.max(1, ...materiasPlano.map(m => m.fase || 1));
+
+    conteudo.innerHTML = '';
+
+    atribuicoes.forEach(atr => {
+        const uid = atr.aluno_id;
+        const nome = profiles[uid] || uid.substring(0, 8);
+        const prog = progressos[uid];
+        const estado = prog?.estado || {};
+        const blocos = estado.blocosAtivos || [];
+        const fase = estado.faseAtual || 1;
+        const updatedAt = prog?.updated_at;
+
+        const blocosConcluidos = blocos.filter(b => b.concluido).length;
+        const blocosTotal = blocos.length;
+
+        const editalRows = editalPorAluno[uid] || [];
+        const editalConcluidos = editalRows.filter(r => r.status === 'visto').length;
+        const pctEdital = editalTotal > 0 ? Math.round((editalConcluidos / editalTotal) * 100) : 0;
+
+        const ultimaAtividade = updatedAt ? formatarTempoAtras(updatedAt) : 'Nunca';
+
+        // Group blocks by legenda to show per-subject counts
+        const blocosPorMateria = {};
+        blocos.forEach(b => {
+            if (!blocosPorMateria[b.legenda]) blocosPorMateria[b.legenda] = { total: 0, feitos: 0, nome: b.nome };
+            blocosPorMateria[b.legenda].total++;
+            if (b.concluido) blocosPorMateria[b.legenda].feitos++;
+        });
+
+        const materiasResumo = Object.entries(blocosPorMateria).map(([leg, d]) =>
+            `<span style="font-size:12px; padding:2px 6px; border-radius:4px; background:${d.feitos === d.total ? '#E8F5E9' : '#FFF3E0'}; margin:2px;">${leg}: ${d.feitos}/${d.total}</span>`
+        ).join(' ');
+
+        // Next phase subjects
+        let proximaFaseHtml = '';
+        if (fase < maxFase) {
+            const proximas = materiasPlano.filter(m => (m.fase || 1) === fase + 1);
+            if (proximas.length > 0) {
+                proximaFaseHtml = `<div style="font-size:12px; color:#7C4DFF; margin-top:6px;">Fase ${fase + 1}: ${proximas.map(m => m.nome).join(', ')}</div>`;
+            }
+        }
+
+        const card = document.createElement('div');
+        card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:white; cursor:pointer;';
+
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <strong style="font-size:15px;">${nome}</strong>
+                    <span style="font-size:12px; color:white; background:#3F51B5; padding:1px 8px; border-radius:10px; margin-left:8px;">Fase ${fase}/${maxFase}</span>
+                </div>
+                <div style="font-size:12px; color:#999;">Atividade: ${ultimaAtividade}</div>
+            </div>
+            <div style="display:flex; gap:16px; margin-top:8px; font-size:13px; color:#555; flex-wrap:wrap;">
+                <span>Blocos: <strong>${blocosConcluidos}/${blocosTotal}</strong></span>
+                <span>Edital: <strong>${pctEdital}%</strong> (${editalConcluidos}/${editalTotal})</span>
+            </div>
+            <div class="painel-detalhe" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #f0f0f0;">
+                <div style="margin-bottom:6px; font-size:13px; font-weight:600; color:#333;">Blocos por matéria:</div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px;">${materiasResumo || '<span style="font-size:12px; color:#999;">Nenhum bloco</span>'}</div>
+                ${proximaFaseHtml}
+                <div style="margin-top:10px;">
+                    <button class="btn-reatribuir" data-uid="${uid}" style="font-size:12px; padding:4px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Reatribuir Plano</button>
+                </div>
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            const detalhe = card.querySelector('.painel-detalhe');
+            detalhe.style.display = detalhe.style.display === 'none' ? 'block' : 'none';
+        });
+
+        conteudo.appendChild(card);
+    });
+
+    conteudo.querySelectorAll('.btn-reatribuir').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            abrirModalAtribuir(plano);
+            setTimeout(() => {
+                const select = document.getElementById('atribuirAlunoSelect');
+                if (select) select.value = btn.dataset.uid;
+            }, 500);
+        });
+    });
+}
+
+function fecharPainelAlunos() {
+    document.getElementById('painelAlunos').style.display = 'none';
+}
+
+function contarItensEdital(edital) {
+    let total = 0;
+    (edital || []).forEach(materiaObj => {
+        (materiaObj.topicos || []).forEach(topico => {
+            const subs = topico.subtopicos || [];
+            total += subs.length > 0 ? subs.length : 1;
+        });
+    });
+    return total;
+}
+
+function formatarTempoAtras(isoDate) {
+    const diff = Date.now() - new Date(isoDate).getTime();
+    const minutos = Math.floor(diff / 60000);
+    if (minutos < 1) return 'Agora';
+    if (minutos < 60) return `${minutos}min atrás`;
+    const horas = Math.floor(minutos / 60);
+    if (horas < 24) return `${horas}h atrás`;
+    const dias = Math.floor(horas / 24);
+    return `${dias}d atrás`;
 }
