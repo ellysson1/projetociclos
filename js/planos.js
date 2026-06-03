@@ -841,6 +841,9 @@ async function abrirPainelAlunos(plano) {
         supabaseClient.from('edital_progresso').select('user_id, materia, topico, subtopico, status').eq('plano_id', plano.id).in('user_id', alunoIds)
     ]);
 
+    if (progressoResp.error) console.warn('Painel: erro ao ler progresso dos alunos (provável RLS):', progressoResp.error);
+    if (editalResp.error) console.warn('Painel: erro ao ler edital dos alunos (provável RLS):', editalResp.error);
+
     const profiles = {};
     (profilesResp.data || []).forEach(p => { profiles[p.user_id] = p.nome || 'Aluno'; });
 
