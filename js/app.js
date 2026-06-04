@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('proximoMaterias').addEventListener('click', avancarSelecaoMaterias);
     document.getElementById('calcularBlocos').addEventListener('click', calcularBlocos);
     document.getElementById('ajustarBlocos').addEventListener('click', ajustarBlocos);
+    document.getElementById('btnIniciarOnboarding').addEventListener('click', abrirOnboarding);
+    document.getElementById('btnRefazerOnboarding').addEventListener('click', abrirOnboarding);
 
     document.getElementById('adicionarMateria').addEventListener('click', function() {
         const nome = document.getElementById('novaMateriaNome').value.trim();
