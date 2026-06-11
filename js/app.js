@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const logado = await atualizarUIAuth();
     if (supabaseConfigurado()) {
         const { data } = await supabaseClient.auth.getSession();
+        if (typeof atualizarSessionCache === 'function') atualizarSessionCache(data.session);
         if (data.session) {
             await ensureProfile();
             atualizarUIRole();
@@ -165,8 +166,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             autoResumeIfActive();
             if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
             if (typeof carregarNotificacoes === 'function') carregarNotificacoes();
+            if (typeof flushEventosPendentes === 'function') flushEventosPendentes();
         }
         supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+            if (typeof atualizarSessionCache === 'function') atualizarSessionCache(session);
             if (session) {
                 await ensureProfile();
                 atualizarUIRole();
@@ -203,6 +206,21 @@ function autoResumeIfActive() {
 }
 
 setInterval(async () => { if (await getUsuarioLogado()) salvarEstado(); }, 30000);
+
+// T1.4: beforeunload não dispara de forma confiável em mobile. O caminho
+// principal é visibilitychange + fetch keepalive (sobrevive ao fechamento
+// da aba); beforeunload fica como fallback para desktop.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && salvarAoSair) {
+        localStorage.setItem('cicloEstudosEstado', JSON.stringify(montarEstadoLocal()));
+        if (typeof enviarBeaconSync === 'function') enviarBeaconSync();
+    }
+});
+
+window.addEventListener('online', () => {
+    if (typeof flushEventosPendentes === 'function') flushEventosPendentes();
+});
+
 window.addEventListener('beforeunload', () => {
     if (salvarAoSair) salvarEstado();
 });

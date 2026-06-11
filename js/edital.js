@@ -48,6 +48,34 @@ async function salvarEditalProgressoItem(materia, topico, subtopico, dados) {
         updated_at: new Date().toISOString()
     };
 
+    // Proteção multi-dispositivo: um dispositivo com estado antigo nunca
+    // rebaixa o status nem reduz a contagem de questões já gravada.
+    let query = supabaseClient
+        .from('edital_progresso')
+        .select('status, questoes_feitas, questoes_corretas')
+        .eq('user_id', user.id)
+        .eq('plano_id', planoAdotado.id)
+        .eq('materia', materia)
+        .eq('topico', topico);
+    query = subtopico ? query.eq('subtopico', subtopico) : query.is('subtopico', null);
+    const { data: atual } = await query.maybeSingle();
+
+    if (atual) {
+        const rank = typeof RANK_STATUS_EDITAL !== 'undefined'
+            ? RANK_STATUS_EDITAL
+            : { pendente: 0, em_andamento: 1, visto: 2, concluido: 3 };
+        if ((rank[atual.status] || 0) > (rank[registro.status] || 0)) registro.status = atual.status;
+        registro.questoes_feitas = Math.max(registro.questoes_feitas, atual.questoes_feitas || 0);
+        registro.questoes_corretas = Math.max(registro.questoes_corretas, atual.questoes_corretas || 0);
+
+        const chave = gerarChaveEdital(materia, topico, subtopico);
+        if (editalProgresso[chave]) {
+            editalProgresso[chave].status = registro.status;
+            editalProgresso[chave].questoes_feitas = registro.questoes_feitas;
+            editalProgresso[chave].questoes_corretas = registro.questoes_corretas;
+        }
+    }
+
     const { error } = await supabaseClient
         .from('edital_progresso')
         .upsert(registro, {
@@ -363,6 +391,16 @@ function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
         if (questoes && questoes.feitas > 0) {
             editalProgresso[chave].questoes_feitas += questoes.feitas;
             editalProgresso[chave].questoes_corretas += questoes.corretas;
+        }
+
+        if (typeof registrarEvento === 'function') {
+            registrarEvento('topico_status', {
+                materia: match.materia,
+                topico: match.topico,
+                subtopico: match.subtopico || null,
+                status: editalProgresso[chave].status,
+                questoes: questoes || null
+            });
         }
 
         salvarEditalProgressoItem(match.materia, match.topico, match.subtopico, editalProgresso[chave]);
@@ -915,6 +953,10 @@ function verificarProgressoFase() {
 
     if (typeof notificarAvancoFase === 'function') {
         notificarAvancoFase(faseAtual, nomesMaterias);
+    }
+
+    if (typeof registrarEvento === 'function') {
+        registrarEvento('fase_avancada', { fase: faseAtual, materias: nomesMaterias });
     }
 
     salvarEstado();

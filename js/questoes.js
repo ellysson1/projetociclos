@@ -246,9 +246,32 @@ function encontrarChaveParaTexto(texto) {
 function finalizarConclusao(questoes) {
     if (blocoEmConclusao === null) return;
 
+    if (typeof garantirIdsBlocos === 'function') garantirIdsBlocos(blocosAtivos);
     const bloco = blocosAtivos[blocoEmConclusao];
     bloco.concluido = true;
     bloco.questoes = questoes;
+
+    // Eventos imutáveis: gravados imediatamente (fila offline + idempotência)
+    // para que a conclusão nunca se perca, mesmo se a aba fechar agora.
+    let eventoQuestoesId = null;
+    if (typeof registrarEvento === 'function') {
+        registrarEvento('bloco_concluido', {
+            bloco_id: bloco.id,
+            materia: bloco.nome,
+            legenda: bloco.legenda,
+            assunto: bloco.assunto || null,
+            questoes: questoes || null
+        });
+        if (questoes) {
+            eventoQuestoesId = registrarEvento('questoes_registradas', {
+                bloco_id: bloco.id,
+                materia: bloco.nome,
+                assunto: bloco.assunto || null,
+                feitas: questoes.feitas,
+                corretas: questoes.corretas
+            });
+        }
+    }
 
     if (cardEmConclusao) {
         cardEmConclusao.classList.add('concluido');
@@ -264,7 +287,7 @@ function finalizarConclusao(questoes) {
     }
 
     salvarEstado();
-    salvarQuestoesNuvem(bloco, questoes);
+    salvarQuestoesNuvem(bloco, questoes, eventoQuestoesId);
 
     // Atualizar progresso no edital with the new status
     if (typeof atualizarProgressoEdital === 'function') {
@@ -283,24 +306,41 @@ function finalizarConclusao(questoes) {
     }
 }
 
-async function salvarQuestoesNuvem(bloco, questoes) {
+async function salvarQuestoesNuvem(bloco, questoes, clientEventId) {
     if (!supabaseConfigurado() || !questoes) return;
     const user = await getUsuarioLogado();
     if (!user) return;
 
+    const registro = {
+        bloco_index: blocosAtivos.indexOf(bloco),
+        materia: bloco.nome,
+        assunto: bloco.assunto || '',
+        questoes_feitas: questoes.feitas,
+        questoes_corretas: questoes.corretas,
+        client_event_id: clientEventId || (typeof gerarUUID === 'function' ? gerarUUID() : undefined)
+    };
+
     const { error } = await supabaseClient
         .from('questoes')
-        .insert({
-            user_id: user.id,
-            bloco_index: blocosAtivos.indexOf(bloco),
-            materia: bloco.nome,
-            assunto: bloco.assunto || '',
-            questoes_feitas: questoes.feitas,
-            questoes_corretas: questoes.corretas
-        });
+        .upsert({ ...registro, user_id: user.id }, { onConflict: 'client_event_id', ignoreDuplicates: true });
 
     if (error) {
-        console.error('Erro ao salvar questões:', error);
+        // Coluna client_event_id ausente (migração pendente): insert legado.
+        const legado = await supabaseClient
+            .from('questoes')
+            .insert({
+                user_id: user.id,
+                bloco_index: registro.bloco_index,
+                materia: registro.materia,
+                assunto: registro.assunto,
+                questoes_feitas: registro.questoes_feitas,
+                questoes_corretas: registro.questoes_corretas
+            });
+        if (legado.error) {
+            console.error('Erro ao salvar questões:', legado.error);
+            // Sem rede: enfileira para reenvio idempotente no próximo sync.
+            if (typeof enfileirarQuestaoPendente === 'function') enfileirarQuestaoPendente(registro);
+        }
     }
 }
 
