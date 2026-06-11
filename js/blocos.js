@@ -1,34 +1,56 @@
+// T8: Distribuição round-robin ponderada por déficit acumulado.
+// Correta por construção: a cada posição escolhe a matéria com maior
+// diferença entre a alocação ideal e a já posicionada, respeitando a
+// regra de no máximo 2 consecutivos iguais. Sem laço infinito mesmo em
+// distribuições extremas (uma matéria com >2/3 dos blocos).
+function _distribuirPorDeficit(materias) {
+    const total = materias.reduce((s, m) => s + m.qtdBlocos, 0);
+    if (total === 0) return [];
+    const colocados = {};
+    materias.forEach(m => { colocados[m.legenda] = 0; });
+    const resultado = [];
+
+    for (let pos = 0; pos < total; pos++) {
+        const candidatas = materias
+            .filter(m => colocados[m.legenda] < m.qtdBlocos)
+            .map(m => ({
+                m,
+                deficit: (m.qtdBlocos / total) * (pos + 1) - colocados[m.legenda]
+            }))
+            .sort((a, b) => {
+                const diff = b.deficit - a.deficit;
+                if (Math.abs(diff) > 0.0001) return diff;
+                return Math.random() - 0.5; // pequeno ruído no desempate → variedade entre ciclos
+            });
+
+        const n = resultado.length;
+        const violaRegra = (leg) => n >= 2 && resultado[n - 1] === leg && resultado[n - 2] === leg;
+        const valida = candidatas.find(c => !violaRegra(c.m.legenda)) || candidatas[0];
+        resultado.push(valida.m.legenda);
+        colocados[valida.m.legenda]++;
+    }
+    return resultado;
+}
+
 function distribuirBlocosAleatoriamente(blocos) {
-    let blocosDistribuidos = [];
-    blocos.forEach(bloco => {
-        for (let i = 0; i < bloco.quantidadeBlocos; i++) {
-            const copia = { ...bloco };
-            if (bloco.meioBloco && !copia.duracaoEspecifica) {
-                copia.duracaoEspecifica = Math.round(configuracoes.duracaoBloco / 2);
-            }
-            blocosDistribuidos.push(copia);
+    const materias = blocos
+        .filter(b => b.quantidadeBlocos > 0)
+        .map(b => ({ ...b, qtdBlocos: b.quantidadeBlocos }));
+
+    const ordem = _distribuirPorDeficit(materias);
+    const porLegenda = {};
+    materias.forEach(b => { porLegenda[b.legenda] = b; });
+
+    return ordem.map(leg => {
+        const bloco = porLegenda[leg];
+        const copia = { ...bloco };
+        delete copia.qtdBlocos;
+        delete copia.quantidadeBlocos;
+        if (bloco.meioBloco && !copia.duracaoEspecifica) {
+            copia.duracaoEspecifica = Math.round(configuracoes.duracaoBloco / 2);
         }
+        return copia;
     });
-
-    for (let i = blocosDistribuidos.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [blocosDistribuidos[i], blocosDistribuidos[j]] = [blocosDistribuidos[j], blocosDistribuidos[i]];
-    }
-
-    for (let i = 2; i < blocosDistribuidos.length; i++) {
-        if (blocosDistribuidos[i].legenda === blocosDistribuidos[i-1].legenda &&
-            blocosDistribuidos[i].legenda === blocosDistribuidos[i-2].legenda) {
-            let j = i + 1;
-            while (j < blocosDistribuidos.length && blocosDistribuidos[j].legenda === blocosDistribuidos[i].legenda) {
-                j++;
-            }
-            if (j < blocosDistribuidos.length) {
-                [blocosDistribuidos[i], blocosDistribuidos[j]] = [blocosDistribuidos[j], blocosDistribuidos[i]];
-            }
-        }
-    }
-
-    return blocosDistribuidos;
 }
 
 function exibirCicloVisual(blocos) {

@@ -60,70 +60,7 @@ function calcularBlocos() {
         return;
     }
 
-    // Exact proportional share per subject (can be fractional)
-    blocos.forEach(bloco => {
-        bloco._share = (bloco.valorPonderado / totalPonderado) * totalBlocos;
-    });
-
-    // Subjects with 0 < share < 1 are candidates for a half block
-    const candidatosMeio = blocos.filter(b => b._share > 0 && b._share < 1);
-    const usarMeioBloco = candidatosMeio.length >= 2;
-
-    // Initial allocation using Math.round — avoids penalizing last subjects
-    let minutosUsados = 0;
-    blocos.forEach(bloco => {
-        if (bloco._share >= 1) {
-            bloco.quantidadeBlocos = Math.round(bloco._share);
-            bloco.meioBloco = false;
-            minutosUsados += bloco.quantidadeBlocos * duracaoBloco;
-        } else if (bloco._share > 0) {
-            bloco.quantidadeBlocos = 1;
-            bloco.meioBloco = usarMeioBloco;
-            minutosUsados += usarMeioBloco ? duracaoBloco / 2 : duracaoBloco;
-        } else {
-            bloco.quantidadeBlocos = 0;
-        }
-    });
-
-    const minutosDisponiveis = totalBlocos * duracaoBloco;
-
-    // Reduce over-allocation from subjects with the most full blocks
-    if (minutosUsados > minutosDisponiveis) {
-        const candidatos = blocos
-            .filter(b => !b.meioBloco && b.quantidadeBlocos > 1)
-            .sort((a, b) => b.quantidadeBlocos - a.quantidadeBlocos);
-        let i = 0;
-        while (minutosUsados > minutosDisponiveis && candidatos.length > 0) {
-            const b = candidatos[i % candidatos.length];
-            if (b.quantidadeBlocos > 1) {
-                b.quantidadeBlocos--;
-                minutosUsados -= duracaoBloco;
-            }
-            i++;
-            if (i > candidatos.length * totalBlocos) break;
-        }
-    }
-
-    // Fill under-allocation into subjects with highest fractional remainder
-    if (minutosUsados < minutosDisponiveis) {
-        const candidatos = blocos
-            .filter(b => !b.meioBloco && b.quantidadeBlocos > 0)
-            .sort((a, b) => (b._share % 1) - (a._share % 1));
-        let i = 0;
-        while (minutosUsados + duracaoBloco <= minutosDisponiveis && candidatos.length > 0) {
-            candidatos[i % candidatos.length].quantidadeBlocos++;
-            minutosUsados += duracaoBloco;
-            i++;
-            if (i > candidatos.length * totalBlocos) break;
-        }
-    }
-
-    // Propagate meioBloco flag back to materiasSelecionadas for use in ajustarBlocos
-    blocos.forEach(bloco => {
-        const m = materiasSelecionadas.find(m => m.legenda === bloco.legenda);
-        if (m) m.meioBloco = bloco.meioBloco;
-        delete bloco._share;
-    });
+    _alocarBlocosLargestRemainder(blocos, totalBlocos, totalPonderado, duracaoBloco);
 
     const materiasSemBlocos = blocos.filter(bloco => bloco.quantidadeBlocos === 0);
     if (materiasSemBlocos.length > 0) {
@@ -133,6 +70,118 @@ function calcularBlocos() {
 
     preencherTabelaAjustes(blocos);
     alternarAba('ajustes');
+}
+
+// T7 + T9: Alocação por maior resto (largest remainder) com invariante de
+// piso de meio-bloco para toda matéria ativa.
+// - 2+ matérias na faixa (0,1): meio-bloco para todas.
+// - Exatamente 1 matéria na faixa: arredonda para 1 bloco inteiro e
+//   remove proporcionalmente da matéria de maior alocação.
+// - Invariante: toda matéria ativa termina com ≥ meio-bloco (0 blocos
+//   nunca acontece silenciosamente; se horas forem insuficientes, avisa).
+function _alocarBlocosLargestRemainder(blocos, totalBlocos, totalPonderado, duracaoBloco) {
+    blocos.forEach(b => {
+        b._share = (b.valorPonderado / totalPonderado) * totalBlocos;
+    });
+
+    // Identificar candidatos a meio-bloco (share entre 0 e 1, exclusive)
+    const candidatosMeio = blocos.filter(b => b._share > 0 && b._share < 1);
+    const usarMeioBloco = candidatosMeio.length >= 2;
+
+    // T7: Exatamente 1 matéria na faixa → promover a 1 bloco inteiro
+    const promoverParaInteiro = candidatosMeio.length === 1;
+
+    // Número de "slots" efetivos a distribuir: meio-blocos contam como 0.5
+    let slotsParaDistribuir = totalBlocos;
+    let meiosBlocos = 0;
+
+    blocos.forEach(b => {
+        if (b._share > 0 && b._share < 1) {
+            if (usarMeioBloco) {
+                b.quantidadeBlocos = 1;
+                b.meioBloco = true;
+                meiosBlocos++;
+            } else if (promoverParaInteiro) {
+                b.quantidadeBlocos = 1;
+                b.meioBloco = false;
+            } else {
+                b.quantidadeBlocos = 0;
+                b.meioBloco = false;
+            }
+        } else if (b._share >= 1) {
+            b.quantidadeBlocos = Math.floor(b._share);
+            b.meioBloco = false;
+        } else {
+            b.quantidadeBlocos = 0;
+            b.meioBloco = false;
+        }
+    });
+
+    // Calcular minutos efetivos usados e disponíveis
+    let minutosUsados = 0;
+    blocos.forEach(b => {
+        if (b.meioBloco) minutosUsados += duracaoBloco / 2;
+        else minutosUsados += b.quantidadeBlocos * duracaoBloco;
+    });
+    const minutosDisponiveis = totalBlocos * duracaoBloco;
+
+    // Distribuir blocos remanescentes pelo método de maior resto
+    const candidatos = blocos.filter(b => !b.meioBloco && b._share >= 1);
+    const restos = candidatos.map(b => ({
+        bloco: b,
+        resto: b._share - Math.floor(b._share)
+    })).sort((a, b) => b.resto - a.resto);
+
+    let i = 0;
+    while (minutosUsados + duracaoBloco <= minutosDisponiveis && restos.length > 0) {
+        restos[i % restos.length].bloco.quantidadeBlocos++;
+        minutosUsados += duracaoBloco;
+        i++;
+        if (i > restos.length * totalBlocos) break;
+    }
+
+    // T7: se promovemos 1 matéria para inteiro, compensar retirando 1 bloco
+    // da matéria com mais blocos (se sobrou minutos a mais)
+    if (promoverParaInteiro && minutosUsados > minutosDisponiveis) {
+        const maior = blocos
+            .filter(b => !b.meioBloco && b.quantidadeBlocos > 1)
+            .sort((a, b) => b.quantidadeBlocos - a.quantidadeBlocos)[0];
+        if (maior) {
+            maior.quantidadeBlocos--;
+            minutosUsados -= duracaoBloco;
+        }
+    }
+
+    // Reduzir sobre-alocação restante (por arredondamento)
+    if (minutosUsados > minutosDisponiveis) {
+        const reducao = blocos
+            .filter(b => !b.meioBloco && b.quantidadeBlocos > 1)
+            .sort((a, b) => b.quantidadeBlocos - a.quantidadeBlocos);
+        let j = 0;
+        while (minutosUsados > minutosDisponiveis && reducao.length > 0) {
+            const b = reducao[j % reducao.length];
+            if (b.quantidadeBlocos > 1) {
+                b.quantidadeBlocos--;
+                minutosUsados -= duracaoBloco;
+            }
+            j++;
+            if (j > reducao.length * totalBlocos) break;
+        }
+    }
+
+    // Invariante T7: toda matéria ativa termina com >= meio-bloco
+    const nMateriasAtivas = blocos.filter(b => b._share > 0).length;
+    const pisoMinutos = nMateriasAtivas * (duracaoBloco / 2);
+    if (minutosDisponiveis < pisoMinutos) {
+        alert(`Com ${Math.round(minutosDisponiveis / 60)}h semanais não é possível manter todas as ${nMateriasAtivas} matérias. Considere remover matérias ou aumentar as horas.`);
+    }
+
+    // Propagar meioBloco para materiasSelecionadas
+    blocos.forEach(bloco => {
+        const m = materiasSelecionadas.find(m => m.legenda === bloco.legenda);
+        if (m) m.meioBloco = bloco.meioBloco;
+        delete bloco._share;
+    });
 }
 
 function preencherTabelaAjustes(blocos) {
@@ -152,6 +201,9 @@ function preencherTabelaAjustes(blocos) {
     });
 }
 
+// T9: Redimensionamento com largest remainder e piso de meio-bloco.
+// Blocos concluídos NUNCA são alterados. Ao reduzir horas, nenhuma
+// matéria ativa cai para 0 — se não couber, avisa.
 function redimensionarCiclo(novasHoras) {
     if (!blocosAtivos || blocosAtivos.length === 0) {
         alert('Não há ciclo ativo para redimensionar.');
@@ -162,9 +214,10 @@ function redimensionarCiclo(novasHoras) {
     if (!horasAntigas || horasAntigas <= 0) return;
     if (novasHoras === horasAntigas) return;
 
-    const fator = novasHoras / horasAntigas;
+    const duracaoBloco = configuracoes.duracaoBloco || 60;
+    const totalNovo = Math.floor((novasHoras * 60) / duracaoBloco);
 
-    // Group blocks by materia legenda
+    // Agrupar por matéria
     const grupos = {};
     blocosAtivos.forEach(bloco => {
         const key = bloco.legenda;
@@ -173,28 +226,91 @@ function redimensionarCiclo(novasHoras) {
         else grupos[key].pendentes.push(bloco);
     });
 
+    const materias = Object.entries(grupos).map(([leg, g]) => ({
+        legenda: leg,
+        template: g.template,
+        nConcluidos: g.concluidos.length,
+        concluidos: g.concluidos,
+        pendentes: g.pendentes,
+        totalAtual: g.concluidos.length + g.pendentes.length
+    }));
+
+    const totalAtualGlobal = materias.reduce((s, m) => s + m.totalAtual, 0);
+    if (totalAtualGlobal === 0) return;
+
+    // Largest remainder: alocar totalNovo slots proporcionalmente
+    const fator = totalNovo / totalAtualGlobal;
+    materias.forEach(m => {
+        m._ideal = m.totalAtual * fator;
+        // Nunca abaixo dos concluídos, e nunca abaixo de 1 (piso de meio-bloco)
+        m.novoTotal = Math.max(m.nConcluidos, Math.max(1, Math.floor(m._ideal)));
+    });
+
+    // Distribuir restos
+    let slotsUsados = materias.reduce((s, m) => s + m.novoTotal, 0);
+    const restos = materias
+        .filter(m => m.novoTotal > m.nConcluidos) // só quem pode crescer
+        .map(m => ({ m, resto: m._ideal - Math.floor(m._ideal) }))
+        .sort((a, b) => b.resto - a.resto);
+
+    let ri = 0;
+    while (slotsUsados < totalNovo && restos.length > 0) {
+        restos[ri % restos.length].m.novoTotal++;
+        slotsUsados++;
+        ri++;
+        if (ri > restos.length * totalNovo) break;
+    }
+
+    // Se slots > total alvo (por causa dos pisos), reduzir os maiores
+    const reducao = materias
+        .filter(m => m.novoTotal > m.nConcluidos && m.novoTotal > 1)
+        .sort((a, b) => b.novoTotal - a.novoTotal);
+    let rj = 0;
+    while (slotsUsados > totalNovo && reducao.length > 0) {
+        const m = reducao[rj % reducao.length];
+        if (m.novoTotal > m.nConcluidos && m.novoTotal > 1) {
+            m.novoTotal--;
+            slotsUsados--;
+        }
+        rj++;
+        if (rj > reducao.length * totalNovo) break;
+    }
+
+    // Aviso se pisos impedem o encaixe
+    if (slotsUsados > totalNovo) {
+        alert(`Com ${novasHoras}h semanais não é possível manter todas as ${materias.length} matérias. Considere remover matérias ou aumentar as horas.`);
+    }
+
+    // Montar novo array
     const concluidos = [];
     const novosPendentes = [];
 
-    Object.values(grupos).forEach(({ template, concluidos: c, pendentes: p }) => {
-        const totalAtual = c.length + p.length;
-        const novoTotal = Math.max(c.length, Math.round(totalAtual * fator));
-        const qtdPendentes = novoTotal - c.length;
-
-        concluidos.push(...c);
-
+    materias.forEach(m => {
+        concluidos.push(...m.concluidos);
+        const qtdPendentes = Math.max(0, m.novoTotal - m.nConcluidos);
         for (let i = 0; i < qtdPendentes; i++) {
-            novosPendentes.push(i < p.length ? p[i] : { ...template, concluido: false, assunto: null, questoes: null });
+            novosPendentes.push(i < m.pendentes.length
+                ? m.pendentes[i]
+                : { ...m.template, concluido: false, assunto: null, questoes: null });
         }
     });
 
-    // Shuffle pending blocks (Fisher-Yates)
-    for (let i = novosPendentes.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [novosPendentes[i], novosPendentes[j]] = [novosPendentes[j], novosPendentes[i]];
+    // Distribuir pendentes por round-robin (T8)
+    if (typeof _distribuirPorDeficit === 'function' && novosPendentes.length > 1) {
+        const contagem = {};
+        novosPendentes.forEach(b => { contagem[b.legenda] = (contagem[b.legenda] || 0) + 1; });
+        const entradas = Object.entries(contagem).map(([leg, qtd]) => ({ legenda: leg, qtdBlocos: qtd }));
+        const ordem = _distribuirPorDeficit(entradas);
+        const porLegenda = {};
+        novosPendentes.forEach(b => {
+            if (!porLegenda[b.legenda]) porLegenda[b.legenda] = [];
+            porLegenda[b.legenda].push(b);
+        });
+        const pendentesOrdenados = ordem.map(leg => porLegenda[leg].shift());
+        blocosAtivos = [...concluidos, ...pendentesOrdenados];
+    } else {
+        blocosAtivos = [...concluidos, ...novosPendentes];
     }
-
-    blocosAtivos = [...concluidos, ...novosPendentes];
 
     document.getElementById('horasSemanais').value = novasHoras;
     const editInput = document.getElementById('horasSemanaisEdit');
