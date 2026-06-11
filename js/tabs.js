@@ -38,6 +38,12 @@ function ativarMainTab(tabName) {
     if (tabName === 'revisao' && typeof renderizarRevisao === 'function') {
         renderizarRevisao();
     }
+    if (tabName === 'edital' && typeof renderizarEdital === 'function') {
+        renderizarEdital();
+    }
+    if (tabName === 'planos' && typeof renderizarListaPlanosProfessor === 'function') {
+        renderizarListaPlanosProfessor();
+    }
 }
 
 function ativarSubTab(parentTabId, subtabId) {

@@ -74,6 +74,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         const dados = coletarDadosPlano();
         if (!dados.nome) { alert('Informe o nome do plano.'); return; }
         if (dados.materias.length === 0) { alert('Adicione pelo menos uma materia.'); return; }
+
+        if (dados.edital && dados.edital.length > 0 && typeof validarMateriasContraEdital === 'function') {
+            const semMatch = validarMateriasContraEdital(dados.materias, dados.edital);
+            if (semMatch.length > 0) {
+                const lista = semMatch.map(s => `  • ${s.materia} (${s.legenda})`).join('\n');
+                const continuar = confirm(
+                    `Atenção: as seguintes matérias não têm correspondência no edital:\n\n${lista}\n\n` +
+                    `Essas matérias não terão sugestão automática de assunto nem acompanhamento no edital.\n\n` +
+                    `Verifique se os nomes estão escritos de forma compatível.\n\nDeseja salvar mesmo assim?`
+                );
+                if (!continuar) return;
+            }
+        }
+
         const result = await salvarPlano(dados);
         if (result) {
             alert('Plano salvo com sucesso!');

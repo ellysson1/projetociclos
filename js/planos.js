@@ -652,10 +652,13 @@ async function verificarEAplicarPlanoAtribuido() {
     inicializarSelecaoMaterias();
     carregarConfiguracoes();
 
-    // Update edital
+    // Sempre limpar progresso antigo e recarregar para o plano atual
+    if (typeof editalProgresso !== 'undefined') editalProgresso = {};
     if (typeof atualizarVisibilidadeEdital === 'function') atualizarVisibilidadeEdital();
-    if (planoAdotado.edital && typeof carregarEditalProgresso === 'function') {
-        await carregarEditalProgresso();
+    if (planoAdotado.edital) {
+        if (typeof carregarEditalProgresso === 'function') await carregarEditalProgresso();
+        if (typeof renderizarEdital === 'function') renderizarEdital();
+    } else {
         if (typeof renderizarEdital === 'function') renderizarEdital();
     }
 
@@ -802,13 +805,14 @@ async function adotarPlano(planoId, atribuicao = null) {
 
     salvarEstado();
 
-    // Atualizar visibilidade da aba Edital
-    if (typeof atualizarVisibilidadeEdital === 'function') {
-        atualizarVisibilidadeEdital();
-    }
-    if (planoAdotado?.edital && typeof carregarEditalProgresso === 'function') {
-        await carregarEditalProgresso();
-        renderizarEdital();
+    // Sempre limpar progresso antigo e recarregar para o novo plano
+    if (typeof editalProgresso !== 'undefined') editalProgresso = {};
+    if (typeof atualizarVisibilidadeEdital === 'function') atualizarVisibilidadeEdital();
+    if (planoAdotado?.edital) {
+        if (typeof carregarEditalProgresso === 'function') await carregarEditalProgresso();
+        if (typeof renderizarEdital === 'function') renderizarEdital();
+    } else {
+        if (typeof renderizarEdital === 'function') renderizarEdital();
     }
 
     alert(`Plano "${plano.nome}" adotado com sucesso! Prosseguindo para calcular blocos.`);

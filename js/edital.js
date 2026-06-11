@@ -442,6 +442,33 @@ function calcularSimilaridade(a, b) {
     return comuns / Math.max(palavrasA.length, palavrasB.length);
 }
 
+// ── Validação: verificar correspondência matérias ↔ edital ─────────────────
+
+function validarMateriasContraEdital(materias, edital) {
+    if (!edital || edital.length === 0 || !materias || materias.length === 0) return [];
+
+    const semCorrespondencia = [];
+    const editalNomes = edital.map(e => normalizarTexto(e.materia));
+
+    materias.forEach(m => {
+        const nomeNorm = normalizarTexto(m.nome);
+        let melhorScore = 0;
+        let melhorNome = '';
+        editalNomes.forEach((en, idx) => {
+            const s = calcularSimilaridade(nomeNorm, en);
+            if (s > melhorScore) {
+                melhorScore = s;
+                melhorNome = edital[idx].materia;
+            }
+        });
+        if (melhorScore < 0.4) {
+            semCorrespondencia.push({ materia: m.nome, legenda: m.legenda, melhorCandidata: melhorNome, score: melhorScore });
+        }
+    });
+
+    return semCorrespondencia;
+}
+
 // ── Autocomplete: preencher datalist com tópicos do edital ──────────────────
 
 function preencherDatalistEdital(materiaBloco) {
