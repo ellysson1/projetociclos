@@ -130,6 +130,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     const btnRetificacao = document.getElementById('btnRetificacaoEdital');
     if (btnRetificacao) btnRetificacao.addEventListener('click', abrirRetificacaoEdital);
 
+    document.getElementById('btnConfirmarReconciliacao').addEventListener('click', confirmarReconciliacao);
+    document.getElementById('btnCancelarReconciliacao').addEventListener('click', () => fecharModal('modalReconciliacao'));
+    document.getElementById('btnSalvarVinculos').addEventListener('click', salvarVinculos);
+    document.getElementById('btnFecharVinculos').addEventListener('click', () => fecharModal('modalGerenciarVinculos'));
+    document.getElementById('btnUploadRetificacao').addEventListener('click', () => document.getElementById('retificacaoFileInput').click());
+    document.getElementById('retificacaoFileInput').addEventListener('change', processarRetificacaoUpload);
+    document.getElementById('btnConfirmarRetificacao').addEventListener('click', confirmarRetificacao);
+    document.getElementById('btnCancelarRetificacao').addEventListener('click', cancelarRetificacao);
+
     // Filtros da aba Revisão
     document.getElementById('revisaoFiltroMateria').addEventListener('change', renderizarRevisao);
     document.getElementById('revisaoBusca').addEventListener('input', renderizarRevisao);

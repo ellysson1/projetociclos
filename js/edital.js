@@ -435,13 +435,16 @@ function encontrarMatchEdital(materiaBloco, assunto, edital) {
     let melhorMatch = null;
     let melhorScore = 0;
 
-    edital.forEach(materiaObj => {
-        // Verificar se a matéria corresponde
-        const materiaNorm = normalizarTexto(materiaObj.materia);
-        const mesmaMateria = materiaNorm.includes(normalizarTexto(materiaBloco)) ||
-                             normalizarTexto(materiaBloco).includes(materiaNorm);
+    const materiaById = _encontrarMateriaEditalPorId(materiaBloco);
+    const materiasParaBuscar = materiaById ? [materiaById] : edital;
 
-        if (!mesmaMateria) return;
+    materiasParaBuscar.forEach(materiaObj => {
+        if (!materiaById) {
+            const materiaNorm = normalizarTexto(materiaObj.materia);
+            const mesmaMateria = materiaNorm.includes(normalizarTexto(materiaBloco)) ||
+                                 normalizarTexto(materiaBloco).includes(materiaNorm);
+            if (!mesmaMateria) return;
+        }
 
         (materiaObj.topicos || []).forEach(topicoObj => {
             const subtopicos = topicoObj.subtopicos || [];

@@ -544,7 +544,7 @@
         <div class="modal-card" style="max-width:620px; width:94%;">
             <h3>Vincular Matérias ao Edital</h3>
             <p style="font-size:13px; color:#666; margin-bottom:12px;">Confirme a correspondência entre cada matéria do seu ciclo e a seção do edital.</p>
-            <div id="reconciliacaoLista" style="max-height:400px; overflow-y:auto;"></div>
+            <div id="reconciliacaoCorpo" style="max-height:400px; overflow-y:auto;"></div>
             <div class="modal-actions">
                 <button id="btnConfirmarReconciliacao" style="background:#4CAF50;">Confirmar Vínculos</button>
                 <button id="btnCancelarReconciliacao" style="background:#999;">Depois</button>
@@ -557,7 +557,7 @@
         <div class="modal-card" style="max-width:620px; width:94%;">
             <h3>Gerenciar Vínculos</h3>
             <p style="font-size:13px; color:#666; margin-bottom:12px;">Revise e edite os vínculos entre matérias e seções do edital.</p>
-            <div id="gerenciarVinculosLista" style="max-height:400px; overflow-y:auto;"></div>
+            <div id="gerenciarVinculosCorpo" style="max-height:400px; overflow-y:auto;"></div>
             <div class="modal-actions">
                 <button id="btnSalvarVinculos" style="background:#4CAF50;">Salvar</button>
                 <button id="btnFecharVinculos" style="background:#999;">Fechar</button>
@@ -565,30 +565,35 @@
         </div>
     </div>
 
-    <!-- Modal: Upload de retificação de edital (T2) -->
-    <div id="modalRetificacaoEdital" class="modal-overlay">
-        <div class="modal-card" style="max-width:600px; width:94%;">
+    <!-- Modal: Retificação de edital (T2) — upload + mapeamento em um só modal -->
+    <div id="modalRetificacao" class="modal-overlay">
+        <div class="modal-card" style="max-width:700px; width:96%;">
             <h3>Atualizar Edital (Retificação)</h3>
-            <p style="font-size:13px; color:#666; margin-bottom:12px;">Envie o novo edital retificado. O sistema mapeará automaticamente os itens antigos para os novos, preservando seu progresso.</p>
-            <div style="margin-bottom:12px;">
+            <div id="retificacaoUploadArea">
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">Envie o novo edital retificado. O sistema mapeará automaticamente os itens antigos para os novos, preservando seu progresso.</p>
+                <input type="file" id="retificacaoFileInput" accept=".xlsx,.xls,.csv" style="display:none;">
                 <button id="btnUploadRetificacao" type="button" style="background:#26A69A; font-size:13px; padding:8px 16px;">Enviar Edital Retificado (Excel/CSV)</button>
             </div>
-            <div id="retificacaoPreview" style="display:none;"></div>
+            <div id="retificacaoMapeamento" style="display:none;">
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">Confirme o mapeamento entre itens do edital antigo e do novo. Itens mapeados herdam o progresso anterior.</p>
+                <div id="retificacaoResultado" style="max-height:400px; overflow-y:auto;"></div>
+                <div class="modal-actions" style="margin-top:12px;">
+                    <button id="btnConfirmarRetificacao" style="background:#4CAF50;">Confirmar Retificação</button>
+                </div>
+            </div>
             <div class="modal-actions">
                 <button id="btnCancelarRetificacao" style="background:#999;">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Mapeamento de retificação (T2) -->
-    <div id="modalMapeamentoRetificacao" class="modal-overlay">
-        <div class="modal-card" style="max-width:700px; width:96%;">
-            <h3>Mapeamento: Edital Antigo → Novo</h3>
-            <p style="font-size:13px; color:#666; margin-bottom:12px;">Confirme o mapeamento entre itens do edital antigo e do novo. Itens mapeados herdam o progresso anterior.</p>
-            <div id="mapeamentoConteudo" style="max-height:450px; overflow-y:auto;"></div>
+    <!-- Modal: Reconciliação inline no bloco (T2) -->
+    <div id="modalReconciliacaoBloco" class="modal-overlay">
+        <div class="modal-card" style="max-width:480px; width:92%;">
+            <h3>Vincular Matéria ao Edital</h3>
+            <div id="reconciliacaoBlocoCorpo"></div>
             <div class="modal-actions">
-                <button id="btnConfirmarRetificacao" style="background:#4CAF50;">Confirmar Retificação</button>
-                <button id="btnVoltarRetificacao" style="background:#999;">Voltar</button>
+                <button id="btnReconciliacaoBlocoOk" style="background:#4CAF50;">Confirmar</button>
             </div>
         </div>
     </div>
@@ -620,10 +625,10 @@
     <script src="js/materias.js?v=1"></script>
     <script src="js/variaveis.js?v=7"></script>
     <script src="js/blocos.js?v=8"></script>
-    <script src="js/questoes.js?v=5"></script>
+    <script src="js/questoes.js?v=6"></script>
     <script src="js/matcher.js?v=1"></script>
     <script src="js/planos.js?v=10"></script>
-    <script src="js/edital.js?v=9"></script>
+    <script src="js/edital.js?v=10"></script>
     <script src="js/reconciliacao.js?v=1"></script>
     <script src="js/notificacoes.js?v=2"></script>
     <script src="js/revisao.js?v=1"></script>
@@ -634,6 +639,6 @@
     <script src="js/notes.js?v=1"></script>
     <script src="js/export.js?v=1"></script>
     <script src="js/onboarding.js?v=2"></script>
-    <script src="js/app.js?v=11"></script>
+    <script src="js/app.js?v=12"></script>
 </body>
 </html>

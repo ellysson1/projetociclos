@@ -132,19 +132,31 @@ function preencherListaAssuntosEdital(materiaBloco) {
     const itens = [];
 
     if (planoAdotado?.edital) {
-        const materiaBlNorm = normalizarTexto(materiaBloco);
-        planoAdotado.edital.forEach(materiaObj => {
-            const materiaNorm = normalizarTexto(materiaObj.materia);
-            const mesmaMateria = materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm);
-            if (!mesmaMateria) return;
+        const materiaEdital = (typeof _encontrarMateriaEditalPorId === 'function' && _encontrarMateriaEditalPorId(materiaBloco))
+            || (typeof _encontrarMateriaEditalFuzzy === 'function' && _encontrarMateriaEditalFuzzy(materiaBloco));
 
+        const materiasParaBuscar = materiaEdital ? [materiaEdital] : [];
+        if (!materiaEdital) {
+            const materiaBlNorm = normalizarTexto(materiaBloco);
+            planoAdotado.edital.forEach(materiaObj => {
+                const materiaNorm = normalizarTexto(materiaObj.materia);
+                if (materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm)) {
+                    materiasParaBuscar.push(materiaObj);
+                }
+            });
+        }
+
+        materiasParaBuscar.forEach(materiaObj => {
             const topicos = materiaObj.topicos || [];
             const topicosOrdenados = [...topicos].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
 
             topicosOrdenados.forEach(topicoObj => {
                 const subtopicos = topicoObj.subtopicos || [];
                 if (subtopicos.length > 0) {
-                    subtopicos.forEach(sub => itens.push(sub));
+                    subtopicos.forEach(sub => {
+                        const nome = typeof nomeSubtopico === 'function' ? nomeSubtopico(sub) : (typeof sub === 'string' ? sub : sub?.nome || '');
+                        if (nome) itens.push(nome);
+                    });
                 } else {
                     itens.push(topicoObj.nome);
                 }
@@ -228,12 +240,14 @@ function preencherListaAssuntosEdital(materiaBloco) {
 
 function encontrarChaveParaTexto(texto) {
     if (!planoAdotado?.edital) return null;
+    const _nome = typeof nomeSubtopico === 'function' ? nomeSubtopico : (s => typeof s === 'string' ? s : s?.nome || '');
     for (const materiaObj of planoAdotado.edital) {
         for (const topicoObj of (materiaObj.topicos || [])) {
             const subtopicos = topicoObj.subtopicos || [];
             if (subtopicos.length > 0) {
                 for (const sub of subtopicos) {
-                    if (sub === texto) return gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
+                    const nomeSub = _nome(sub);
+                    if (nomeSub === texto) return gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub);
                 }
             } else if (topicoObj.nome === texto) {
                 return gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
@@ -289,9 +303,19 @@ function finalizarConclusao(questoes) {
     salvarEstado();
     salvarQuestoesNuvem(bloco, questoes, eventoQuestoesId);
 
-    // Atualizar progresso no edital with the new status
-    if (typeof atualizarProgressoEdital === 'function') {
-        const statusEdital = concluiuAssunto ? 'visto' : 'em_andamento';
+    // Garantir vínculo matéria→edital antes de atualizar progresso
+    const statusEdital = concluiuAssunto ? 'visto' : 'em_andamento';
+    const matSel = typeof materiasSelecionadas !== 'undefined'
+        ? materiasSelecionadas.find(m => m.nome === bloco.nome || m.legenda === bloco.legenda)
+        : null;
+
+    if (matSel && typeof reconciliarNoBloco === 'function') {
+        reconciliarNoBloco(matSel, () => {
+            if (typeof atualizarProgressoEdital === 'function') {
+                atualizarProgressoEdital(bloco.nome, bloco.assunto, questoes, statusEdital);
+            }
+        });
+    } else if (typeof atualizarProgressoEdital === 'function') {
         atualizarProgressoEdital(bloco.nome, bloco.assunto, questoes, statusEdital);
     }
 
