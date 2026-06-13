@@ -38,13 +38,16 @@ async function salvarPlano(plano) {
     const user = await getUsuarioLogado();
     if (!user) return null;
 
+    const edital = plano.edital || null;
+    if (edital && typeof garantirIdsEdital === 'function') garantirIdsEdital(edital);
+
     const dados = {
         professor_id: user.id,
         nome: plano.nome,
         descricao: plano.descricao || '',
         materias: plano.materias || [],
         configuracoes: plano.configuracoes || {},
-        edital: plano.edital || null,
+        edital,
         regras_evolucao: plano.regras_evolucao || [],
         publico: plano.publico !== false
     };
@@ -761,6 +764,10 @@ async function adotarPlano(planoId, atribuicao = null) {
         maxFase
     };
 
+    if (planoAdotado.edital && typeof garantirIdsEdital === 'function') {
+        garantirIdsEdital(planoAdotado.edital);
+    }
+
     // Only include phase 1 matérias initially
     const materiasDoPlano = todasMaterias.filter(m => (m.fase || 1) <= faseAtual);
     materiasList = materiasDoPlano.map(m => ({ nome: m.nome, legenda: m.legenda }));
@@ -817,6 +824,10 @@ async function adotarPlano(planoId, atribuicao = null) {
 
     alert(`Plano "${plano.nome}" adotado com sucesso! Prosseguindo para calcular blocos.`);
     calcularBlocos();
+
+    if (planoAdotado?.edital && typeof verificarReconciliacaoPendente === 'function') {
+        verificarReconciliacaoPendente();
+    }
 }
 
 // ── Painel de Alunos (Professor Dashboard) ──────────────────────────────────

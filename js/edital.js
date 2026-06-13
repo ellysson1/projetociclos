@@ -91,6 +91,26 @@ function gerarChaveEdital(materia, topico, subtopico) {
     return [materia, topico, subtopico || ''].join('|');
 }
 
+// ── Lookup de matéria por ID estável (T2) ──────────────────────────────────
+
+function _encontrarMateriaEditalPorId(materiaBloco) {
+    if (!planoAdotado?.edital || !materiasSelecionadas) return null;
+    const matSel = materiasSelecionadas.find(m => m.nome === materiaBloco || m.legenda === materiaBloco);
+    if (!matSel?.materia_edital_id) return null;
+    return planoAdotado.edital.find(e => e.id === matSel.materia_edital_id) || null;
+}
+
+function _encontrarMateriaEditalFuzzy(materiaBloco) {
+    if (!planoAdotado?.edital) return null;
+    const materiaBlNorm = normalizarTexto(materiaBloco);
+    let melhorMateria = null, melhorSim = 0;
+    for (const materiaObj of planoAdotado.edital) {
+        const sim = calcularSimilaridade(materiaBlNorm, normalizarTexto(materiaObj.materia));
+        if (sim > melhorSim) { melhorSim = sim; melhorMateria = materiaObj; }
+    }
+    return (melhorMateria && melhorSim >= 0.4) ? melhorMateria : null;
+}
+
 // ── Renderizar aba Edital (árvore accordion) ────────────────────────────────
 
 function renderizarEdital() {
@@ -141,18 +161,19 @@ function renderizarEdital() {
                 let topicoVisivel = false;
 
                 subtopicos.forEach(sub => {
-                    const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
+                    const nomeSub = nomeSubtopico(sub);
+                    const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub);
                     const prog = editalProgresso[chave] || { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
                     totalItens++;
                     materiaItens++;
                     if (prog.status === 'concluido' || prog.status === 'visto') { itensConcluidos++; materiaConcluidos++; }
 
                     if (filtroStatus !== 'todos' && prog.status !== filtroStatus) return;
-                    if (busca && !sub.toLowerCase().includes(busca) && !topicoObj.nome.toLowerCase().includes(busca)) return;
+                    if (busca && !nomeSub.toLowerCase().includes(busca) && !topicoObj.nome.toLowerCase().includes(busca)) return;
 
                     topicoVisivel = true;
                     temItemVisivel = true;
-                    subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, sub, prog, undefined, undefined);
+                    subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, nomeSub, prog, undefined, undefined);
                 });
 
                 if (topicoVisivel || (!busca && filtroStatus === 'todos')) {
@@ -320,7 +341,7 @@ function calcularProgressoTopico(materia, topico, subtopicos) {
     let total = subtopicos.length;
     let concluidos = 0;
     subtopicos.forEach(sub => {
-        const chave = gerarChaveEdital(materia, topico, sub);
+        const chave = gerarChaveEdital(materia, topico, nomeSubtopico(sub));
         const prog = editalProgresso[chave];
         if (prog && (prog.status === 'concluido' || prog.status === 'visto')) concluidos++;
     });
@@ -427,10 +448,11 @@ function encontrarMatchEdital(materiaBloco, assunto, edital) {
 
             if (subtopicos.length > 0) {
                 subtopicos.forEach(sub => {
-                    const score = calcularSimilaridade(assuntoNorm, normalizarTexto(sub));
+                    const nomeSub = nomeSubtopico(sub);
+                    const score = calcularSimilaridade(assuntoNorm, normalizarTexto(nomeSub));
                     if (score > melhorScore && score >= 0.4) {
                         melhorScore = score;
-                        melhorMatch = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: sub };
+                        melhorMatch = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: nomeSub };
                     }
                 });
             }
@@ -516,36 +538,31 @@ function preencherDatalistEdital(materiaBloco) {
 
     if (!planoAdotado?.edital) return;
 
-    const edital = planoAdotado.edital;
-    const materiaBlNorm = normalizarTexto(materiaBloco);
+    const materiaObj = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
+    if (!materiaObj) return;
 
-    edital.forEach(materiaObj => {
-        const materiaNorm = normalizarTexto(materiaObj.materia);
-        const mesmaMateria = materiaNorm.includes(materiaBlNorm) || materiaBlNorm.includes(materiaNorm);
-        if (!mesmaMateria) return;
-
-        (materiaObj.topicos || []).forEach(topicoObj => {
-            const subtopicos = topicoObj.subtopicos || [];
-            if (subtopicos.length > 0) {
-                subtopicos.forEach(sub => {
-                    const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, sub);
-                    const prog = editalProgresso[chave];
-                    const jaConcluido = prog && prog.status === 'concluido';
-                    const opt = document.createElement('option');
-                    opt.value = sub;
-                    opt.label = jaConcluido ? `${sub} (concluído)` : sub;
-                    datalist.appendChild(opt);
-                });
-            } else {
-                const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
+    (materiaObj.topicos || []).forEach(topicoObj => {
+        const subtopicos = topicoObj.subtopicos || [];
+        if (subtopicos.length > 0) {
+            subtopicos.forEach(sub => {
+                const nomeSub = nomeSubtopico(sub);
+                const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub);
                 const prog = editalProgresso[chave];
                 const jaConcluido = prog && prog.status === 'concluido';
                 const opt = document.createElement('option');
-                opt.value = topicoObj.nome;
-                opt.label = jaConcluido ? `${topicoObj.nome} (concluído)` : topicoObj.nome;
+                opt.value = nomeSub;
+                opt.label = jaConcluido ? `${nomeSub} (concluído)` : nomeSub;
                 datalist.appendChild(opt);
-            }
-        });
+            });
+        } else {
+            const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
+            const prog = editalProgresso[chave];
+            const jaConcluido = prog && prog.status === 'concluido';
+            const opt = document.createElement('option');
+            opt.value = topicoObj.nome;
+            opt.label = jaConcluido ? `${topicoObj.nome} (concluído)` : topicoObj.nome;
+            datalist.appendChild(opt);
+        }
     });
 }
 
@@ -554,20 +571,8 @@ function preencherDatalistEdital(materiaBloco) {
 function obterAssuntoSugerido(materiaBloco) {
     if (!planoAdotado?.edital) return null;
 
-    const materiaBlNorm = normalizarTexto(materiaBloco);
-
-    // Find best matching materia (threshold 0.4 word overlap)
-    let melhorMateria = null;
-    let melhorSim = 0;
-    for (const materiaObj of planoAdotado.edital) {
-        const materiaNorm = normalizarTexto(materiaObj.materia);
-        const sim = calcularSimilaridade(materiaBlNorm, materiaNorm);
-        if (sim > melhorSim) {
-            melhorSim = sim;
-            melhorMateria = materiaObj;
-        }
-    }
-    if (!melhorMateria || melhorSim < 0.4) return null;
+    const melhorMateria = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
+    if (!melhorMateria) return null;
 
     const topicos = [...(melhorMateria.topicos || [])].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
 
@@ -575,9 +580,10 @@ function obterAssuntoSugerido(materiaBloco) {
         const subtopicos = topicoObj.subtopicos || [];
         if (subtopicos.length > 0) {
             for (const sub of subtopicos) {
-                const chave = gerarChaveEdital(melhorMateria.materia, topicoObj.nome, sub);
+                const nomeSub = nomeSubtopico(sub);
+                const chave = gerarChaveEdital(melhorMateria.materia, topicoObj.nome, nomeSub);
                 const prog = editalProgresso[chave];
-                if (!prog || prog.status === 'pendente') return sub;
+                if (!prog || prog.status === 'pendente') return nomeSub;
             }
         } else {
             const chave = gerarChaveEdital(melhorMateria.materia, topicoObj.nome, null);
@@ -663,10 +669,11 @@ function renderizarTopicosEditor(topicos, mIdx) {
 function renderizarSubtopicosEditor(subtopicos, mIdx, tIdx) {
     let html = '';
     subtopicos.forEach((sub, sIdx) => {
+        const nomeSub = typeof nomeSubtopico === 'function' ? nomeSubtopico(sub) : (typeof sub === 'string' ? sub : sub?.nome || '');
         html += `
             <div style="display:flex; align-items:center; gap:4px; margin-bottom:3px;">
                 <span style="color:#999; font-size:11px;">&#8226;</span>
-                <input type="text" value="${sub}" placeholder="Subtópico"
+                <input type="text" value="${nomeSub}" placeholder="Subtópico"
                     onchange="editalEditando[${mIdx}].topicos[${tIdx}].subtopicos[${sIdx}] = this.value.trim()"
                     style="font-size:12px; border:1px solid #ddd; border-radius:3px; padding:3px 6px; flex:1;">
                 <button onclick="removerSubtopicoEdital(${mIdx}, ${tIdx}, ${sIdx})" style="background:#FF6B6B; padding:1px 6px; font-size:10px;">&times;</button>
@@ -969,11 +976,11 @@ function calcularPercentualPorLegendasEdital(legendasSet) {
     let itensConcluidos = 0;
 
     planoAdotado.edital.forEach(materiaObj => {
-        const materiaNorm = normalizarTexto(materiaObj.materia);
         const matchLegenda = [...legendasSet].some(leg => {
             const matSel = (planoAdotado.materias || []).find(m => m.legenda === leg);
             if (!matSel) return false;
-            return calcularSimilaridade(normalizarTexto(matSel.nome), materiaNorm) >= 0.4;
+            if (matSel.materia_edital_id) return matSel.materia_edital_id === materiaObj.id;
+            return calcularSimilaridade(normalizarTexto(matSel.nome), normalizarTexto(materiaObj.materia)) >= 0.4;
         });
         if (!matchLegenda) return;
 
@@ -982,7 +989,7 @@ function calcularPercentualPorLegendasEdital(legendasSet) {
             if (subtopicos.length > 0) {
                 subtopicos.forEach(sub => {
                     totalItens++;
-                    const chave = gerarChaveEdital(materiaObj.materia, topico.nome, sub);
+                    const chave = gerarChaveEdital(materiaObj.materia, topico.nome, nomeSubtopico(sub));
                     if (editalProgresso[chave]?.status === 'visto') itensConcluidos++;
                 });
             } else {

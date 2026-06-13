@@ -124,6 +124,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('editalFiltroStatus').addEventListener('change', renderizarEdital);
     document.getElementById('editalBusca').addEventListener('input', renderizarEdital);
 
+    // T2: Vínculos e retificação de edital
+    const btnVinculos = document.getElementById('btnGerenciarVinculos');
+    if (btnVinculos) btnVinculos.addEventListener('click', abrirGerenciarVinculos);
+    const btnRetificacao = document.getElementById('btnRetificacaoEdital');
+    if (btnRetificacao) btnRetificacao.addEventListener('click', abrirRetificacaoEdital);
+
     // Filtros da aba Revisão
     document.getElementById('revisaoFiltroMateria').addEventListener('change', renderizarRevisao);
     document.getElementById('revisaoBusca').addEventListener('input', renderizarRevisao);
@@ -160,8 +166,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             await verificarEAplicarPlanoAtribuido();
             atualizarVisibilidadeEdital();
             if (planoAdotado?.edital) {
+                if (typeof garantirIdsEdital === 'function') garantirIdsEdital(planoAdotado.edital);
                 await carregarEditalProgresso();
                 renderizarEdital();
+                if (typeof verificarReconciliacaoPendente === 'function') verificarReconciliacaoPendente();
             }
             autoResumeIfActive();
             if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
@@ -177,8 +185,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 await verificarEAplicarPlanoAtribuido();
                 atualizarVisibilidadeEdital();
                 if (planoAdotado?.edital) {
+                    if (typeof garantirIdsEdital === 'function') garantirIdsEdital(planoAdotado.edital);
                     await carregarEditalProgresso();
                     renderizarEdital();
+                    if (typeof verificarReconciliacaoPendente === 'function') verificarReconciliacaoPendente();
                 }
                 autoResumeIfActive();
                 if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
