@@ -1,3 +1,33 @@
+function calcularFatoresDesempenho() {
+    const porMateria = {};
+    if (!blocosAtivos || blocosAtivos.length === 0) return porMateria;
+
+    blocosAtivos.forEach(bloco => {
+        if (!bloco.concluido || !bloco.questoes) return;
+        const key = bloco.legenda;
+        if (!porMateria[key]) porMateria[key] = { feitas: 0, corretas: 0 };
+        porMateria[key].feitas += bloco.questoes.feitas || 0;
+        porMateria[key].corretas += bloco.questoes.corretas || 0;
+    });
+
+    const fatores = {};
+    const mediaGlobal = (() => {
+        let tf = 0, tc = 0;
+        Object.values(porMateria).forEach(d => { tf += d.feitas; tc += d.corretas; });
+        return tf > 0 ? tc / tf : 0.5;
+    })();
+
+    Object.entries(porMateria).forEach(([leg, dados]) => {
+        if (dados.feitas < 5) return;
+        const pctAcerto = dados.corretas / dados.feitas;
+        // Subjects below average get boost (up to 1.5x), above average get reduction (down to 0.7x)
+        // Formula: factor = 1 + (mediaGlobal - pctAcerto) clamped to [0.7, 1.5]
+        fatores[leg] = Math.max(0.7, Math.min(1.5, 1 + (mediaGlobal - pctAcerto)));
+    });
+
+    return fatores;
+}
+
 function preencherTabelaVariaveis() {
     const tabela = document.getElementById("tabelaVariaveis").getElementsByTagName('tbody')[0];
     tabela.innerHTML = "";
@@ -58,6 +88,15 @@ function calcularBlocos() {
     if (blocos.length === 0) {
         alert("Não há matérias selecionadas para calcular os blocos.");
         return;
+    }
+
+    const fatoresDesemp = calcularFatoresDesempenho();
+    if (Object.keys(fatoresDesemp).length > 0) {
+        totalPonderado = 0;
+        blocos.forEach(b => {
+            b.valorPonderado *= (fatoresDesemp[b.legenda] || 1);
+            totalPonderado += b.valorPonderado;
+        });
     }
 
     _alocarBlocosLargestRemainder(blocos, totalBlocos, totalPonderado, duracaoBloco);
@@ -238,10 +277,19 @@ function redimensionarCiclo(novasHoras) {
     const totalAtualGlobal = materias.reduce((s, m) => s + m.totalAtual, 0);
     if (totalAtualGlobal === 0) return;
 
-    // Largest remainder: alocar totalNovo slots proporcionalmente
-    const fator = totalNovo / totalAtualGlobal;
+    // Aplicar fator de desempenho ao peso proporcional
+    const fatoresDesemp = calcularFatoresDesempenho();
+    let totalPonderadoResize = 0;
     materias.forEach(m => {
-        m._ideal = m.totalAtual * fator;
+        m._pesoDesemp = m.totalAtual * (fatoresDesemp[m.legenda] || 1);
+        totalPonderadoResize += m._pesoDesemp;
+    });
+
+    // Largest remainder: alocar totalNovo slots proporcionalmente
+    materias.forEach(m => {
+        m._ideal = totalPonderadoResize > 0
+            ? (m._pesoDesemp / totalPonderadoResize) * totalNovo
+            : m.totalAtual * (totalNovo / totalAtualGlobal);
         // Nunca abaixo dos concluídos, e nunca abaixo de 1 (piso de meio-bloco)
         m.novoTotal = Math.max(m.nConcluidos, Math.max(1, Math.floor(m._ideal)));
     });

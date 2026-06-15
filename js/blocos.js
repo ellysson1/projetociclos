@@ -237,7 +237,12 @@ function editarBloco(bloco) {
 function verificarConclusao() {
     const todosConcluidos = blocosAtivos.every(bloco => bloco.concluido);
     if (todosConcluidos && blocosAtivos.length > 0) {
-        alert("Parabéns! Você completou todo o ciclo de estudos!");
+        const fatores = typeof calcularFatoresDesempenho === 'function' ? calcularFatoresDesempenho() : {};
+        const temAjuste = Object.keys(fatores).length > 0;
+        const msg = temAjuste
+            ? "Parabéns! Você completou todo o ciclo de estudos!\n\nCom base no seu desempenho em questões, o próximo ciclo será ajustado automaticamente — matérias com menor acerto receberão mais blocos."
+            : "Parabéns! Você completou todo o ciclo de estudos!";
+        alert(msg);
     }
 }
 
