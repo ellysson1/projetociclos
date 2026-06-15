@@ -18,6 +18,7 @@ let salvarAoSair = true;
 let planoAdotado = null; // { id, nome, edital }
 let modosMateria = {}; // { legenda: 'questoes' | 'revisao' }
 let faseAtual = 1; // Progressive cycle: current phase
+let cicloNumero = 1; // Cycle counter: increments when all blocks are completed
 
 let configuracoes = {
     duracaoBloco: 60,
@@ -37,6 +38,7 @@ function montarEstadoLocal() {
         planoAdotado,
         modosMateria,
         faseAtual,
+        cicloNumero,
         revisoesContador: typeof revisoesContador !== 'undefined' ? revisoesContador : {},
         horasSemanais: document.getElementById('horasSemanais')?.value || null,
         atualizadoEm: new Date().toISOString()
@@ -59,6 +61,7 @@ function aplicarEstadoGlobals(estado, opts = {}) {
     if (estado.planoAdotado) planoAdotado = estado.planoAdotado;
     if (estado.modosMateria) modosMateria = estado.modosMateria;
     if (estado.faseAtual) faseAtual = estado.faseAtual;
+    if (estado.cicloNumero) cicloNumero = estado.cicloNumero;
     if (estado.revisoesContador && typeof revisoesContador !== 'undefined') revisoesContador = estado.revisoesContador;
     if (estado.horasSemanais) {
         const el = document.getElementById('horasSemanais');

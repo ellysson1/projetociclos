@@ -237,13 +237,31 @@ function editarBloco(bloco) {
 function verificarConclusao() {
     const todosConcluidos = blocosAtivos.every(bloco => bloco.concluido);
     if (todosConcluidos && blocosAtivos.length > 0) {
+        if (typeof cicloNumero !== 'undefined') cicloNumero++;
+
         const fatores = typeof calcularFatoresDesempenho === 'function' ? calcularFatoresDesempenho() : {};
         const temAjuste = Object.keys(fatores).length > 0;
-        const msg = temAjuste
-            ? "Parabéns! Você completou todo o ciclo de estudos!\n\nCom base no seu desempenho em questões, o próximo ciclo será ajustado automaticamente — matérias com menor acerto receberão mais blocos."
-            : "Parabéns! Você completou todo o ciclo de estudos!";
-        alert(msg);
+        const partes = [`Parabéns! Você completou o ciclo ${(typeof cicloNumero !== 'undefined' ? cicloNumero : 2) - 1}!`];
+        if (temAjuste) partes.push('Com base no seu desempenho em questões, o próximo ciclo será ajustado automaticamente — matérias com menor acerto receberão mais blocos.');
+
+        const itensPendentes = contarItensRevisaoPendente();
+        if (itensPendentes > 0) partes.push(`Há ${itensPendentes} itens do edital pendentes de revisão. Confira na aba Revisão.`);
+
+        alert(partes.join('\n\n'));
+        salvarEstado();
     }
+}
+
+function contarItensRevisaoPendente() {
+    if (typeof editalProgresso === 'undefined' || typeof cicloNumero === 'undefined') return 0;
+    let count = 0;
+    Object.values(editalProgresso).forEach(prog => {
+        if (!prog.ciclo_visto) return;
+        if (prog.status !== 'visto' && prog.status !== 'concluido') return;
+        const distancia = cicloNumero - (prog.ultimo_ciclo_revisado || prog.ciclo_visto);
+        if (distancia >= 2) count++;
+    });
+    return count;
 }
 
 function atualizarSugestoesBlocos() {

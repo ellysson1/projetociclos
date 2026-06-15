@@ -506,6 +506,11 @@
     color: #E65100;
 }
 
+.revisao-item--pendente {
+    border-left: 3px solid #FF6B6B;
+    background: #FFF5F5;
+}
+
 .revisao-item__revisoes {
     flex-shrink: 0;
     display: flex;

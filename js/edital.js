@@ -378,6 +378,12 @@ async function alterarStatusEdital(select, materia, topico, subtopico) {
         editalProgresso[chave] = { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
     }
     editalProgresso[chave].status = novoStatus;
+    if ((novoStatus === 'visto' || novoStatus === 'em_andamento') && !editalProgresso[chave].ciclo_visto) {
+        editalProgresso[chave].ciclo_visto = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
+    }
+    if (novoStatus === 'visto' || novoStatus === 'em_andamento') {
+        editalProgresso[chave].ultimo_ciclo_revisado = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
+    }
 
     // Atualizar visual do item
     const item = select.closest('.edital-item');
@@ -409,6 +415,10 @@ function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
         if (atual !== 'concluido' && !(atual === 'visto' && novoStatus === 'em_andamento')) {
             editalProgresso[chave].status = novoStatus;
         }
+        if (!editalProgresso[chave].ciclo_visto) {
+            editalProgresso[chave].ciclo_visto = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
+        }
+        editalProgresso[chave].ultimo_ciclo_revisado = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
         if (questoes && questoes.feitas > 0) {
             editalProgresso[chave].questoes_feitas += questoes.feitas;
             editalProgresso[chave].questoes_corretas += questoes.corretas;
@@ -577,8 +587,20 @@ function obterAssuntoSugerido(materiaBloco) {
     const melhorMateria = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
     if (!melhorMateria) return null;
 
+    const cicloAtual = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
+    const matSel = (typeof materiasSelecionadas !== 'undefined' ? materiasSelecionadas : [])
+        .find(m => m.nome === materiaBloco || m.legenda === materiaBloco);
+    const modoMateria = typeof modosMateria !== 'undefined' ? (modosMateria[matSel?.legenda] || null) : null;
+
+    // If in review mode, prioritize items pending revision (2+ cycles since last review)
+    if (modoMateria === 'revisao') {
+        const pendente = _encontrarItemRevisaoPendente(melhorMateria, cicloAtual);
+        if (pendente) return pendente;
+    }
+
     const topicos = [...(melhorMateria.topicos || [])].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
 
+    // First pass: unseen items
     for (const topicoObj of topicos) {
         const subtopicos = topicoObj.subtopicos || [];
         if (subtopicos.length > 0) {
@@ -594,7 +616,37 @@ function obterAssuntoSugerido(materiaBloco) {
             if (!prog || prog.status === 'pendente') return topicoObj.nome;
         }
     }
+
+    // Second pass: if all items seen, suggest one needing revision
+    const pendente = _encontrarItemRevisaoPendente(melhorMateria, cicloAtual);
+    if (pendente) return '⟳ ' + pendente;
+
     return null;
+}
+
+function _encontrarItemRevisaoPendente(materiaObj, cicloAtual) {
+    let melhor = null;
+    let maiorDistancia = 0;
+
+    (materiaObj.topicos || []).forEach(topicoObj => {
+        const subtopicos = topicoObj.subtopicos || [];
+        const itens = subtopicos.length > 0
+            ? subtopicos.map(s => ({ nome: nomeSubtopico(s), topico: topicoObj.nome }))
+            : [{ nome: topicoObj.nome, topico: topicoObj.nome, semSub: true }];
+
+        itens.forEach(item => {
+            const chave = gerarChaveEdital(materiaObj.materia, item.topico, item.semSub ? '' : item.nome);
+            const prog = editalProgresso[chave];
+            if (!prog || (prog.status !== 'visto' && prog.status !== 'concluido')) return;
+            const dist = cicloAtual - (prog.ultimo_ciclo_revisado || prog.ciclo_visto || cicloAtual);
+            if (dist >= 2 && dist > maiorDistancia) {
+                maiorDistancia = dist;
+                melhor = item.nome;
+            }
+        });
+    });
+
+    return melhor;
 }
 
 function atualizarVisibilidadeEdital() {

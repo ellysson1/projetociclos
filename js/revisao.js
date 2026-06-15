@@ -37,6 +37,9 @@ function renderizarRevisao() {
                 if (filtroMateria !== 'todas' && materiaObj.materia !== filtroMateria) return;
                 if (busca && !label.toLowerCase().includes(busca)) return;
 
+                const cicloAtual = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
+                const distanciaCiclo = cicloAtual - (prog.ultimo_ciclo_revisado || prog.ciclo_visto || cicloAtual);
+
                 if (!grupos[materiaObj.materia]) grupos[materiaObj.materia] = [];
                 grupos[materiaObj.materia].push({
                     chave,
@@ -45,7 +48,9 @@ function renderizarRevisao() {
                     subtopico,
                     status: prog.status,
                     questoes_feitas: prog.questoes_feitas || 0,
-                    questoes_corretas: prog.questoes_corretas || 0
+                    questoes_corretas: prog.questoes_corretas || 0,
+                    ciclo_visto: prog.ciclo_visto || null,
+                    distanciaCiclo
                 });
                 temItens = true;
             };
@@ -89,6 +94,8 @@ function renderizarRevisao() {
     // Render
     container.innerHTML = '';
     Object.entries(grupos).forEach(([materia, itens]) => {
+        itens.sort((a, b) => b.distanciaCiclo - a.distanciaCiclo);
+
         const grupo = document.createElement('div');
         grupo.className = 'revisao-grupo';
 
@@ -105,17 +112,25 @@ function renderizarRevisao() {
                 questoesHTML = `<span style="font-size:11px; color:#888;">| ${item.questoes_corretas}/${item.questoes_feitas} questões (${pct}%)</span>`;
             }
 
+            let cicloHTML = '';
+            if (item.distanciaCiclo >= 2) {
+                cicloHTML = `<span style="font-size:11px; font-weight:600; color:#FF6B6B; margin-left:6px;">⟳ revisar (${item.distanciaCiclo} ciclos)</span>`;
+            } else if (item.distanciaCiclo === 1) {
+                cicloHTML = `<span style="font-size:11px; color:#FF9800; margin-left:6px;">1 ciclo atrás</span>`;
+            }
+
             let opcoesRev = '';
             for (let i = 0; i <= 10; i++) {
                 opcoesRev += `<option value="${i}" ${rev === i ? 'selected' : ''}>${i}</option>`;
             }
 
             itensHTML += `
-                <div class="revisao-item">
+                <div class="revisao-item${item.distanciaCiclo >= 2 ? ' revisao-item--pendente' : ''}">
                     <div class="revisao-item__info">
                         <span>${item.label}</span>
                         <span class="revisao-item__status revisao-item__status--${item.status}">${statusLabel}</span>
                         ${questoesHTML}
+                        ${cicloHTML}
                     </div>
                     <div class="revisao-item__revisoes">
                         <span>Revisões:</span>
