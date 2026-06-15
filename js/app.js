@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     document.getElementById('gerarPDF').addEventListener('click', gerarPDF);
     document.getElementById('exportarExcel').addEventListener('click', exportarParaExcel);
+    document.getElementById('btnExportarDados').addEventListener('click', exportarDadosPessoais);
+    document.getElementById('btnExcluirConta').addEventListener('click', excluirConta);
     const btnLogoutTop = document.getElementById('btnLogoutTop');
     if (btnLogoutTop) btnLogoutTop.addEventListener('click', sair);
 

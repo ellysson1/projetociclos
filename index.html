@@ -417,6 +417,16 @@
             <h2>Exportar Ciclo</h2>
             <button id="gerarPDF">Gerar PDF</button>
             <button id="exportarExcel">Exportar para Excel</button>
+
+            <div style="margin-top:32px; padding-top:24px; border-top:2px solid var(--border-color);">
+                <h3 style="color:var(--primary-color); margin-bottom:8px;">Seus Dados (LGPD)</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:14px;">Voce tem o direito de acessar todos os seus dados pessoais armazenados e de solicitar a exclusao da sua conta.</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+                    <button id="btnExportarDados" type="button" style="background:#26A69A;">Exportar Meus Dados (JSON)</button>
+                    <button id="btnExcluirConta" type="button" style="background:#FF6B6B;">Excluir Minha Conta</button>
+                </div>
+                <div id="lgpdStatus" style="display:none; padding:10px; border-radius:6px; font-size:13px; margin-top:8px;"></div>
+            </div>
         </div>
     </div>
 
@@ -643,7 +653,8 @@
     <script src="js/timer.js?v=3"></script>
     <script src="js/notes.js?v=1"></script>
     <script src="js/export.js?v=1"></script>
+    <script src="js/lgpd.js?v=2"></script>
     <script src="js/onboarding.js?v=3"></script>
-    <script src="js/app.js?v=13"></script>
+    <script src="js/app.js?v=14"></script>
 </body>
 </html>
