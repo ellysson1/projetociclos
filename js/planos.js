@@ -431,6 +431,7 @@ function preencherEditorPlano() {
 
     renderizarMateriasPlano(planoEditando?.materias || []);
     renderizarEditorEdital(planoEditando?.edital || []);
+    renderizarRegrasEvolucao(planoEditando?.regras_evolucao || []);
 }
 
 function renderizarMateriasPlano(materias) {
@@ -458,6 +459,68 @@ function renderizarMateriasPlano(materias) {
             renderizarMateriasPlano(materias);
         });
     });
+}
+
+function renderizarRegrasEvolucao(regras) {
+    const container = document.getElementById('regrasEvolucaoContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    regras.forEach((regra, idx) => {
+        const div = document.createElement('div');
+        div.className = 'regra-evolucao-item';
+        div.style.cssText = 'border:1px solid #ddd; border-radius:8px; padding:12px; margin-bottom:10px; background:#f9f9f9;';
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong style="color:var(--primary-color);">Fase ${regra.fase || idx + 1} → ${(regra.fase || idx + 1) + 1}</strong>
+                <button class="btn-remover-regra" data-idx="${idx}" style="background:#FF6B6B; padding:4px 8px; font-size:12px; border:none; color:white; border-radius:4px; cursor:pointer;">&times;</button>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
+                <div>
+                    <label style="font-size:12px;">% minimo edital visto:</label>
+                    <input type="number" class="regra-input" data-idx="${idx}" data-field="pct_edital" value="${regra.pct_edital ?? 60}" min="0" max="100" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:12px;">Questoes minimas feitas:</label>
+                    <input type="number" class="regra-input" data-idx="${idx}" data-field="questoes_minimas" value="${regra.questoes_minimas ?? ''}" min="0" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:12px;">% minimo acerto questoes:</label>
+                    <input type="number" class="regra-input" data-idx="${idx}" data-field="pct_acerto_minimo" value="${regra.pct_acerto_minimo ?? ''}" min="0" max="100" style="width:100%;">
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    container.querySelectorAll('.btn-remover-regra').forEach(btn => {
+        btn.addEventListener('click', () => {
+            regras.splice(parseInt(btn.dataset.idx), 1);
+            renderizarRegrasEvolucao(regras);
+        });
+    });
+}
+
+function coletarRegrasEvolucao() {
+    const container = document.getElementById('regrasEvolucaoContainer');
+    if (!container) return [];
+    const items = container.querySelectorAll('.regra-evolucao-item');
+    const regras = [];
+    items.forEach(item => {
+        const inputs = item.querySelectorAll('.regra-input');
+        const regra = {};
+        inputs.forEach(input => {
+            const field = input.dataset.field;
+            const val = input.value.trim();
+            if (val !== '') {
+                regra[field] = parseInt(val);
+            }
+        });
+        const idx = parseInt(inputs[0]?.dataset.idx ?? regras.length);
+        regra.fase = idx + 1;
+        regras.push(regra);
+    });
+    return regras;
 }
 
 function coletarDadosPlano() {
@@ -494,7 +557,7 @@ function coletarDadosPlano() {
             horasSemanais: parseInt(document.getElementById('planoHorasSemanais').value) || null
         },
         edital: coletarEditalDoEditor(),
-        regras_evolucao: planoEditando?.regras_evolucao || []
+        regras_evolucao: coletarRegrasEvolucao()
     };
 }
 
@@ -636,7 +699,7 @@ async function verificarEAplicarPlanoAtribuido() {
     // Apply plan reference (store all materias for progressive phases)
     const todasMaterias = plano.materias || [];
     const maxFase = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
-    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase };
+    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase, regras_evolucao: plano.regras_evolucao || [] };
 
     // Only include current-phase matérias in active lists
     const materiasDoPlano = todasMaterias.filter(m => (m.fase || 1) <= faseAtual);
@@ -761,7 +824,8 @@ async function adotarPlano(planoId, atribuicao = null) {
         nome: plano.nome,
         edital: plano.edital || null,
         materias: todasMaterias,
-        maxFase
+        maxFase,
+        regras_evolucao: plano.regras_evolucao || []
     };
 
     if (planoAdotado.edital && typeof garantirIdsEdital === 'function') {

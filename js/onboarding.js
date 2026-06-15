@@ -372,7 +372,8 @@ function onbFinalizar() {
             nome: plano.nome,
             edital: plano.edital || null,
             materias: todasMaterias,
-            maxFase
+            maxFase,
+            regras_evolucao: plano.regras_evolucao || []
         };
 
         // Apply configs

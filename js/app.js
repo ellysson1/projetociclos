@@ -100,6 +100,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('btnAddMateriaPlano').addEventListener('click', adicionarMateriaAoPlano);
     document.getElementById('btnUploadMateriasPlano').addEventListener('click', uploadMateriasPlano);
     document.getElementById('btnBaixarModelo').addEventListener('click', baixarModeloExcel);
+    document.getElementById('btnAddRegraEvolucao').addEventListener('click', () => {
+        const container = document.getElementById('regrasEvolucaoContainer');
+        const items = container.querySelectorAll('.regra-evolucao-item');
+        const regras = coletarRegrasEvolucao();
+        const nextFase = regras.length > 0 ? Math.max(...regras.map(r => r.fase)) + 1 : 1;
+        regras.push({ fase: nextFase, pct_edital: 60 });
+        renderizarRegrasEvolucao(regras);
+    });
 
     // Upload materias (aluno)
     document.getElementById('btnUploadMaterias').addEventListener('click', uploadMateriasAluno);

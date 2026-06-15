@@ -896,6 +896,51 @@ function baixarModeloEdital() {
 
 // ── Ciclo Progressivo: verificação de avanço de fase ─────────────────────────
 
+function obterRegraFase(fase) {
+    const regras = planoAdotado?.regras_evolucao || [];
+    return regras.find(r => r.fase === fase) || null;
+}
+
+function calcularQuestoesFase(legendasSet) {
+    let totalFeitas = 0;
+    let totalCorretas = 0;
+
+    if (!planoAdotado?.edital) return { feitas: 0, corretas: 0 };
+
+    planoAdotado.edital.forEach(materiaObj => {
+        const matchLegenda = [...legendasSet].some(leg => {
+            const matSel = (planoAdotado.materias || []).find(m => m.legenda === leg);
+            if (!matSel) return false;
+            if (matSel.materia_edital_id) return matSel.materia_edital_id === materiaObj.id;
+            return calcularSimilaridade(normalizarTexto(matSel.nome), normalizarTexto(materiaObj.materia)) >= 0.4;
+        });
+        if (!matchLegenda) return;
+
+        (materiaObj.topicos || []).forEach(topico => {
+            const subtopicos = topico.subtopicos || [];
+            if (subtopicos.length > 0) {
+                subtopicos.forEach(sub => {
+                    const chave = gerarChaveEdital(materiaObj.materia, topico.nome, nomeSubtopico(sub));
+                    const prog = editalProgresso[chave];
+                    if (prog) {
+                        totalFeitas += prog.questoes_feitas || 0;
+                        totalCorretas += prog.questoes_corretas || 0;
+                    }
+                });
+            } else {
+                const chave = gerarChaveEdital(materiaObj.materia, topico.nome, '');
+                const prog = editalProgresso[chave];
+                if (prog) {
+                    totalFeitas += prog.questoes_feitas || 0;
+                    totalCorretas += prog.questoes_corretas || 0;
+                }
+            }
+        });
+    });
+
+    return { feitas: totalFeitas, corretas: totalCorretas };
+}
+
 function verificarProgressoFase() {
     if (!planoAdotado?.materias || !planoAdotado.maxFase || planoAdotado.maxFase <= 1) return;
     if (faseAtual >= planoAdotado.maxFase) return;
@@ -907,8 +952,20 @@ function verificarProgressoFase() {
             .map(m => m.legenda)
     );
 
+    const regra = obterRegraFase(faseAtual);
+    const pctEditalMinimo = regra?.pct_edital ?? 60;
+
     const pctFase = calcularPercentualPorLegendasEdital(legendasFaseAtual);
-    if (pctFase < 60) return;
+    if (pctFase < pctEditalMinimo) return;
+
+    if (regra?.questoes_minimas || regra?.pct_acerto_minimo) {
+        const { feitas, corretas } = calcularQuestoesFase(legendasFaseAtual);
+        if (regra.questoes_minimas && feitas < regra.questoes_minimas) return;
+        if (regra.pct_acerto_minimo && feitas > 0) {
+            const pctAcerto = Math.round((corretas / feitas) * 100);
+            if (pctAcerto < regra.pct_acerto_minimo) return;
+        }
+    }
 
     // Advance to next phase
     faseAtual++;
