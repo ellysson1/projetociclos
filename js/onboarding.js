@@ -5,12 +5,15 @@ let _onboardingDados = {
     objetivo: '',
     horasSemanais: 10,
     materias: [],
-    planoBase: null
+    planoBase: null,
+    limitarMaterias: false,
+    materiasIniciais: 6,
+    materiasPorCiclo: 2
 };
 
 function abrirOnboarding() {
     _onboardingStep = 1;
-    _onboardingDados = { objetivo: '', horasSemanais: 10, materias: [], planoBase: null };
+    _onboardingDados = { objetivo: '', horasSemanais: 10, materias: [], planoBase: null, limitarMaterias: false, materiasIniciais: 6, materiasPorCiclo: 2 };
 
     const overlay = document.getElementById('onboardingOverlay');
     overlay.style.display = 'flex';
@@ -24,7 +27,7 @@ function fecharOnboarding() {
 function renderizarStepOnboarding() {
     const container = document.getElementById('onboardingConteudo');
     const progressBar = document.getElementById('onboardingProgresso');
-    const totalSteps = 5;
+    const totalSteps = 6;
     progressBar.style.width = `${(_onboardingStep / totalSteps) * 100}%`;
 
     document.getElementById('onboardingStepLabel').textContent = `Etapa ${_onboardingStep} de ${totalSteps}`;
@@ -34,7 +37,8 @@ function renderizarStepOnboarding() {
         case 2: renderStep2Horas(container); break;
         case 3: renderStep3Materias(container); break;
         case 4: renderStep4Familiaridade(container); break;
-        case 5: renderStep5Resumo(container); break;
+        case 5: renderStep5LimiteMaterias(container); break;
+        case 6: renderStep6Resumo(container); break;
     }
 }
 
@@ -214,7 +218,7 @@ function renderStep4Familiaridade(container) {
         <div id="onbFamiliaridadeLista" style="max-height:400px; overflow-y:auto;"></div>
         <div style="display:flex; justify-content:space-between; gap:10px; margin-top:20px;">
             <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Ver Resumo &rarr;</button>
+            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
         </div>
     `;
 
@@ -274,44 +278,214 @@ function renderBotoesNivel(idx, campo, valorAtual, labels) {
     }).join('');
 }
 
-// ── Step 5: Resumo ───────────────────────────────────────────────────────────
+// ── Step 5: Limite de matérias no ciclo inicial ─────────────────────────────
 
-function renderStep5Resumo(container) {
+function renderStep5LimiteMaterias(container) {
+    const total = _onboardingDados.materias.length;
+    const limitarAtivo = _onboardingDados.limitarMaterias;
+
+    container.innerHTML = `
+        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Quantas materias no primeiro ciclo?</h2>
+        <p style="color:#666; margin-bottom:24px;">Voce pode comecar com todas ou ir adicionando aos poucos conforme avanca.</p>
+
+        <div style="display:flex; gap:12px; margin-bottom:20px;">
+            <button class="onb-limite-opt" data-limitar="false" style="
+                flex:1; padding:16px; border-radius:12px; text-align:center; cursor:pointer; transition:all 0.2s;
+                border:2px solid ${!limitarAtivo ? '#3F51B5' : '#E1E4E8'};
+                background:${!limitarAtivo ? '#E8EAF6' : 'white'};
+            ">
+                <div style="font-size:24px; margin-bottom:4px;">📚</div>
+                <div style="font-weight:700; font-size:15px; color:${!limitarAtivo ? '#3F51B5' : '#333'};">Todas (${total})</div>
+                <div style="font-size:12px; color:#888; margin-top:2px;">Desde o primeiro ciclo</div>
+            </button>
+            <button class="onb-limite-opt" data-limitar="true" style="
+                flex:1; padding:16px; border-radius:12px; text-align:center; cursor:pointer; transition:all 0.2s;
+                border:2px solid ${limitarAtivo ? '#3F51B5' : '#E1E4E8'};
+                background:${limitarAtivo ? '#E8EAF6' : 'white'};
+            ">
+                <div style="font-size:24px; margin-bottom:4px;">🎯</div>
+                <div style="font-weight:700; font-size:15px; color:${limitarAtivo ? '#3F51B5' : '#333'};">Gradual</div>
+                <div style="font-size:12px; color:#888; margin-top:2px;">Comecar com poucas, crescer aos poucos</div>
+            </button>
+        </div>
+
+        <div id="onbLimiteConfig" style="display:${limitarAtivo ? 'block' : 'none'}; background:#F5F7FA; border-radius:12px; padding:16px; margin-bottom:20px;">
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:600; color:#555; display:block; margin-bottom:6px;">Materias no ciclo inicial:</label>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <input type="range" id="onbMateriasIniciais" min="1" max="${total}" value="${_onboardingDados.materiasIniciais}" style="flex:1;">
+                    <span id="onbMateriasIniciaisLabel" style="font-size:20px; font-weight:700; color:#3F51B5; min-width:30px; text-align:center;">${Math.min(_onboardingDados.materiasIniciais, total)}</span>
+                </div>
+            </div>
+            <div>
+                <label style="font-size:14px; font-weight:600; color:#555; display:block; margin-bottom:6px;">Novas materias a cada avanco:</label>
+                <div style="display:flex; gap:8px;">
+                    ${[1, 2, 3, 4].map(n => `
+                        <button class="onb-incremento-btn" data-val="${n}" style="
+                            flex:1; padding:10px; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; transition:all 0.15s;
+                            border:2px solid ${_onboardingDados.materiasPorCiclo === n ? '#3F51B5' : '#E1E4E8'};
+                            background:${_onboardingDados.materiasPorCiclo === n ? '#E8EAF6' : 'white'};
+                            color:${_onboardingDados.materiasPorCiclo === n ? '#3F51B5' : '#888'};
+                        ">+${n}</button>
+                    `).join('')}
+                </div>
+            </div>
+            <p style="font-size:12px; color:#999; margin-top:12px;">As materias serao priorizadas pela importancia e dificuldade que voce definiu.</p>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; gap:10px;">
+            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Ver Resumo &rarr;</button>
+        </div>
+    `;
+
+    container.querySelectorAll('.onb-limite-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            _onboardingDados.limitarMaterias = btn.dataset.limitar === 'true';
+            renderStep5LimiteMaterias(container);
+        });
+    });
+
+    const slider = document.getElementById('onbMateriasIniciais');
+    const sliderLabel = document.getElementById('onbMateriasIniciaisLabel');
+    if (slider) {
+        slider.addEventListener('input', () => {
+            _onboardingDados.materiasIniciais = parseInt(slider.value);
+            if (sliderLabel) sliderLabel.textContent = slider.value;
+        });
+    }
+
+    container.querySelectorAll('.onb-incremento-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            _onboardingDados.materiasPorCiclo = parseInt(btn.dataset.val);
+            renderStep5LimiteMaterias(container);
+        });
+    });
+}
+
+// ── Step 6: Resumo ──────────────────────────────────────────────────────────
+
+function renderStep6Resumo(container) {
     const materias = _onboardingDados.materias;
     const horas = _onboardingDados.horasSemanais;
     const duracaoBloco = configuracoes?.duracaoBloco || 60;
     const totalBlocos = Math.floor((horas * 60) / duracaoBloco);
 
+    // Calcular blocos por matéria (simulação)
+    const materiasComFase = _calcularFasesMaterias(materias);
+    const materiasAtivas = materiasComFase.filter(m => m.fase === 1);
+    const blocosPorMateria = _simularBlocos(materiasAtivas, totalBlocos);
+
+    const materiasProxFases = materiasComFase.filter(m => m.fase > 1);
+
     container.innerHTML = `
         <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Tudo pronto!</h2>
         <p style="color:#666; margin-bottom:20px;">Confira o resumo e gere seu ciclo de estudos.</p>
-        <div style="background:#F5F7FA; border-radius:10px; padding:16px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-around; text-align:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+
+        <div style="background:#F5F7FA; border-radius:12px; padding:20px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-around; text-align:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
                 <div>
-                    <div style="font-size:28px; font-weight:700; color:#3F51B5;">${horas}h</div>
+                    <div style="font-size:32px; font-weight:700; color:#3F51B5;">${horas}h</div>
                     <div style="font-size:13px; color:#888;">por semana</div>
                 </div>
                 <div>
-                    <div style="font-size:28px; font-weight:700; color:#3F51B5;">${materias.length}</div>
-                    <div style="font-size:13px; color:#888;">materias</div>
+                    <div style="font-size:32px; font-weight:700; color:#3F51B5;">${materiasAtivas.length}</div>
+                    <div style="font-size:13px; color:#888;">materias${materiasProxFases.length > 0 ? ` (de ${materias.length})` : ''}</div>
                 </div>
                 <div>
-                    <div style="font-size:28px; font-weight:700; color:#3F51B5;">~${totalBlocos}</div>
+                    <div style="font-size:32px; font-weight:700; color:#3F51B5;">${totalBlocos}</div>
                     <div style="font-size:13px; color:#888;">blocos de ${duracaoBloco}min</div>
                 </div>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                ${materias.map(m => {
-                    const cor = m.importancia === 'muito' ? '#F44336' : m.importancia === 'medio' ? '#FF9800' : '#4CAF50';
-                    return `<span style="padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; background:${cor}22; color:${cor}; border:1px solid ${cor}44;">${m.legenda}</span>`;
+
+            <div style="margin-bottom:12px;">
+                <div style="font-size:13px; font-weight:600; color:#555; margin-bottom:8px;">Distribuicao dos blocos:</div>
+                ${blocosPorMateria.map(b => {
+                    const cor = b.importancia === 'muito' ? '#F44336' : b.importancia === 'medio' ? '#FF9800' : '#4CAF50';
+                    const pct = totalBlocos > 0 ? Math.round((b.qtd / totalBlocos) * 100) : 0;
+                    return `
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                            <span style="font-size:12px; font-weight:600; color:${cor}; min-width:36px;">${b.legenda}</span>
+                            <div style="flex:1; height:20px; background:#E1E4E8; border-radius:10px; overflow:hidden;">
+                                <div style="height:100%; width:${pct}%; background:${cor}; border-radius:10px; min-width:${b.qtd > 0 ? '8px' : '0'}; transition:width 0.3s;"></div>
+                            </div>
+                            <span style="font-size:13px; font-weight:700; color:#333; min-width:44px; text-align:right;">${b.qtd} ${b.meioBloco ? '(½)' : ''}</span>
+                        </div>
+                    `;
                 }).join('')}
             </div>
+
+            ${materiasProxFases.length > 0 ? `
+                <div style="border-top:1px solid #E1E4E8; padding-top:12px; margin-top:8px;">
+                    <div style="font-size:12px; color:#888; margin-bottom:6px;">Entram nas proximas fases (+${_onboardingDados.materiasPorCiclo} por avanco):</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                        ${materiasProxFases.map(m => `<span style="padding:3px 8px; border-radius:8px; font-size:11px; font-weight:600; background:#E1E4E833; color:#999; border:1px solid #E1E4E8;">${m.legenda}</span>`).join('')}
+                    </div>
+                </div>
+            ` : ''}
         </div>
+
         <div style="display:flex; justify-content:space-between; gap:10px;">
             <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbFinalizar()" style="background:#4CAF50; padding:12px 28px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:700; font-size:16px;">Gerar Meu Ciclo!</button>
+            <button onclick="onbFinalizar()" style="background:linear-gradient(135deg, #4CAF50, #2E7D32); padding:14px 32px; border-radius:10px; color:white; border:none; cursor:pointer; font-weight:700; font-size:16px; box-shadow:0 4px 12px rgba(76,175,80,.3);">Gerar Meu Ciclo!</button>
         </div>
     `;
+}
+
+function _calcularFasesMaterias(materias) {
+    if (!_onboardingDados.limitarMaterias || materias.length === 0) {
+        return materias.map(m => ({ ...m, fase: m.fase || 1 }));
+    }
+
+    const iniciais = Math.max(1, Math.min(_onboardingDados.materiasIniciais, materias.length));
+    const porCiclo = _onboardingDados.materiasPorCiclo || 2;
+
+    // Sort by priority: importancia "muito" first, then "medio", then "pouco"; within same, dificuldade "muito" first
+    const sorted = [...materias].sort((a, b) => {
+        const prioMap = { muito: 3, medio: 2, pouco: 1 };
+        const pa = (prioMap[a.importancia] || 2) * 10 + (prioMap[a.dificuldade] || 2);
+        const pb = (prioMap[b.importancia] || 2) * 10 + (prioMap[b.dificuldade] || 2);
+        return pb - pa;
+    });
+
+    return sorted.map((m, idx) => {
+        if (idx < iniciais) return { ...m, fase: 1 };
+        const cicloExtra = Math.ceil((idx - iniciais + 1) / porCiclo);
+        return { ...m, fase: 1 + cicloExtra };
+    });
+}
+
+function _simularBlocos(materias, totalBlocos) {
+    if (materias.length === 0) return [];
+
+    const blocos = materias.map(m => {
+        const peso = nivelParaPeso(m.importancia);
+        const ext = nivelParaPeso(m.extensao);
+        const dif = nivelParaPeso(m.dificuldade);
+        const vp = peso * 0.5 + ext * 0.25 + dif * 0.25;
+        return { legenda: m.legenda, importancia: m.importancia, valorPonderado: vp, meioBloco: false, qtd: 0 };
+    });
+
+    const totalP = blocos.reduce((s, b) => s + b.valorPonderado, 0);
+    if (totalP === 0) return blocos;
+
+    blocos.forEach(b => {
+        b._share = (b.valorPonderado / totalP) * totalBlocos;
+        b.qtd = Math.floor(b._share);
+    });
+
+    let atribuidos = blocos.reduce((s, b) => s + b.qtd, 0);
+    const restos = blocos.map(b => ({ b, r: b._share - b.qtd })).sort((a, b) => b.r - a.r);
+    let i = 0;
+    while (atribuidos < totalBlocos && restos.length > 0) {
+        restos[i % restos.length].b.qtd++;
+        atribuidos++;
+        i++;
+        if (i > restos.length * 2) break;
+    }
+
+    blocos.forEach(b => { delete b._share; });
+    return blocos;
 }
 
 // ── Navigation ───────────────────────────────────────────────────────────────
@@ -326,6 +500,11 @@ function onbAvancar() {
     if (_onboardingStep === 3 && _onboardingDados.materias.length === 0) {
         alert('Adicione pelo menos uma materia.');
         return;
+    }
+    if (_onboardingStep === 5) {
+        if (_onboardingDados.limitarMaterias) {
+            _onboardingDados.materiasIniciais = parseInt(document.getElementById('onbMateriasIniciais')?.value) || 6;
+        }
     }
     _onboardingStep++;
     renderizarStepOnboarding();
@@ -348,10 +527,12 @@ function onbFinalizar() {
     const editInput = document.getElementById('horasSemanaisEdit');
     if (editInput) editInput.value = dados.horasSemanais;
 
+    // Apply phase assignments from limiter
+    const materiasComFase = _calcularFasesMaterias(dados.materias);
+
     // Convert materias and set globals
     coresUsadas = [];
-    materiasList = dados.materias.map(m => ({ nome: m.nome, legenda: m.legenda }));
-    materiasSelecionadas = dados.materias.map(m => ({
+    const todasMaterias = materiasComFase.map(m => ({
         nome: m.nome,
         legenda: m.legenda,
         fase: m.fase || 1,
@@ -360,23 +541,33 @@ function onbFinalizar() {
         dificuldade: nivelParaPeso(m.dificuldade),
         cor: gerarCorUnica()
     }));
+    const materiasDoPlano = todasMaterias.filter(m => m.fase <= 1);
+    materiasList = materiasDoPlano.map(m => ({ nome: m.nome, legenda: m.legenda }));
+    materiasSelecionadas = materiasDoPlano;
 
-    // If there's a base plan, adopt it
+    const maxFaseCalculada = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
+
     if (dados.planoBase) {
         const plano = dados.planoBase;
-        const todasMaterias = plano.materias || [];
-        const maxFase = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
+        const materiasPlano = plano.materias || [];
+        // Apply phases from onboarding limiter to plan materias
+        if (dados.limitarMaterias) {
+            materiasPlano.forEach(mp => {
+                const match = todasMaterias.find(tm => tm.legenda === mp.legenda);
+                if (match) mp.fase = match.fase;
+            });
+        }
+        const maxFase = Math.max(1, ...materiasPlano.map(m => m.fase || 1));
         faseAtual = 1;
         planoAdotado = {
             id: plano.id,
             nome: plano.nome,
             edital: plano.edital || null,
-            materias: todasMaterias,
+            materias: materiasPlano,
             maxFase,
             regras_evolucao: plano.regras_evolucao || []
         };
 
-        // Apply configs
         const cfgPlano = plano.configuracoes || {};
         const cfgAtrib = dados.planoAtribuicao?.configuracoes || {};
         const cfg = { ...cfgPlano, ...cfgAtrib };
@@ -392,6 +583,16 @@ function onbFinalizar() {
                 if (typeof renderizarEdital === 'function') renderizarEdital();
             });
         }
+    } else if (maxFaseCalculada > 1) {
+        faseAtual = 1;
+        planoAdotado = {
+            id: null,
+            nome: dados.objetivo || 'Ciclo Manual',
+            edital: null,
+            materias: todasMaterias,
+            maxFase: maxFaseCalculada,
+            regras_evolucao: []
+        };
     }
 
     inicializarSelecaoMaterias();
