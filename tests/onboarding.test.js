@@ -1,31 +1,37 @@
-// Testes para onboarding — _calcularFasesMaterias e _simularBlocos
+// Testes para onboarding — perfil, nivel, _calcularFasesMaterias e _simularBlocos
 // Executar: node tests/onboarding.test.js
 
 const fs = require('fs');
 const vm = require('vm');
 const path = require('path');
 
-// ── Shims mínimos ─────────────────────────────────────────────────────────────
+// ── Shims minimos ─────────────────────────────────────────────────────────────
 global.configuracoes = { duracaoBloco: 60 };
 global._onboardingDados = { limitarMaterias: false, materiasIniciais: 6, materiasPorCiclo: 2 };
 
-// ── Extrair funções ──────────────────────────────────────────────────────────
+// ── Extrair funcoes ──────────────────────────────────────────────────────────
 function extrairBloco(codigo, nomeFuncao) {
     const pos = codigo.indexOf('function ' + nomeFuncao + '(');
-    if (pos === -1) throw new Error('Função não encontrada: ' + nomeFuncao);
+    if (pos === -1) throw new Error('Funcao nao encontrada: ' + nomeFuncao);
     let depth = 0, i = pos, started = false;
     while (i < codigo.length) {
         if (codigo[i] === '{') { depth++; started = true; }
         else if (codigo[i] === '}') { depth--; if (started && depth === 0) return codigo.slice(pos, i + 1); }
         i++;
     }
-    throw new Error('Bloco não fechado: ' + nomeFuncao);
+    throw new Error('Bloco nao fechado: ' + nomeFuncao);
 }
 
 const code = fs.readFileSync(path.join(__dirname, '..', 'js', 'onboarding.js'), 'utf8');
+
+// Extract NIVEL_MATERIAS constant
+const nivelMatch = code.match(/const NIVEL_MATERIAS\s*=\s*\{[^}]+\}/);
+if (nivelMatch) vm.runInThisContext(nivelMatch[0].replace('const ', 'var '));
+
 vm.runInThisContext(extrairBloco(code, 'nivelParaPeso'));
 vm.runInThisContext(extrairBloco(code, '_calcularFasesMaterias'));
 vm.runInThisContext(extrairBloco(code, '_simularBlocos'));
+vm.runInThisContext(extrairBloco(code, '_definirStepsParaPerfil'));
 
 let passed = 0, failed = 0;
 function assert(cond, msg) {
@@ -34,54 +40,105 @@ function assert(cond, msg) {
 }
 
 const materias = [
-    { nome: 'Português', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
-    { nome: 'Matemática', legenda: 'MAT', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
+    { nome: 'Portugues', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+    { nome: 'Matematica', legenda: 'MAT', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
     { nome: 'Direito Const.', legenda: 'DC', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
     { nome: 'Direito Admin.', legenda: 'DA', importancia: 'medio', extensao: 'medio', dificuldade: 'pouco' },
-    { nome: 'Informática', legenda: 'INF', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' },
-    { nome: 'Inglês', legenda: 'ING', importancia: 'pouco', extensao: 'pouco', dificuldade: 'medio' },
+    { nome: 'Informatica', legenda: 'INF', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' },
+    { nome: 'Ingles', legenda: 'ING', importancia: 'pouco', extensao: 'pouco', dificuldade: 'medio' },
     { nome: 'Economia', legenda: 'ECO', importancia: 'pouco', extensao: 'medio', dificuldade: 'muito' },
     { nome: 'AFO', legenda: 'AFO', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' }
 ];
 
-// ── _calcularFasesMaterias: sem limitação ───────────────────────────────────
-console.log('\n_calcularFasesMaterias — sem limitação:');
+// ── _definirStepsParaPerfil ────────────────────────────────────────────────
+console.log('\n_definirStepsParaPerfil:');
+
+let steps = _definirStepsParaPerfil('autodidata');
+assert(steps[0] === 'perfil', 'autodidata: comeca com perfil');
+assert(steps.includes('materias'), 'autodidata: inclui materias');
+assert(steps.includes('familiaridade'), 'autodidata: inclui familiaridade');
+assert(steps.includes('limite'), 'autodidata: inclui limite');
+assert(steps.length === 7, `autodidata: 7 etapas (obteve ${steps.length})`);
+
+steps = _definirStepsParaPerfil('curso');
+assert(steps.includes('nivel'), 'curso: inclui nivel');
+assert(!steps.includes('materias'), 'curso: nao inclui materias');
+assert(!steps.includes('familiaridade'), 'curso: nao inclui familiaridade');
+assert(!steps.includes('limite'), 'curso: nao inclui limite');
+assert(steps.length === 5, `curso: 5 etapas (obteve ${steps.length})`);
+
+steps = _definirStepsParaPerfil('mentoria');
+assert(!steps.includes('horas'), 'mentoria: nao inclui horas');
+assert(!steps.includes('nivel'), 'mentoria: nao inclui nivel');
+assert(steps.length === 3, `mentoria: 3 etapas (obteve ${steps.length})`);
+
+steps = _definirStepsParaPerfil(null);
+assert(steps.length === 1 && steps[0] === 'perfil', 'null: so perfil');
+
+// ── NIVEL_MATERIAS ─────────────────────────────────────────────────────────
+console.log('\nNIVEL_MATERIAS:');
+
+assert(NIVEL_MATERIAS.basico === 6, 'basico = 6');
+assert(NIVEL_MATERIAS.intermediario === 12, 'intermediario = 12');
+assert(NIVEL_MATERIAS.avancado === Infinity, 'avancado = Infinity');
+
+// ── Nivel auto-configura limite ────────────────────────────────────────────
+console.log('\nNivel auto-configura limite:');
+
+_onboardingDados.limitarMaterias = true;
+_onboardingDados.materiasIniciais = 6;
+_onboardingDados.materiasPorCiclo = 2;
+let result = _calcularFasesMaterias(materias);
+const fase1 = result.filter(m => m.fase === 1);
+assert(fase1.length === 6, `basico (6 iniciais): 6 materias na fase 1 (obteve ${fase1.length})`);
+
+_onboardingDados.materiasIniciais = 12;
+_onboardingDados.materiasPorCiclo = 3;
+result = _calcularFasesMaterias(materias);
+assert(result.every(m => m.fase === 1), 'intermediario (12 iniciais, 8 materias): todas na fase 1');
 
 _onboardingDados.limitarMaterias = false;
-let result = _calcularFasesMaterias(materias);
-assert(result.every(m => m.fase === 1), 'sem limitar: todas na fase 1');
-assert(result.length === 8, 'preserva todas as 8 matérias');
+result = _calcularFasesMaterias(materias);
+assert(result.every(m => m.fase === 1), 'avancado (sem limitar): todas na fase 1');
 
-// ── _calcularFasesMaterias: com limitação ───────────────────────────────────
-console.log('\n_calcularFasesMaterias — com limitação:');
+// ── _calcularFasesMaterias: sem limitacao ───────────────────────────────────
+console.log('\n_calcularFasesMaterias — sem limitacao:');
+
+_onboardingDados.limitarMaterias = false;
+result = _calcularFasesMaterias(materias);
+assert(result.every(m => m.fase === 1), 'sem limitar: todas na fase 1');
+assert(result.length === 8, 'preserva todas as 8 materias');
+
+// ── _calcularFasesMaterias: com limitacao ───────────────────────────────────
+console.log('\n_calcularFasesMaterias — com limitacao:');
 
 _onboardingDados.limitarMaterias = true;
 _onboardingDados.materiasIniciais = 3;
 _onboardingDados.materiasPorCiclo = 2;
 result = _calcularFasesMaterias(materias);
 
-const fase1 = result.filter(m => m.fase === 1);
-assert(fase1.length === 3, `3 matérias na fase 1 (obteve ${fase1.length})`);
+const f1 = result.filter(m => m.fase === 1);
+assert(f1.length === 3, `3 materias na fase 1 (obteve ${f1.length})`);
 
-const fase2 = result.filter(m => m.fase === 2);
-assert(fase2.length === 2, `2 matérias na fase 2 (obteve ${fase2.length})`);
+const f2 = result.filter(m => m.fase === 2);
+assert(f2.length === 2, `2 materias na fase 2 (obteve ${f2.length})`);
 
-const fase3 = result.filter(m => m.fase === 3);
-assert(fase3.length === 2, `2 matérias na fase 3 (obteve ${fase3.length})`);
+const f3 = result.filter(m => m.fase === 3);
+assert(f3.length === 2, `2 materias na fase 3 (obteve ${f3.length})`);
 
-const fase4 = result.filter(m => m.fase === 4);
-assert(fase4.length === 1, `1 matéria na fase 4 (obteve ${fase4.length})`);
+const f4 = result.filter(m => m.fase === 4);
+assert(f4.length === 1, `1 materia na fase 4 (obteve ${f4.length})`);
 
-// ── Priorização por importância ─────────────────────────────────────────────
-console.log('\n_calcularFasesMaterias — priorização:');
+// ── Priorizacao por importancia ─────────────────────────────────────────────
+console.log('\n_calcularFasesMaterias — priorizacao:');
 
-const primeiras = fase1.map(m => m.legenda);
+const primeiras = f1.map(m => m.legenda);
 assert(primeiras.includes('POR') || primeiras.includes('MAT'),
-    'matérias "muito" importantes estão na fase 1');
+    'materias "muito" importantes estao na fase 1');
 
 const ultimas = result.filter(m => m.fase >= 3).map(m => m.legenda);
 assert(ultimas.includes('INF') || ultimas.includes('ING'),
-    'matérias "pouco" importantes ficam nas fases posteriores');
+    'materias "pouco" importantes ficam nas fases posteriores');
 
 // ── _calcularFasesMaterias: incremento de 1 ─────────────────────────────────
 console.log('\n_calcularFasesMaterias — incremento 1:');
@@ -91,7 +148,7 @@ _onboardingDados.materiasIniciais = 2;
 result = _calcularFasesMaterias(materias);
 
 const fases = new Set(result.map(m => m.fase));
-assert(fases.size === 7, `com 2 iniciais e +1/ciclo em 8 matérias: 7 fases (obteve ${fases.size})`);
+assert(fases.size === 7, `com 2 iniciais e +1/ciclo em 8 materias: 7 fases (obteve ${fases.size})`);
 
 // ── _calcularFasesMaterias: limite >= total ──────────────────────────────────
 console.log('\n_calcularFasesMaterias — limite >= total:');
@@ -118,7 +175,7 @@ const inf = blocos.find(b => b.legenda === 'INF');
 assert(por.qtd > inf.qtd, `POR (muito) tem mais blocos que INF (pouco): ${por.qtd} vs ${inf.qtd}`);
 
 blocos = _simularBlocos([], 10);
-assert(blocos.length === 0, 'sem matérias: retorna vazio');
+assert(blocos.length === 0, 'sem materias: retorna vazio');
 
 blocos = _simularBlocos(matAtivas, 0);
 assert(blocos.every(b => b.qtd === 0), '0 blocos: todos com 0');

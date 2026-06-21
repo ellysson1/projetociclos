@@ -51,7 +51,7 @@
             <button class="tab" data-tab="revisao" style="display:none;">Revisão</button>
             <button class="tab" data-tab="desempenho">Desempenho</button>
             <button class="tab" data-tab="videos">Videos</button>
-            <button class="tab" data-tab="planos">Planos</button>
+            <button class="tab" data-tab="planos" data-perfil-oculto="mentoria">Planos</button>
             <button class="tab" data-tab="exportar">Exportar</button>
         </div>
 
@@ -59,9 +59,9 @@
         <div id="ciclo" class="tab-content active">
             <div class="subtab-container">
                 <button class="subtab active" data-subtab="subtab-meuciclo">Meu Ciclo</button>
-                <button class="subtab" data-subtab="subtab-variaveis">Variaveis</button>
-                <button class="subtab" data-subtab="subtab-ajustes">Ajustes</button>
-                <button class="subtab" data-subtab="subtab-config">Configuracoes</button>
+                <button class="subtab" data-subtab="subtab-variaveis" data-perfil-oculto="mentoria">Variaveis</button>
+                <button class="subtab" data-subtab="subtab-ajustes" data-perfil-oculto="mentoria">Ajustes</button>
+                <button class="subtab" data-subtab="subtab-config" data-perfil-oculto="mentoria">Configuracoes</button>
             </div>
 
             <!-- Sub-tab: Meu Ciclo (default) -->
@@ -112,7 +112,7 @@
             </div>
 
             <!-- Sub-tab: Variaveis (always editable) -->
-            <div id="subtab-variaveis" class="subtab-content">
+            <div id="subtab-variaveis" class="subtab-content" data-perfil-oculto="mentoria">
                 <h2>Pesos por Materia</h2>
                 <p style="font-size:13px; color:#666; margin-bottom:12px;">Ajuste os pesos e clique em Calcular para gerar um novo ciclo.</p>
                 <table id="tabelaVariaveis">
@@ -130,7 +130,7 @@
             </div>
 
             <!-- Sub-tab: Ajustes (always editable) -->
-            <div id="subtab-ajustes" class="subtab-content">
+            <div id="subtab-ajustes" class="subtab-content" data-perfil-oculto="mentoria">
                 <h2>Ajustar Blocos por Materia</h2>
                 <p style="font-size:13px; color:#666; margin-bottom:12px;">Edite manualmente a quantidade de blocos e confirme.</p>
                 <table id="tabelaAjustes">
@@ -146,7 +146,7 @@
             </div>
 
             <!-- Sub-tab: Configuracoes -->
-            <div id="subtab-config" class="subtab-content">
+            <div id="subtab-config" class="subtab-content" data-perfil-oculto="mentoria">
                 <h2>Configuracoes Avancadas</h2>
                 <div>
                     <label for="duracaoBloco">Duracao do Bloco (minutos):</label>
@@ -312,7 +312,7 @@
         </div>
 
         <!-- ============ PLANOS TAB ============ -->
-        <div id="planos" class="tab-content">
+        <div id="planos" class="tab-content" data-perfil-oculto="mentoria">
             <!-- Student view -->
             <div id="planosAluno">
                 <h2>Planos Disponiveis</h2>
@@ -632,7 +632,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js?v=1"></script>
     <script src="js/sync-engine.js?v=2"></script>
-    <script src="js/state.js?v=6"></script>
+    <script src="js/state.js?v=7"></script>
     <script src="js/tabs.js?v=3"></script>
     <script src="js/supabase-auth.js?v=1"></script>
     <script src="js/supabase-sync.js?v=5"></script>
@@ -654,7 +654,7 @@
     <script src="js/notes.js?v=1"></script>
     <script src="js/export.js?v=1"></script>
     <script src="js/lgpd.js?v=2"></script>
-    <script src="js/onboarding.js?v=4"></script>
-    <script src="js/app.js?v=14"></script>
+    <script src="js/onboarding.js?v=6"></script>
+    <script src="js/app.js?v=15"></script>
 </body>
 </html>

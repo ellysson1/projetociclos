@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     inicializarSelecaoMaterias();
     carregarConfiguracoes();
     carregarEstado();
+    if (typeof aplicarVisibilidadePerfil === 'function') aplicarVisibilidadePerfil();
 
     const logado = await atualizarUIAuth();
     if (supabaseConfigurado()) {

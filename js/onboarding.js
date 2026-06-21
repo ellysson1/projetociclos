@@ -1,19 +1,50 @@
 // ── Onboarding Wizard ────────────────────────────────────────────────────────
 
-let _onboardingStep = 1;
+const NIVEL_MATERIAS = { basico: 6, intermediario: 12, avancado: Infinity };
+
+let _onboardingStepIdx = 0;
+let _onboardingSteps = ['perfil'];
 let _onboardingDados = {
+    tipoPerfil: null,
+    nivelConteudo: null,
     objetivo: '',
     horasSemanais: 10,
     materias: [],
     planoBase: null,
+    planoAtribuicao: null,
     limitarMaterias: false,
     materiasIniciais: 6,
     materiasPorCiclo: 2
 };
 
+function _definirStepsParaPerfil(perfil) {
+    switch (perfil) {
+        case 'autodidata':
+            return ['perfil', 'objetivo', 'horas', 'materias', 'familiaridade', 'limite', 'resumo'];
+        case 'curso':
+            return ['perfil', 'objetivo', 'horas', 'nivel', 'resumo'];
+        case 'mentoria':
+            return ['perfil', 'objetivo', 'resumo'];
+        default:
+            return ['perfil'];
+    }
+}
+
 function abrirOnboarding() {
-    _onboardingStep = 1;
-    _onboardingDados = { objetivo: '', horasSemanais: 10, materias: [], planoBase: null, limitarMaterias: false, materiasIniciais: 6, materiasPorCiclo: 2 };
+    _onboardingStepIdx = 0;
+    _onboardingSteps = ['perfil'];
+    _onboardingDados = {
+        tipoPerfil: null,
+        nivelConteudo: null,
+        objetivo: '',
+        horasSemanais: 10,
+        materias: [],
+        planoBase: null,
+        planoAtribuicao: null,
+        limitarMaterias: false,
+        materiasIniciais: 6,
+        materiasPorCiclo: 2
+    };
 
     const overlay = document.getElementById('onboardingOverlay');
     overlay.style.display = 'flex';
@@ -27,38 +58,104 @@ function fecharOnboarding() {
 function renderizarStepOnboarding() {
     const container = document.getElementById('onboardingConteudo');
     const progressBar = document.getElementById('onboardingProgresso');
-    const totalSteps = 6;
-    progressBar.style.width = `${(_onboardingStep / totalSteps) * 100}%`;
+    const totalSteps = _onboardingSteps.length;
+    const currentStep = _onboardingStepIdx + 1;
+    progressBar.style.width = `${(currentStep / totalSteps) * 100}%`;
+    document.getElementById('onboardingStepLabel').textContent = `Etapa ${currentStep} de ${totalSteps}`;
 
-    document.getElementById('onboardingStepLabel').textContent = `Etapa ${_onboardingStep} de ${totalSteps}`;
+    const stepName = _onboardingSteps[_onboardingStepIdx];
+    const renderers = {
+        perfil: renderStepPerfil,
+        objetivo: renderStep1Objetivo,
+        horas: renderStep2Horas,
+        materias: renderStep3Materias,
+        familiaridade: renderStep4Familiaridade,
+        limite: renderStep5LimiteMaterias,
+        nivel: renderStepNivel,
+        resumo: renderStep6Resumo
+    };
 
-    switch (_onboardingStep) {
-        case 1: renderStep1Objetivo(container); break;
-        case 2: renderStep2Horas(container); break;
-        case 3: renderStep3Materias(container); break;
-        case 4: renderStep4Familiaridade(container); break;
-        case 5: renderStep5LimiteMaterias(container); break;
-        case 6: renderStep6Resumo(container); break;
-    }
+    if (renderers[stepName]) renderers[stepName](container);
 }
 
-// ── Step 1: Objetivo ─────────────────────────────────────────────────────────
+// ── Step: Perfil ────────────────────────────────────────────────────────────
 
-async function renderStep1Objetivo(container) {
+function renderStepPerfil(container) {
+    const perfil = _onboardingDados.tipoPerfil;
     container.innerHTML = `
         <h2 style="font-size:24px; color:#3F51B5; margin-bottom:8px;">Bem-vindo ao Ciclo de Estudos!</h2>
-        <p style="color:#666; margin-bottom:24px;">Vamos montar seu plano de estudos personalizado em poucos minutos.</p>
-        <label style="font-weight:600; font-size:15px; display:block; margin-bottom:8px;">Qual concurso ou objetivo voce esta estudando?</label>
-        <input type="text" id="onbObjetivo" placeholder="Ex: TCU 2026, OAB, ENEM..." value="${_onboardingDados.objetivo}"
-            style="width:100%; padding:14px; font-size:16px; border:2px solid #E1E4E8; border-radius:10px; margin-bottom:20px;">
-        <div id="onbPlanosDisponiveis" style="margin-bottom:20px;"></div>
+        <p style="color:#666; margin-bottom:24px;">Como voce estuda? Isso define o caminho mais rapido pra comecar.</p>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+            ${_renderCardPerfil('autodidata', 'Estudo por conta propria', 'Configure seu ciclo do zero ou use um template. Controle total sobre materias e configuracoes.', '~3 min', perfil)}
+            ${_renderCardPerfil('curso', 'Tenho um curso preparatorio', 'Adote o plano do seu curso e escolha seu nivel. Comece a estudar em segundos.', '~1 min', perfil)}
+            ${_renderCardPerfil('mentoria', 'Tenho um professor/mentor', 'Seu professor ja configurou tudo. Voce so precisa estudar e reportar seu progresso.', 'Automatico', perfil)}
+        </div>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
             <button onclick="fecharOnboarding()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">Cancelar</button>
             <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
         </div>
     `;
 
-    // Load available plans
+    container.querySelectorAll('.onb-perfil-card').forEach(card => {
+        card.addEventListener('click', () => {
+            _onboardingDados.tipoPerfil = card.dataset.perfil;
+            _onboardingSteps = _definirStepsParaPerfil(card.dataset.perfil);
+            renderStepPerfil(container);
+        });
+    });
+}
+
+function _renderCardPerfil(tipo, titulo, desc, tempo, perfilAtual) {
+    const ativo = perfilAtual === tipo;
+    const icones = { autodidata: '\u{1F3AF}', curso: '\u{1F4DA}', mentoria: '\u{1F468}‍\u{1F3EB}' };
+    return `
+        <button class="onb-perfil-card" data-perfil="${tipo}" style="
+            display:flex; align-items:flex-start; gap:14px; padding:16px 20px; border-radius:12px; text-align:left; cursor:pointer; transition:all 0.2s;
+            border:2px solid ${ativo ? '#3F51B5' : '#E1E4E8'};
+            background:${ativo ? '#E8EAF6' : 'white'};
+        ">
+            <span style="font-size:28px; line-height:1;">${icones[tipo]}</span>
+            <div style="flex:1;">
+                <div style="font-weight:700; font-size:15px; color:${ativo ? '#3F51B5' : '#333'};">${titulo}</div>
+                <div style="font-size:13px; color:#888; margin-top:4px;">${desc}</div>
+                <div style="font-size:11px; color:#aaa; margin-top:6px;">${tempo}</div>
+            </div>
+        </button>
+    `;
+}
+
+// ── Step 1: Objetivo ─────────────────────────────────────────────────────────
+
+async function renderStep1Objetivo(container) {
+    const perfil = _onboardingDados.tipoPerfil;
+    const titulos = {
+        autodidata: 'Qual concurso ou objetivo voce esta estudando?',
+        curso: 'Selecione o plano do seu curso',
+        mentoria: 'Plano do seu professor'
+    };
+    const subtitulos = {
+        autodidata: 'Vamos montar seu plano de estudos personalizado em poucos minutos.',
+        curso: 'Escolha o plano do seu curso preparatorio para comecar.',
+        mentoria: 'Conecte-se ao plano configurado pelo seu professor.'
+    };
+
+    const mostrarInput = perfil === 'autodidata';
+
+    container.innerHTML = `
+        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">${titulos[perfil] || titulos.autodidata}</h2>
+        <p style="color:#666; margin-bottom:${mostrarInput ? '24' : '16'}px;">${subtitulos[perfil] || subtitulos.autodidata}</p>
+        ${mostrarInput ? `
+            <label style="font-weight:600; font-size:15px; display:block; margin-bottom:8px;">Qual concurso ou objetivo?</label>
+            <input type="text" id="onbObjetivo" placeholder="Ex: TCU 2026, OAB, ENEM..." value="${_onboardingDados.objetivo}"
+                style="width:100%; padding:14px; font-size:16px; border:2px solid #E1E4E8; border-radius:10px; margin-bottom:20px;">
+        ` : `<input type="hidden" id="onbObjetivo" value="${_onboardingDados.objetivo}">`}
+        <div id="onbPlanosDisponiveis" style="margin-bottom:20px;"></div>
+        <div style="display:flex; justify-content:space-between; gap:10px;">
+            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
+        </div>
+    `;
+
     const planosDiv = document.getElementById('onbPlanosDisponiveis');
     if (supabaseConfigurado()) {
         const user = await getUsuarioLogado();
@@ -84,7 +181,8 @@ async function renderStep1Objetivo(container) {
         });
 
         if (planos.length > 0) {
-            planosDiv.innerHTML = '<p style="font-size:14px; color:#555; margin-bottom:10px; font-weight:600;">Ou escolha um plano pronto:</p>';
+            const label = perfil === 'autodidata' ? 'Ou escolha um plano pronto:' : 'Planos disponiveis:';
+            planosDiv.innerHTML = `<p style="font-size:14px; color:#555; margin-bottom:10px; font-weight:600;">${label}</p>`;
             planos.forEach(p => {
                 const isAtribuido = atribuicao?.planos?.id === p.id;
                 const card = document.createElement('div');
@@ -115,6 +213,8 @@ async function renderStep1Objetivo(container) {
                 });
                 planosDiv.appendChild(card);
             });
+        } else if (perfil !== 'autodidata') {
+            planosDiv.innerHTML = '<p style="color:#999; font-size:14px;">Nenhum plano disponivel. Peca o codigo ao seu professor ou curso.</p>';
         }
     }
 }
@@ -265,8 +365,8 @@ function renderStep4Familiaridade(container) {
 
 function renderBotoesNivel(idx, campo, valorAtual, labels) {
     const valores = ['pouco', 'medio', 'muito'];
-    if (campo === 'extensao') valores[0] = 'pouco'; // curto
-    if (campo === 'dificuldade') valores[2] = 'muito'; // dificil
+    if (campo === 'extensao') valores[0] = 'pouco';
+    if (campo === 'dificuldade') valores[2] = 'muito';
     return labels.map((label, i) => {
         const val = valores[i];
         const ativo = valorAtual === val;
@@ -278,7 +378,7 @@ function renderBotoesNivel(idx, campo, valorAtual, labels) {
     }).join('');
 }
 
-// ── Step 5: Limite de matérias no ciclo inicial ─────────────────────────────
+// ── Step 5: Limite de materias no ciclo inicial ─────────────────────────────
 
 function renderStep5LimiteMaterias(container) {
     const total = _onboardingDados.materias.length;
@@ -294,7 +394,7 @@ function renderStep5LimiteMaterias(container) {
                 border:2px solid ${!limitarAtivo ? '#3F51B5' : '#E1E4E8'};
                 background:${!limitarAtivo ? '#E8EAF6' : 'white'};
             ">
-                <div style="font-size:24px; margin-bottom:4px;">📚</div>
+                <div style="font-size:24px; margin-bottom:4px;">\u{1F4DA}</div>
                 <div style="font-weight:700; font-size:15px; color:${!limitarAtivo ? '#3F51B5' : '#333'};">Todas (${total})</div>
                 <div style="font-size:12px; color:#888; margin-top:2px;">Desde o primeiro ciclo</div>
             </button>
@@ -303,7 +403,7 @@ function renderStep5LimiteMaterias(container) {
                 border:2px solid ${limitarAtivo ? '#3F51B5' : '#E1E4E8'};
                 background:${limitarAtivo ? '#E8EAF6' : 'white'};
             ">
-                <div style="font-size:24px; margin-bottom:4px;">🎯</div>
+                <div style="font-size:24px; margin-bottom:4px;">\u{1F3AF}</div>
                 <div style="font-weight:700; font-size:15px; color:${limitarAtivo ? '#3F51B5' : '#333'};">Gradual</div>
                 <div style="font-size:12px; color:#888; margin-top:2px;">Comecar com poucas, crescer aos poucos</div>
             </button>
@@ -363,20 +463,97 @@ function renderStep5LimiteMaterias(container) {
     });
 }
 
-// ── Step 6: Resumo ──────────────────────────────────────────────────────────
+// ── Step: Nivel (Curso) ─────────────────────────────────────────────────────
+
+function renderStepNivel(container) {
+    const materias = _onboardingDados.materias;
+    const total = materias.length;
+    const nivel = _onboardingDados.nivelConteudo;
+
+    const sorted = [...materias].sort((a, b) => {
+        const prioMap = { muito: 3, medio: 2, pouco: 1 };
+        const pa = (prioMap[a.importancia] || 2) * 10 + (prioMap[a.dificuldade] || 2);
+        const pb = (prioMap[b.importancia] || 2) * 10 + (prioMap[b.dificuldade] || 2);
+        return pb - pa;
+    });
+
+    const niveis = [
+        { id: 'basico', titulo: 'Basico', icone: '\u{1F331}', qtd: Math.min(6, total), desc: 'Foco nas disciplinas mais importantes' },
+        { id: 'intermediario', titulo: 'Intermediario', icone: '\u{1F4C8}', qtd: Math.min(12, total), desc: 'Cobertura ampliada do edital' },
+        { id: 'avancado', titulo: 'Avancado', icone: '\u{1F3C6}', qtd: total, desc: 'Cobertura completa' }
+    ];
+
+    const niveisUnicos = niveis.filter((n, i) => i === 0 || n.qtd !== niveis[i - 1].qtd);
+
+    container.innerHTML = `
+        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Qual seu nivel de estudo?</h2>
+        <p style="color:#666; margin-bottom:24px;">Escolha quantas materias voce quer estudar agora. As demais serao adicionadas conforme voce avanca.</p>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+            ${niveisUnicos.map(n => {
+                const ativo = nivel === n.id;
+                const materiasDoNivel = sorted.slice(0, n.qtd);
+                const materiasRestantes = sorted.slice(n.qtd);
+                return `
+                    <button class="onb-nivel-card" data-nivel="${n.id}" style="
+                        padding:16px 20px; border-radius:12px; text-align:left; cursor:pointer; transition:all 0.2s;
+                        border:2px solid ${ativo ? '#3F51B5' : '#E1E4E8'};
+                        background:${ativo ? '#E8EAF6' : 'white'};
+                    ">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <span style="font-size:24px;">${n.icone}</span>
+                            <div>
+                                <div style="font-weight:700; font-size:15px; color:${ativo ? '#3F51B5' : '#333'};">${n.titulo}</div>
+                                <div style="font-size:12px; color:#888;">${n.qtd} materia${n.qtd !== 1 ? 's' : ''} — ${n.desc}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                            ${materiasDoNivel.map(m => `<span style="padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; background:${ativo ? '#C5CAE9' : '#E8EAF6'}; color:#3F51B5;">${m.legenda}</span>`).join('')}
+                            ${materiasRestantes.length > 0 ? `<span style="padding:2px 8px; border-radius:8px; font-size:11px; color:#999; background:#f5f5f5;">+${materiasRestantes.length} depois</span>` : ''}
+                        </div>
+                    </button>
+                `;
+            }).join('')}
+        </div>
+        <div style="display:flex; justify-content:space-between; gap:10px;">
+            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Ver Resumo &rarr;</button>
+        </div>
+    `;
+
+    container.querySelectorAll('.onb-nivel-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const nivelId = card.dataset.nivel;
+            _onboardingDados.nivelConteudo = nivelId;
+            const qtd = NIVEL_MATERIAS[nivelId];
+            if (qtd >= total) {
+                _onboardingDados.limitarMaterias = false;
+            } else {
+                _onboardingDados.limitarMaterias = true;
+                _onboardingDados.materiasIniciais = qtd;
+                _onboardingDados.materiasPorCiclo = qtd <= 6 ? 2 : 3;
+            }
+            renderStepNivel(container);
+        });
+    });
+}
+
+// ── Step: Resumo ────────────────────────────────────────────────────────────
 
 function renderStep6Resumo(container) {
-    const materias = _onboardingDados.materias;
-    const horas = _onboardingDados.horasSemanais;
+    const dados = _onboardingDados;
+    const materias = dados.materias;
+    const horas = dados.horasSemanais;
     const duracaoBloco = configuracoes?.duracaoBloco || 60;
     const totalBlocos = Math.floor((horas * 60) / duracaoBloco);
+    const perfil = dados.tipoPerfil;
 
-    // Calcular blocos por matéria (simulação)
     const materiasComFase = _calcularFasesMaterias(materias);
     const materiasAtivas = materiasComFase.filter(m => m.fase === 1);
     const blocosPorMateria = _simularBlocos(materiasAtivas, totalBlocos);
-
     const materiasProxFases = materiasComFase.filter(m => m.fase > 1);
+
+    const perfilLabels = { autodidata: 'Autodidata', curso: 'Aluno de Curso', mentoria: 'Mentoria' };
+    const nivelLabels = { basico: 'Basico', intermediario: 'Intermediario', avancado: 'Avancado' };
 
     container.innerHTML = `
         <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Tudo pronto!</h2>
@@ -397,6 +574,14 @@ function renderStep6Resumo(container) {
                     <div style="font-size:13px; color:#888;">blocos de ${duracaoBloco}min</div>
                 </div>
             </div>
+
+            ${perfil ? `
+                <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+                    <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#E8EAF6; color:#3F51B5;">${perfilLabels[perfil] || perfil}</span>
+                    ${dados.nivelConteudo ? `<span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#E8F5E9; color:#2E7D32;">${nivelLabels[dados.nivelConteudo]}</span>` : ''}
+                    ${dados.planoBase ? `<span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#FFF3E0; color:#E65100;">${dados.planoBase.nome}</span>` : ''}
+                </div>
+            ` : ''}
 
             <div style="margin-bottom:12px;">
                 <div style="font-size:13px; font-weight:600; color:#555; margin-bottom:8px;">Distribuicao dos blocos:</div>
@@ -440,7 +625,6 @@ function _calcularFasesMaterias(materias) {
     const iniciais = Math.max(1, Math.min(_onboardingDados.materiasIniciais, materias.length));
     const porCiclo = _onboardingDados.materiasPorCiclo || 2;
 
-    // Sort by priority: importancia "muito" first, then "medio", then "pouco"; within same, dificuldade "muito" first
     const sorted = [...materias].sort((a, b) => {
         const prioMap = { muito: 3, medio: 2, pouco: 1 };
         const pa = (prioMap[a.importancia] || 2) * 10 + (prioMap[a.dificuldade] || 2);
@@ -491,28 +675,62 @@ function _simularBlocos(materias, totalBlocos) {
 // ── Navigation ───────────────────────────────────────────────────────────────
 
 function onbAvancar() {
-    if (_onboardingStep === 1) {
-        _onboardingDados.objetivo = document.getElementById('onbObjetivo')?.value?.trim() || '';
+    const stepName = _onboardingSteps[_onboardingStepIdx];
+
+    if (stepName === 'perfil') {
+        if (!_onboardingDados.tipoPerfil) { alert('Escolha como voce estuda.'); return; }
+        _onboardingSteps = _definirStepsParaPerfil(_onboardingDados.tipoPerfil);
     }
-    if (_onboardingStep === 2) {
+    if (stepName === 'objetivo') {
+        _onboardingDados.objetivo = document.getElementById('onbObjetivo')?.value?.trim() || '';
+        if (_onboardingDados.tipoPerfil !== 'autodidata' && !_onboardingDados.planoBase) {
+            alert('Selecione um plano para continuar.');
+            return;
+        }
+    }
+    if (stepName === 'horas') {
         _onboardingDados.horasSemanais = parseInt(document.getElementById('onbHorasCustom')?.value) || 10;
     }
-    if (_onboardingStep === 3 && _onboardingDados.materias.length === 0) {
+    if (stepName === 'materias' && _onboardingDados.materias.length === 0) {
         alert('Adicione pelo menos uma materia.');
         return;
     }
-    if (_onboardingStep === 5) {
+    if (stepName === 'limite') {
         if (_onboardingDados.limitarMaterias) {
             _onboardingDados.materiasIniciais = parseInt(document.getElementById('onbMateriasIniciais')?.value) || 6;
         }
     }
-    _onboardingStep++;
+    if (stepName === 'nivel') {
+        if (!_onboardingDados.nivelConteudo) { alert('Escolha um nivel.'); return; }
+    }
+
+    // For Curso: skip nivel step if plan has <= 6 materias
+    if (stepName === 'horas' && _onboardingDados.tipoPerfil === 'curso') {
+        const nextStep = _onboardingSteps[_onboardingStepIdx + 1];
+        if (nextStep === 'nivel' && _onboardingDados.materias.length <= 6) {
+            _onboardingDados.nivelConteudo = 'avancado';
+            _onboardingDados.limitarMaterias = false;
+            _onboardingStepIdx++;
+        }
+    }
+
+    _onboardingStepIdx++;
     renderizarStepOnboarding();
 }
 
 function onbVoltar() {
-    if (_onboardingStep > 1) {
-        _onboardingStep--;
+    if (_onboardingStepIdx > 0) {
+        // If going back from a step after perfil, check if we skipped nivel
+        const prevStep = _onboardingSteps[_onboardingStepIdx - 1];
+        if (prevStep === 'nivel' && _onboardingDados.tipoPerfil === 'curso' && _onboardingDados.materias.length <= 6) {
+            _onboardingStepIdx -= 2;
+        } else {
+            _onboardingStepIdx--;
+        }
+        if (_onboardingStepIdx < 0) _onboardingStepIdx = 0;
+        if (_onboardingSteps[_onboardingStepIdx] === 'perfil') {
+            _onboardingSteps = _definirStepsParaPerfil(_onboardingDados.tipoPerfil || 'autodidata');
+        }
         renderizarStepOnboarding();
     }
 }
@@ -521,6 +739,10 @@ function onbVoltar() {
 
 function onbFinalizar() {
     const dados = _onboardingDados;
+
+    // Apply profile and nivel to globals
+    tipoPerfil = dados.tipoPerfil;
+    nivelConteudo = dados.nivelConteudo;
 
     // Set hours
     document.getElementById('horasSemanais').value = dados.horasSemanais;
@@ -550,7 +772,6 @@ function onbFinalizar() {
     if (dados.planoBase) {
         const plano = dados.planoBase;
         const materiasPlano = plano.materias || [];
-        // Apply phases from onboarding limiter to plan materias
         if (dados.limitarMaterias) {
             materiasPlano.forEach(mp => {
                 const match = todasMaterias.find(tm => tm.legenda === mp.legenda);
@@ -599,7 +820,6 @@ function onbFinalizar() {
     carregarConfiguracoes();
     preencherTabelaVariaveis();
 
-    // Pre-fill weights from onboarding answers
     materiasSelecionadas.forEach(m => {
         const pesoInput = document.getElementsByName(`peso-${m.legenda}`)[0];
         const extInput = document.getElementsByName(`extensao-${m.legenda}`)[0];
@@ -609,11 +829,22 @@ function onbFinalizar() {
         if (difInput) difInput.value = m.dificuldade;
     });
 
-    // Generate cycle
     calcularBlocos();
 
     fecharOnboarding();
     salvarEstado();
+
+    if (typeof aplicarVisibilidadePerfil === 'function') aplicarVisibilidadePerfil();
+}
+
+// ── Visibilidade por perfil ─────────────────────────────────────────────────
+
+function aplicarVisibilidadePerfil() {
+    const perfil = tipoPerfil || 'autodidata';
+    document.querySelectorAll('[data-perfil-oculto]').forEach(el => {
+        const ocultos = el.dataset.perfilOculto.split(',');
+        el.style.display = ocultos.includes(perfil) ? 'none' : '';
+    });
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
