@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Painel de alunos (professor)
     document.getElementById('btnFecharPainel').addEventListener('click', fecharPainelAlunos);
+    document.getElementById('btnSairVisualizacao').addEventListener('click', sairModoVisualizacao);
 
     // Notificacoes
     document.getElementById('notificacaoBadge').addEventListener('click', () => {

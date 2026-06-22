@@ -32,6 +32,7 @@ async function carregarEditalProgresso() {
 }
 
 async function salvarEditalProgressoItem(materia, topico, subtopico, dados) {
+    if (_modoVisualizacaoAluno) return;
     if (!supabaseConfigurado() || !planoAdotado?.id) return;
     const user = await getUsuarioLogado();
     if (!user) return;

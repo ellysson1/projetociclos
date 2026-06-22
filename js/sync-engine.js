@@ -154,6 +154,7 @@ function enfileirarQuestaoPendente(registro) {
 let _flushEmAndamento = false;
 
 async function flushEventosPendentes() {
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return;
     if (_flushEmAndamento) return;
     if (typeof supabaseConfigurado !== 'function' || !supabaseConfigurado()) return;
     if (!navigator.onLine) return;

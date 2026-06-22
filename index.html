@@ -44,6 +44,20 @@
             </div>
         </div>
 
+        <!-- Banner: Modo Visualizacao Aluno -->
+        <div id="bannerVisualizacao" style="display:none; background:linear-gradient(135deg, #FF6B6B, #ee5a24); color:white; padding:12px 18px; border-radius:8px; margin-bottom:14px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <strong style="font-size:15px;">Visualizando como aluno</strong>
+                    <span id="bannerVisualizacaoNome" style="margin-left:8px; font-size:14px; opacity:0.9;"></span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span style="font-size:12px; background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:12px;">Somente leitura</span>
+                    <button id="btnSairVisualizacao" type="button" style="background:white; color:#ee5a24; border:none; border-radius:6px; padding:6px 16px; font-size:13px; font-weight:bold; cursor:pointer;">Voltar ao modo professor</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Main tabs -->
         <div class="tab-container">
             <button class="tab active" data-tab="ciclo">Ciclo</button>
@@ -637,19 +651,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js?v=1"></script>
-    <script src="js/sync-engine.js?v=2"></script>
-    <script src="js/state.js?v=7"></script>
+    <script src="js/sync-engine.js?v=3"></script>
+    <script src="js/state.js?v=8"></script>
     <script src="js/tabs.js?v=3"></script>
     <script src="js/supabase-auth.js?v=1"></script>
-    <script src="js/supabase-sync.js?v=5"></script>
+    <script src="js/supabase-sync.js?v=6"></script>
     <script src="js/profile.js?v=1"></script>
     <script src="js/materias.js?v=1"></script>
     <script src="js/variaveis.js?v=8"></script>
     <script src="js/blocos.js?v=10"></script>
     <script src="js/questoes.js?v=6"></script>
     <script src="js/matcher.js?v=1"></script>
-    <script src="js/planos.js?v=11"></script>
-    <script src="js/edital.js?v=12"></script>
+    <script src="js/planos.js?v=12"></script>
+    <script src="js/edital.js?v=13"></script>
     <script src="js/reconciliacao.js?v=1"></script>
     <script src="js/notificacoes.js?v=2"></script>
     <script src="js/revisao.js?v=2"></script>
@@ -661,6 +675,6 @@
     <script src="js/export.js?v=1"></script>
     <script src="js/lgpd.js?v=2"></script>
     <script src="js/onboarding.js?v=6"></script>
-    <script src="js/app.js?v=15"></script>
+    <script src="js/app.js?v=16"></script>
 </body>
 </html>

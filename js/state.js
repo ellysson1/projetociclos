@@ -21,6 +21,8 @@ let faseAtual = 1; // Progressive cycle: current phase
 let cicloNumero = 1; // Cycle counter: increments when all blocks are completed
 let tipoPerfil = null; // 'autodidata' | 'curso' | 'mentoria'
 let nivelConteudo = null; // 'basico' | 'intermediario' | 'avancado'
+let _modoVisualizacaoAluno = false;
+let _estadoProfessorBackup = null;
 
 let configuracoes = {
     duracaoBloco: 60,
@@ -76,6 +78,7 @@ function aplicarEstadoGlobals(estado, opts = {}) {
 }
 
 function salvarEstado() {
+    if (_modoVisualizacaoAluno) return;
     const estado = montarEstadoLocal();
     localStorage.setItem('cicloEstudosEstado', JSON.stringify(estado));
     salvarEstadoNuvem();

@@ -7,6 +7,7 @@
 let _salvandoNuvem = false;
 
 async function salvarEstadoNuvem() {
+    if (_modoVisualizacaoAluno) return;
     if (!supabaseConfigurado()) return;
     const user = await getUsuarioLogado();
     if (!user) return;

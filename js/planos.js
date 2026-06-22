@@ -999,7 +999,8 @@ async function abrirPainelAlunos(plano) {
                 <div style="margin-bottom:6px; font-size:13px; font-weight:600; color:#333;">Blocos por matéria:</div>
                 <div style="display:flex; flex-wrap:wrap; gap:4px;">${materiasResumo || '<span style="font-size:12px; color:#999;">Nenhum bloco</span>'}</div>
                 ${proximaFaseHtml}
-                <div style="margin-top:10px;">
+                <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn-visualizar-aluno" data-uid="${uid}" data-nome="${nome}" style="font-size:12px; padding:4px 12px; background:#FF6B6B; color:white; border:none; border-radius:6px; cursor:pointer;">Visualizar como aluno</button>
                     <button class="btn-reatribuir" data-uid="${uid}" style="font-size:12px; padding:4px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Reatribuir Plano</button>
                 </div>
             </div>
@@ -1023,10 +1024,115 @@ async function abrirPainelAlunos(plano) {
             }, 500);
         });
     });
+
+    conteudo.querySelectorAll('.btn-visualizar-aluno').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            entrarModoVisualizacao(btn.dataset.uid, btn.dataset.nome, plano.id);
+        });
+    });
 }
 
 function fecharPainelAlunos() {
     document.getElementById('painelAlunos').style.display = 'none';
+}
+
+async function entrarModoVisualizacao(alunoId, alunoNome, planoId) {
+    _estadoProfessorBackup = montarEstadoLocal();
+    _estadoProfessorBackup._editalProgresso = typeof editalProgresso !== 'undefined' ? { ...editalProgresso } : {};
+    _estadoProfessorBackup._planoAdotado = planoAdotado ? JSON.parse(JSON.stringify(planoAdotado)) : null;
+
+    const [progressoResp, editalResp, questoesResp, planoResp] = await Promise.all([
+        supabaseClient.from('progresso').select('estado').eq('user_id', alunoId).maybeSingle(),
+        supabaseClient.from('edital_progresso').select('*').eq('user_id', alunoId).eq('plano_id', planoId),
+        supabaseClient.from('questoes').select('materia, questoes_feitas, questoes_corretas').eq('user_id', alunoId),
+        supabaseClient.from('planos').select('*').eq('id', planoId).maybeSingle()
+    ]);
+
+    const estadoAluno = progressoResp.data?.estado;
+    if (!estadoAluno) {
+        alert('Este aluno ainda nao tem dados de progresso.');
+        _estadoProfessorBackup = null;
+        return;
+    }
+
+    _modoVisualizacaoAluno = true;
+
+    aplicarEstadoGlobals(estadoAluno, { forcarTempo: true });
+
+    if (planoResp.data) {
+        planoAdotado = {
+            id: planoResp.data.id,
+            nome: planoResp.data.nome,
+            edital: planoResp.data.edital || [],
+            materias: planoResp.data.materias || [],
+            regras_evolucao: planoResp.data.regras_evolucao || planoResp.data.configuracoes?.regras_evolucao || null
+        };
+    }
+
+    if (editalResp.data && typeof editalProgresso !== 'undefined') {
+        editalProgresso = {};
+        editalResp.data.forEach(row => {
+            const key = gerarChaveEdital(row.materia, row.topico, row.subtopico);
+            editalProgresso[key] = {
+                status: row.status || 'pendente',
+                questoes_feitas: row.questoes_feitas || 0,
+                questoes_corretas: row.questoes_corretas || 0
+            };
+        });
+    }
+
+    const banner = document.getElementById('bannerVisualizacao');
+    banner.style.display = 'block';
+    document.getElementById('bannerVisualizacaoNome').textContent = alunoNome;
+
+    document.getElementById('inicio').style.display = 'none';
+    document.getElementById('continuar').style.display = 'block';
+
+    if (typeof exibirCicloVisual === 'function') exibirCicloVisual(blocosAtivos);
+    if (typeof renderizarEdital === 'function' && planoAdotado?.edital?.length) {
+        atualizarVisibilidadeEdital();
+        renderizarEdital();
+    }
+    if (typeof renderizarDesempenho === 'function') renderizarDesempenho();
+
+    alternarAba('ciclo');
+    fecharPainelAlunos();
+}
+
+function sairModoVisualizacao() {
+    if (!_estadoProfessorBackup) return;
+
+    _modoVisualizacaoAluno = false;
+
+    aplicarEstadoGlobals(_estadoProfessorBackup, { forcarTempo: true });
+
+    if (_estadoProfessorBackup._editalProgresso && typeof editalProgresso !== 'undefined') {
+        editalProgresso = _estadoProfessorBackup._editalProgresso;
+    }
+    if (_estadoProfessorBackup._planoAdotado !== undefined) {
+        planoAdotado = _estadoProfessorBackup._planoAdotado;
+    }
+
+    _estadoProfessorBackup = null;
+
+    document.getElementById('bannerVisualizacao').style.display = 'none';
+
+    if (blocosAtivos.length > 0) {
+        document.getElementById('inicio').style.display = 'none';
+        document.getElementById('continuar').style.display = 'block';
+        if (typeof exibirCicloVisual === 'function') exibirCicloVisual(blocosAtivos);
+    } else {
+        document.getElementById('inicio').style.display = 'block';
+        document.getElementById('continuar').style.display = 'none';
+    }
+
+    atualizarVisibilidadeEdital();
+    if (planoAdotado?.edital?.length && typeof renderizarEdital === 'function') {
+        renderizarEdital();
+    }
+
+    alternarAba('planos');
 }
 
 function contarItensEdital(edital) {
