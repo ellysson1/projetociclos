@@ -203,6 +203,7 @@ function atribuirPassoNext() {
     document.getElementById('atribuirIntervalo').value = cfg.intervaloEntreBlocos ?? 5;
     document.getElementById('atribuirBlocosSessao').value = cfg.blocosPorSessao || 4;
     document.getElementById('atribuirHorasSemanais').value = cfg.horasSemanais || '';
+    document.getElementById('atribuirNivelConteudo').value = cfg.nivel_conteudo || 'avancado';
 
     // Construir seletores de modo por matéria
     const container = document.getElementById('atribuirModosMateria');
@@ -240,10 +241,24 @@ function atribuirPassoNext2() {
         return;
     }
 
-    const materias = _atribuirPlano.materias || [];
+    let materias = _atribuirPlano.materias || [];
     if (materias.length === 0) {
         alert('Este plano não tem matérias definidas.');
         return;
+    }
+
+    // Apply nivel filter: only show matérias that would be in fase 1
+    const nivelSel = document.getElementById('atribuirNivelConteudo').value;
+    if (nivelSel && nivelSel !== 'avancado' && typeof _calcularFasesMaterias === 'function') {
+        const nivelMaterias = typeof NIVEL_MATERIAS !== 'undefined' ? NIVEL_MATERIAS : { basico: 6, intermediario: 12, avancado: Infinity };
+        const limite = nivelMaterias[nivelSel] || Infinity;
+        if (limite < Infinity) {
+            _onboardingDados.limitarMaterias = true;
+            _onboardingDados.materiasIniciais = limite;
+            _onboardingDados.materiasPorCiclo = nivelSel === 'basico' ? 2 : 3;
+            const comFases = _calcularFasesMaterias(materias);
+            materias = comFases.filter(m => m.fase === 1);
+        }
     }
 
     // Same proportional allocation algorithm as calcularBlocos
@@ -346,7 +361,8 @@ async function confirmarAtribuicao() {
         duracaoBloco: parseInt(document.getElementById('atribuirDuracaoBloco').value) || 60,
         intervaloEntreBlocos: parseInt(document.getElementById('atribuirIntervalo').value) ?? 5,
         blocosPorSessao: parseInt(document.getElementById('atribuirBlocosSessao').value) || 4,
-        horasSemanais: parseInt(document.getElementById('atribuirHorasSemanais').value) || null
+        horasSemanais: parseInt(document.getElementById('atribuirHorasSemanais').value) || null,
+        nivel_conteudo: document.getElementById('atribuirNivelConteudo').value || 'avancado'
     };
 
     // Collect block quantities defined by professor in step 3
@@ -696,20 +712,40 @@ async function verificarEAplicarPlanoAtribuido() {
     // Skip if student already has this plan applied
     if (planoAdotado?.id === plano.id) return;
 
+    // Merge configs (plan defaults < atribuicao overrides)
+    const cfg = { ...(plano.configuracoes || {}), ...(atr.configuracoes || {}) };
+    if (cfg.duracaoBloco) configuracoes.duracaoBloco = cfg.duracaoBloco;
+    if (cfg.intervaloEntreBlocos !== undefined) configuracoes.intervaloEntreBlocos = cfg.intervaloEntreBlocos;
+    if (cfg.blocosPorSessao) configuracoes.blocosPorSessao = cfg.blocosPorSessao;
+
+    // Apply nivel_conteudo from teacher assignment
+    if (cfg.nivel_conteudo) {
+        nivelConteudo = cfg.nivel_conteudo;
+        const nivelMaterias = typeof NIVEL_MATERIAS !== 'undefined' ? NIVEL_MATERIAS : { basico: 6, intermediario: 12, avancado: Infinity };
+        const limite = nivelMaterias[cfg.nivel_conteudo] || Infinity;
+        if (limite < Infinity) {
+            _onboardingDados.limitarMaterias = true;
+            _onboardingDados.materiasIniciais = limite;
+            _onboardingDados.materiasPorCiclo = cfg.nivel_conteudo === 'basico' ? 2 : 3;
+        } else {
+            _onboardingDados.limitarMaterias = false;
+        }
+    }
+
     // Apply plan reference (store all materias for progressive phases)
-    const todasMaterias = plano.materias || [];
+    let todasMaterias = plano.materias || [];
+
+    // Recalculate phases based on nivel if teacher set a limit
+    if (_onboardingDados.limitarMaterias && typeof _calcularFasesMaterias === 'function') {
+        todasMaterias = _calcularFasesMaterias(todasMaterias);
+    }
+
     const maxFase = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
     planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase, regras_evolucao: plano.regras_evolucao || [] };
 
     // Only include current-phase matérias in active lists
     const materiasDoPlano = todasMaterias.filter(m => (m.fase || 1) <= faseAtual);
     materiasList = materiasDoPlano.map(m => ({ nome: m.nome, legenda: m.legenda }));
-
-    // Merge configs (plan defaults < atribuicao overrides)
-    const cfg = { ...(plano.configuracoes || {}), ...(atr.configuracoes || {}) };
-    if (cfg.duracaoBloco) configuracoes.duracaoBloco = cfg.duracaoBloco;
-    if (cfg.intervaloEntreBlocos !== undefined) configuracoes.intervaloEntreBlocos = cfg.intervaloEntreBlocos;
-    if (cfg.blocosPorSessao) configuracoes.blocosPorSessao = cfg.blocosPorSessao;
 
     // Apply subject modes
     modosMateria = atr.modos_materia || {};

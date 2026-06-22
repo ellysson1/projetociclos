@@ -485,6 +485,15 @@
                         <input type="number" id="atribuirHorasSemanais" min="1" placeholder="Ex: 20">
                     </div>
                 </div>
+                <div style="margin-bottom:16px;">
+                    <label for="atribuirNivelConteudo" style="font-size:14px; font-weight:600;">Nivel de conteudo:</label>
+                    <p style="font-size:12px; color:#888; margin:4px 0 8px;">Define quantas materias o aluno estuda simultaneamente.</p>
+                    <select id="atribuirNivelConteudo" style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:14px;">
+                        <option value="basico">Basico — ate 6 materias por fase</option>
+                        <option value="intermediario">Intermediario — ate 12 materias por fase</option>
+                        <option value="avancado" selected>Avancado — todas as materias desde o inicio</option>
+                    </select>
+                </div>
                 <h4 style="margin-bottom:8px; font-size:14px;">Modo por Matéria</h4>
                 <div id="atribuirModosMateria" style="max-height:220px; overflow-y:auto; border:1px solid var(--border-color); border-radius:8px; margin-bottom:16px;"></div>
                 <div class="modal-actions">
@@ -662,7 +671,7 @@
     <script src="js/blocos.js?v=10"></script>
     <script src="js/questoes.js?v=6"></script>
     <script src="js/matcher.js?v=1"></script>
-    <script src="js/planos.js?v=12"></script>
+    <script src="js/planos.js?v=13"></script>
     <script src="js/edital.js?v=13"></script>
     <script src="js/reconciliacao.js?v=1"></script>
     <script src="js/notificacoes.js?v=2"></script>
