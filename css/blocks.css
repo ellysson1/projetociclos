@@ -400,6 +400,31 @@
     margin-top: 2px;
 }
 
+.edital-item__nome-oficial {
+    font-size: 11px;
+    color: #999;
+    display: block;
+    margin-top: 1px;
+    font-style: italic;
+}
+
+.edital-item__tec-copy {
+    display: inline-block;
+    font-size: 11px;
+    color: #7C4DFF;
+    background: #F3F0FF;
+    border: 1px solid #E0D8FF;
+    border-radius: 4px;
+    padding: 1px 8px;
+    margin-top: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.edital-item__tec-copy:hover {
+    background: #E0D8FF;
+}
+
 .edital-item__actions {
     flex-shrink: 0;
 }
