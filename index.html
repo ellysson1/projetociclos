@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ciclo de Estudos</title>
     <link rel="stylesheet" href="css/variables.css?v=1">
-    <link rel="stylesheet" href="css/layout.css?v=1">
+    <link rel="stylesheet" href="css/layout.css?v=2">
     <link rel="stylesheet" href="css/forms.css?v=1">
     <link rel="stylesheet" href="css/blocks.css?v=2">
     <link rel="stylesheet" href="css/modals.css?v=1">
@@ -252,6 +252,12 @@
             <h3 style="margin-bottom:12px;">Desempenho por Materia</h3>
             <div id="desempenhoPorMateria">
                 <p style="color:#999;">Carregando...</p>
+            </div>
+
+            <div id="desempenhoAjuste" style="display:none; margin-top:24px;">
+                <h3 style="margin-bottom:12px;">Ajuste automatico de blocos</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">Com base no seu desempenho, materias com acerto abaixo da media ganham mais blocos e materias acima da media ganham menos.</p>
+                <div id="desempenhoAjusteConteudo"></div>
             </div>
 
             <div id="desempenhoEdital" style="display:none; margin-top:24px;">
@@ -648,7 +654,7 @@
     <script src="js/notificacoes.js?v=2"></script>
     <script src="js/revisao.js?v=2"></script>
     <script src="js/videos.js?v=1"></script>
-    <script src="js/desempenho.js?v=1"></script>
+    <script src="js/desempenho.js?v=2"></script>
     <script src="js/batch-upload.js?v=1"></script>
     <script src="js/timer.js?v=3"></script>
     <script src="js/notes.js?v=1"></script>
