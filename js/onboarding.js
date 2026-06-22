@@ -2,6 +2,90 @@
 
 const NIVEL_MATERIAS = { basico: 6, intermediario: 12, avancado: Infinity };
 
+const TEMPLATES_AREA = {
+    fiscal: {
+        nome: 'Area Fiscal',
+        descricao: 'Receita Federal, SEFAZ, ISS, ICMS',
+        materias: [
+            { nome: 'Portugues', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Matematica Financeira', legenda: 'MF', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Direito Constitucional', legenda: 'DC', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Direito Tributario', legenda: 'DT', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
+            { nome: 'Contabilidade Geral', legenda: 'CGE', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
+            { nome: 'Contabilidade Publica', legenda: 'CPB', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Legislacao Tributaria', legenda: 'LT', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Auditoria', legenda: 'AUD', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'AFO', legenda: 'AFO', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Economia', legenda: 'ECO', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Comercio Internacional', legenda: 'CI', importancia: 'pouco', extensao: 'medio', dificuldade: 'medio' }
+        ]
+    },
+    tribunais: {
+        nome: 'Tribunais',
+        descricao: 'TRF, TRT, TRE, STJ, STF',
+        materias: [
+            { nome: 'Portugues', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Direito Constitucional', legenda: 'DC', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Direito Processual Civil', legenda: 'DPC', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
+            { nome: 'Direito Processual Penal', legenda: 'DPP', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Direito Civil', legenda: 'DCI', importancia: 'medio', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Direito Penal', legenda: 'DP', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Informatica', legenda: 'INF', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' },
+            { nome: 'Legislacao Especifica', legenda: 'LE', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Administracao Publica', legenda: 'AP', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' }
+        ]
+    },
+    policial: {
+        nome: 'Policial',
+        descricao: 'PF, PRF, PC, PM, DEPEN',
+        materias: [
+            { nome: 'Portugues', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Direito Constitucional', legenda: 'DC', importancia: 'muito', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'muito', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Direito Penal', legenda: 'DP', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
+            { nome: 'Direito Processual Penal', legenda: 'DPP', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Legislacao Penal Especial', legenda: 'LPE', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Informatica', legenda: 'INF', importancia: 'medio', extensao: 'pouco', dificuldade: 'pouco' },
+            { nome: 'Raciocinio Logico', legenda: 'RL', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Criminologia', legenda: 'CRI', importancia: 'pouco', extensao: 'pouco', dificuldade: 'medio' },
+            { nome: 'Direitos Humanos', legenda: 'DH', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' }
+        ]
+    },
+    controle: {
+        nome: 'Controle',
+        descricao: 'TCU, TCE, CGU',
+        materias: [
+            { nome: 'Portugues', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Direito Constitucional', legenda: 'DC', importancia: 'muito', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Controle Externo', legenda: 'CEX', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
+            { nome: 'AFO', legenda: 'AFO', importancia: 'muito', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Contabilidade Publica', legenda: 'CPB', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Auditoria Governamental', legenda: 'AUG', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Economia', legenda: 'ECO', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Administracao Publica', legenda: 'AP', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'TI para Auditoria', legenda: 'TIA', importancia: 'pouco', extensao: 'medio', dificuldade: 'medio' }
+        ]
+    },
+    gestao: {
+        nome: 'Gestao e Administrativo',
+        descricao: 'EPPGG, Analista Administrativo, IBGE',
+        materias: [
+            { nome: 'Portugues', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Direito Constitucional', legenda: 'DC', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Administracao Publica', legenda: 'AP', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Politicas Publicas', legenda: 'PP', importancia: 'muito', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Economia', legenda: 'ECO', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'AFO', legenda: 'AFO', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Raciocinio Logico', legenda: 'RL', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Informatica', legenda: 'INF', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' }
+        ]
+    }
+};
+
 let _onboardingStepIdx = 0;
 let _onboardingSteps = ['perfil'];
 let _onboardingDados = {
@@ -265,9 +349,30 @@ function renderStep2Horas(container) {
 
 function renderStep3Materias(container) {
     const temMaterias = _onboardingDados.materias.length > 0;
+    const templateKeys = Object.keys(TEMPLATES_AREA);
+    const templateCards = templateKeys.map(key => {
+        const t = TEMPLATES_AREA[key];
+        return `<button class="onb-template-btn" data-template="${key}" style="
+            flex:1; min-width:140px; padding:12px 10px; border-radius:10px; text-align:center; cursor:pointer; transition:all 0.2s;
+            border:2px solid #E1E4E8; background:white;
+        ">
+            <div style="font-weight:700; font-size:14px; color:#3F51B5;">${t.nome}</div>
+            <div style="font-size:11px; color:#888; margin-top:2px;">${t.descricao}</div>
+            <div style="font-size:11px; color:#aaa; margin-top:4px;">${t.materias.length} materias</div>
+        </button>`;
+    }).join('');
+
     container.innerHTML = `
         <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Quais materias voce vai estudar?</h2>
-        <p style="color:#666; margin-bottom:16px;">${temMaterias ? 'As materias do plano ja foram carregadas. Adicione ou remova como quiser.' : 'Adicione as materias do seu edital.'}</p>
+        ${!temMaterias ? `
+        <p style="color:#666; margin-bottom:12px;">Escolha um modelo pronto ou adicione manualmente.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">${templateCards}</div>
+        <div style="border-top:1px solid #E1E4E8; padding-top:12px; margin-bottom:12px;">
+            <p style="font-size:13px; color:#999; margin-bottom:8px;">Ou adicione uma por uma:</p>
+        </div>
+        ` : `
+        <p style="color:#666; margin-bottom:12px;">Adicione ou remova como quiser. <button id="onbLimparMaterias" style="background:none; border:none; color:#FF6B6B; cursor:pointer; font-size:13px; text-decoration:underline;">Limpar e escolher outro modelo</button></p>
+        `}
         <div id="onbMateriasLista" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div>
         <div style="display:flex; gap:8px; margin-bottom:20px;">
             <input type="text" id="onbNovaMateriaNome" placeholder="Nome da materia" style="flex:2; padding:10px; border:2px solid #E1E4E8; border-radius:8px; font-size:14px;">
@@ -307,6 +412,23 @@ function renderStep3Materias(container) {
         });
         renderStep3Materias(container);
     });
+
+    container.querySelectorAll('.onb-template-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const template = TEMPLATES_AREA[btn.dataset.template];
+            if (!template) return;
+            _onboardingDados.materias = template.materias.map(m => ({ ...m, fase: 1 }));
+            renderStep3Materias(container);
+        });
+    });
+
+    const btnLimpar = document.getElementById('onbLimparMaterias');
+    if (btnLimpar) {
+        btnLimpar.addEventListener('click', () => {
+            _onboardingDados.materias = [];
+            renderStep3Materias(container);
+        });
+    }
 }
 
 // ── Step 4: Familiaridade ────────────────────────────────────────────────────

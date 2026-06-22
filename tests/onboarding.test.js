@@ -28,6 +28,22 @@ const code = fs.readFileSync(path.join(__dirname, '..', 'js', 'onboarding.js'), 
 const nivelMatch = code.match(/const NIVEL_MATERIAS\s*=\s*\{[^}]+\}/);
 if (nivelMatch) vm.runInThisContext(nivelMatch[0].replace('const ', 'var '));
 
+// Extract TEMPLATES_AREA constant (deep object — use brace matching)
+function extrairConst(codigo, nome) {
+    const pos = codigo.indexOf('const ' + nome + ' =');
+    if (pos === -1) return null;
+    const start = codigo.indexOf('{', pos);
+    let depth = 0, i = start;
+    while (i < codigo.length) {
+        if (codigo[i] === '{') depth++;
+        else if (codigo[i] === '}') { depth--; if (depth === 0) return 'var ' + nome + ' = ' + codigo.slice(start, i + 1); }
+        i++;
+    }
+    return null;
+}
+const templatesCode = extrairConst(code, 'TEMPLATES_AREA');
+if (templatesCode) vm.runInThisContext(templatesCode);
+
 vm.runInThisContext(extrairBloco(code, 'nivelParaPeso'));
 vm.runInThisContext(extrairBloco(code, '_calcularFasesMaterias'));
 vm.runInThisContext(extrairBloco(code, '_simularBlocos'));
@@ -179,6 +195,37 @@ assert(blocos.length === 0, 'sem materias: retorna vazio');
 
 blocos = _simularBlocos(matAtivas, 0);
 assert(blocos.every(b => b.qtd === 0), '0 blocos: todos com 0');
+
+// ── TEMPLATES_AREA ──────────────────────────────────────────────────────────
+console.log('\nTEMPLATES_AREA:');
+
+assert(typeof TEMPLATES_AREA === 'object', 'TEMPLATES_AREA existe');
+
+const areas = Object.keys(TEMPLATES_AREA);
+assert(areas.length >= 5, `pelo menos 5 areas (obteve ${areas.length})`);
+assert(areas.includes('fiscal'), 'inclui fiscal');
+assert(areas.includes('tribunais'), 'inclui tribunais');
+assert(areas.includes('policial'), 'inclui policial');
+assert(areas.includes('controle'), 'inclui controle');
+assert(areas.includes('gestao'), 'inclui gestao');
+
+areas.forEach(area => {
+    const t = TEMPLATES_AREA[area];
+    assert(t.nome && t.nome.length > 0, `${area}: tem nome`);
+    assert(t.descricao && t.descricao.length > 0, `${area}: tem descricao`);
+    assert(Array.isArray(t.materias) && t.materias.length >= 5, `${area}: tem >= 5 materias (${t.materias.length})`);
+
+    const legendas = t.materias.map(m => m.legenda);
+    const unicas = new Set(legendas);
+    assert(unicas.size === legendas.length, `${area}: legendas unicas`);
+
+    t.materias.forEach(m => {
+        assert(m.nome && m.legenda, `${area}/${m.legenda}: tem nome e legenda`);
+        assert(['pouco', 'medio', 'muito'].includes(m.importancia), `${area}/${m.legenda}: importancia valida`);
+        assert(['pouco', 'medio', 'muito'].includes(m.extensao), `${area}/${m.legenda}: extensao valida`);
+        assert(['pouco', 'medio', 'muito'].includes(m.dificuldade), `${area}/${m.legenda}: dificuldade valida`);
+    });
+});
 
 // ── Resultado ────────────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed`);
