@@ -132,6 +132,9 @@ function _gravarFila(chave, fila) {
 }
 
 function registrarEvento(tipo, payload) {
+    // Modo visualização (professor vendo tela do aluno): nenhum evento é
+    // gravado sob a conta do professor.
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return null;
     const evento = {
         client_event_id: gerarUUID(),
         tipo,
@@ -163,8 +166,12 @@ async function flushEventosPendentes() {
 
     _flushEmAndamento = true;
     try {
-        let fila = _lerFila(FILA_EVENTOS_KEY);
-        while (fila.length > 0) {
+        // A cada iteração relemos a fila do localStorage: um novo evento pode
+        // ter sido enfileirado durante o await acima. Remover só pelo
+        // client_event_id evita descartar eventos gravados concorrentemente.
+        while (true) {
+            const fila = _lerFila(FILA_EVENTOS_KEY);
+            if (fila.length === 0) break;
             const ev = fila[0];
             const { error } = await supabaseClient
                 .from('eventos_estudo')
@@ -176,19 +183,20 @@ async function flushEventosPendentes() {
                     criado_em: ev.criado_em
                 }, { onConflict: 'user_id,client_event_id', ignoreDuplicates: true });
             if (error) break; // rede ou tabela ausente: tenta no próximo ciclo
-            fila.shift();
-            _gravarFila(FILA_EVENTOS_KEY, fila);
+            _gravarFila(FILA_EVENTOS_KEY,
+                _lerFila(FILA_EVENTOS_KEY).filter(e => e.client_event_id !== ev.client_event_id));
         }
 
-        let filaQ = _lerFila(FILA_QUESTOES_KEY);
-        while (filaQ.length > 0) {
+        while (true) {
+            const filaQ = _lerFila(FILA_QUESTOES_KEY);
+            if (filaQ.length === 0) break;
             const reg = filaQ[0];
             const { error } = await supabaseClient
                 .from('questoes')
                 .upsert({ ...reg, user_id: user.id }, { onConflict: 'client_event_id', ignoreDuplicates: true });
             if (error) break;
-            filaQ.shift();
-            _gravarFila(FILA_QUESTOES_KEY, filaQ);
+            _gravarFila(FILA_QUESTOES_KEY,
+                _lerFila(FILA_QUESTOES_KEY).filter(e => e.client_event_id !== reg.client_event_id));
         }
     } finally {
         _flushEmAndamento = false;
@@ -210,6 +218,9 @@ function atualizarSessionCache(session) {
 }
 
 function enviarBeaconSync() {
+    // Modo visualização: jamais persistir o estado do aluno sob a conta do
+    // professor (localStorage já é guardado no handler de visibilitychange).
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return;
     if (!_sessionCache) return;
     if (typeof supabaseConfigurado !== 'function' || !supabaseConfigurado()) return;
 

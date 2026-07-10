@@ -990,7 +990,7 @@ async function abrirPainelAlunos(plano) {
         const blocosTotal = blocos.length;
 
         const editalRows = editalPorAluno[uid] || [];
-        const editalConcluidos = editalRows.filter(r => r.status === 'visto').length;
+        const editalConcluidos = editalRows.filter(r => r.status === 'visto' || r.status === 'concluido').length;
         const pctEdital = editalTotal > 0 ? Math.round((editalConcluidos / editalTotal) * 100) : 0;
 
         const ultimaAtividade = updatedAt ? formatarTempoAtras(updatedAt) : 'Nunca';

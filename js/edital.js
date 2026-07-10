@@ -831,28 +831,41 @@ function removerSubtopicoEdital(mIdx, tIdx, sIdx) {
 }
 
 function coletarEditalDoEditor() {
+    // Preserva os ids estáveis (matéria/tópico/subtópico) atribuídos por
+    // garantirIdsEdital. Sem isso, cada salvamento gera novos UUIDs e quebra
+    // os vínculos materia_edital_id que os alunos já reconciliaram.
     return editalEditando
         .filter(m => m.materia && m.materia.trim())
-        .map(m => ({
-            materia: m.materia.trim(),
-            topicos: (m.topicos || [])
-                .filter(t => t.nome && t.nome.trim())
-                .map((t, idx) => ({
-                    nome: t.nome.trim(),
-                    curso_nome: t.curso_nome || null,
-                    tec_assunto: t.tec_assunto || null,
-                    subtopicos: (t.subtopicos || [])
-                        .filter(s => (typeof s === 'object' ? s?.nome : s) && (typeof s === 'object' ? s.nome.trim() : s.trim()))
-                        .map(s => {
-                            if (typeof s === 'string') return s.trim();
-                            const obj = { nome: s.nome.trim() };
-                            if (s.curso_nome) obj.curso_nome = s.curso_nome;
-                            if (s.tec_assunto) obj.tec_assunto = s.tec_assunto;
-                            return (obj.curso_nome || obj.tec_assunto) ? obj : obj.nome;
-                        }),
-                    ordem: t.ordem || (idx + 1)
-                }))
-        }));
+        .map(m => {
+            const materiaObj = {
+                materia: m.materia.trim(),
+                topicos: (m.topicos || [])
+                    .filter(t => t.nome && t.nome.trim())
+                    .map((t, idx) => {
+                        const topicoObj = {
+                            nome: t.nome.trim(),
+                            curso_nome: t.curso_nome || null,
+                            tec_assunto: t.tec_assunto || null,
+                            subtopicos: (t.subtopicos || [])
+                                .filter(s => (typeof s === 'object' ? s?.nome : s) && (typeof s === 'object' ? s.nome.trim() : s.trim()))
+                                .map(s => {
+                                    if (typeof s === 'string') return s.trim();
+                                    const obj = { nome: s.nome.trim() };
+                                    if (s.id) obj.id = s.id;
+                                    if (s.curso_nome) obj.curso_nome = s.curso_nome;
+                                    if (s.tec_assunto) obj.tec_assunto = s.tec_assunto;
+                                    // Manter como objeto se tiver id (vínculo com progresso) ou mapeamento.
+                                    return (obj.id || obj.curso_nome || obj.tec_assunto) ? obj : obj.nome;
+                                }),
+                            ordem: t.ordem || (idx + 1)
+                        };
+                        if (t.id) topicoObj.id = t.id;
+                        return topicoObj;
+                    })
+            };
+            if (m.id) materiaObj.id = m.id;
+            return materiaObj;
+        });
 }
 
 // ── Import/Export Edital Excel/CSV ──────────────────────────────────────────
@@ -1186,12 +1199,14 @@ function calcularPercentualPorLegendasEdital(legendasSet) {
                 subtopicos.forEach(sub => {
                     totalItens++;
                     const chave = gerarChaveEdital(materiaObj.materia, topico.nome, nomeSubtopico(sub));
-                    if (editalProgresso[chave]?.status === 'visto') itensConcluidos++;
+                    const st = editalProgresso[chave]?.status;
+                    if (st === 'visto' || st === 'concluido') itensConcluidos++;
                 });
             } else {
                 totalItens++;
                 const chave = gerarChaveEdital(materiaObj.materia, topico.nome, '');
-                if (editalProgresso[chave]?.status === 'visto') itensConcluidos++;
+                const st = editalProgresso[chave]?.status;
+                if (st === 'visto' || st === 'concluido') itensConcluidos++;
             }
         });
     });

@@ -168,12 +168,10 @@ function criarCardBloco(bloco, index) {
         if (this.checked && !blocosAtivos[idx].concluido) {
             iniciarFluxoConclusao(idx, card);
         } else if (!this.checked && blocosAtivos[idx].concluido) {
-            blocosAtivos[idx].concluido = false;
-            blocosAtivos[idx].assunto = null;
-            blocosAtivos[idx].questoes = null;
-            card.classList.remove('concluido');
-            card.querySelector('.bloco-card__info-concluido').textContent = '';
-            salvarEstado();
+            // Invariante do produto: um bloco concluído nunca é desconcluído
+            // por nenhum mecanismo. Reverter o checkbox e preservar os dados.
+            this.checked = true;
+            alert('Blocos concluídos não podem ser desmarcados — isso preserva o histórico do seu ciclo.');
         }
     });
 
@@ -234,9 +232,16 @@ function editarBloco(bloco) {
     }
 }
 
+let _ultimoCicloConcluido = -1;
+
 function verificarConclusao() {
     const todosConcluidos = blocosAtivos.every(bloco => bloco.concluido);
     if (todosConcluidos && blocosAtivos.length > 0) {
+        // Idempotência: registrar a conclusão do ciclo apenas uma vez, mesmo
+        // que verificarConclusao seja chamada novamente com o ciclo já completo.
+        const cicloAtual = (typeof cicloNumero !== 'undefined') ? cicloNumero : 1;
+        if (cicloAtual === _ultimoCicloConcluido) return;
+        _ultimoCicloConcluido = cicloAtual;
         if (typeof cicloNumero !== 'undefined') cicloNumero++;
 
         const fatores = typeof calcularFatoresDesempenho === 'function' ? calcularFatoresDesempenho() : {};

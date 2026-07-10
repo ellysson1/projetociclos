@@ -242,6 +242,9 @@ setInterval(async () => { if (await getUsuarioLogado()) salvarEstado(); }, 30000
 // principal é visibilitychange + fetch keepalive (sobrevive ao fechamento
 // da aba); beforeunload fica como fallback para desktop.
 document.addEventListener('visibilitychange', () => {
+    // Modo visualização: não sobrescrever o localStorage nem a nuvem do
+    // professor com o estado do aluno que está sendo visualizado.
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return;
     if (document.visibilityState === 'hidden' && salvarAoSair) {
         localStorage.setItem('cicloEstudosEstado', JSON.stringify(montarEstadoLocal()));
         if (typeof enviarBeaconSync === 'function') enviarBeaconSync();

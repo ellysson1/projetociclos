@@ -331,6 +331,7 @@ function finalizarConclusao(questoes) {
 }
 
 async function salvarQuestoesNuvem(bloco, questoes, clientEventId) {
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return;
     if (!supabaseConfigurado() || !questoes) return;
     const user = await getUsuarioLogado();
     if (!user) return;

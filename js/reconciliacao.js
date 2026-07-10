@@ -372,6 +372,7 @@ function confirmarRetificacao() {
 }
 
 async function _salvarEditalRetificadoNuvem() {
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return;
     if (!supabaseConfigurado() || !planoAdotado?.id) return;
     const user = await getUsuarioLogado();
     if (!user) return;
