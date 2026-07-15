@@ -74,6 +74,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     const btnFecharDetalhe = document.getElementById('btnFecharDetalheBloco');
     if (btnFecharDetalhe) btnFecharDetalhe.addEventListener('click', () => fecharModal('modalDetalheBloco'));
 
+    // Confirmação de revisão ao iniciar o próximo ciclo
+    const btnCicloRevisouSim = document.getElementById('btnCicloRevisouSim');
+    if (btnCicloRevisouSim) btnCicloRevisouSim.addEventListener('click', () => {
+        fecharModal('modalConfirmarProximoCiclo');
+        if (typeof _gerarProximoCiclo === 'function') _gerarProximoCiclo();
+    });
+    const btnCicloRevisouNao = document.getElementById('btnCicloRevisouNao');
+    if (btnCicloRevisouNao) btnCicloRevisouNao.addEventListener('click', () => {
+        fecharModal('modalConfirmarProximoCiclo');
+        alternarAba('revisao');
+    });
+
     // Planos (professor)
     document.getElementById('btnCriarPlano').addEventListener('click', () => abrirEditorPlano(null));
     document.getElementById('btnSalvarPlano').addEventListener('click', async () => {

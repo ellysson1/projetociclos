@@ -21,6 +21,7 @@ function extrairFuncao(codigo, nome) {
 }
 
 const blocosCode = fs.readFileSync(path.join(__dirname, '..', 'js', 'blocos.js'), 'utf8');
+eval(extrairFuncao(blocosCode, '_calcularRedistribuicaoPorDesempenho'));
 eval(extrairFuncao(blocosCode, '_distribuirPorDeficit'));
 
 const variaveisCode = fs.readFileSync(path.join(__dirname, '..', 'js', 'variaveis.js'), 'utf8');
@@ -222,6 +223,56 @@ teste('20h→10h com 8 matérias: todas permanecem com ≥1 bloco', () => {
 
     materias.forEach(m => assert.ok(m.novoTotal >= 1, `${m.legenda} com 0`));
     assert.strictEqual(slotsUsados, totalNovo);
+});
+
+// ── Próximo Ciclo — redistribuição por desempenho ─────────────────────────────
+
+console.log('\nPróximo Ciclo — _calcularRedistribuicaoPorDesempenho:');
+
+teste('sem fatores de desempenho: mantém a distribuição original', () => {
+    const totais = { A: 5, B: 3, C: 2 };
+    const novo = _calcularRedistribuicaoPorDesempenho(totais, {});
+    assert.strictEqual(novo.A, 5);
+    assert.strictEqual(novo.B, 3);
+    assert.strictEqual(novo.C, 2);
+});
+
+teste('soma total sempre igual à soma de entrada', () => {
+    const casos = [
+        [{ A: 5, B: 3, C: 2 }, { A: 0.7, B: 1.5 }],
+        [{ A: 10, B: 1 }, { A: 1.5, B: 0.7 }],
+        [{ A: 1, B: 1, C: 1, D: 1 }, { A: 1.5 }],
+        [{ A: 17, B: 4, C: 9 }, { A: 0.7, B: 1.5, C: 1 }],
+    ];
+    casos.forEach(([totais, fatores]) => {
+        const novo = _calcularRedistribuicaoPorDesempenho(totais, fatores);
+        const totalIn = Object.values(totais).reduce((s, v) => s + v, 0);
+        const totalOut = Object.values(novo).reduce((s, v) => s + v, 0);
+        assert.strictEqual(totalOut, totalIn, `entrada ${JSON.stringify(totais)}`);
+    });
+});
+
+teste('matéria com pior desempenho (fator > 1) recebe mais blocos', () => {
+    const totais = { A: 5, B: 5 };
+    // A: 70% de acerto (fator ~1.3, abaixo da média), B: acima da média (fator 0.7)
+    const novo = _calcularRedistribuicaoPorDesempenho(totais, { A: 1.3, B: 0.7 });
+    assert.ok(novo.A > novo.B, `A deveria ganhar mais blocos que B (A=${novo.A}, B=${novo.B})`);
+});
+
+teste('nenhuma matéria fica com 0 blocos mesmo com fator muito baixo', () => {
+    const totais = { A: 20, B: 1, C: 1 };
+    const novo = _calcularRedistribuicaoPorDesempenho(totais, { A: 0.7, B: 0.7, C: 0.7 });
+    Object.values(novo).forEach(qtd => assert.ok(qtd >= 1, 'matéria com 0 blocos'));
+});
+
+teste('total vazio: retorna objeto vazio sem lançar erro', () => {
+    const novo = _calcularRedistribuicaoPorDesempenho({}, {});
+    assert.deepStrictEqual(novo, {});
+});
+
+teste('matéria única: recebe todos os blocos', () => {
+    const novo = _calcularRedistribuicaoPorDesempenho({ A: 7 }, { A: 1.5 });
+    assert.strictEqual(novo.A, 7);
 });
 
 console.log(`\n${passou} testes passaram.`);

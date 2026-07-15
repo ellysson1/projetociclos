@@ -1,3 +1,51 @@
+// Redistribui um total fixo de blocos entre matérias, ponderando pelo fator
+// de desempenho de cada uma (calcularFatoresDesempenho). Usado ao iniciar um
+// novo ciclo: mantém o mesmo total de blocos do ciclo anterior, mas dá mais
+// peso a matérias com menor acerto em questões. Função pura (sem DOM/estado
+// global) — o total de saída sempre soma exatamente `totais` de entrada.
+function _calcularRedistribuicaoPorDesempenho(totais, fatoresDesemp) {
+    const legendas = Object.keys(totais);
+    const totalBlocos = legendas.reduce((s, leg) => s + totais[leg], 0);
+    if (totalBlocos === 0) return {};
+
+    const pesos = {};
+    let totalPonderado = 0;
+    legendas.forEach(leg => {
+        pesos[leg] = totais[leg] * ((fatoresDesemp && fatoresDesemp[leg]) || 1);
+        totalPonderado += pesos[leg];
+    });
+
+    const ideal = {};
+    const novo = {};
+    legendas.forEach(leg => {
+        ideal[leg] = totalPonderado > 0 ? (pesos[leg] / totalPonderado) * totalBlocos : totais[leg];
+        novo[leg] = Math.max(1, Math.floor(ideal[leg]));
+    });
+
+    let usados = legendas.reduce((s, leg) => s + novo[leg], 0);
+    const restos = legendas
+        .map(leg => ({ leg, resto: ideal[leg] - Math.floor(ideal[leg]) }))
+        .sort((a, b) => b.resto - a.resto);
+    let ri = 0;
+    while (usados < totalBlocos && restos.length > 0) {
+        novo[restos[ri % restos.length].leg]++;
+        usados++;
+        ri++;
+        if (ri > restos.length * totalBlocos) break;
+    }
+
+    const reducao = legendas.filter(leg => novo[leg] > 1).sort((a, b) => novo[b] - novo[a]);
+    let rj = 0;
+    while (usados > totalBlocos && reducao.length > 0) {
+        const leg = reducao[rj % reducao.length];
+        if (novo[leg] > 1) { novo[leg]--; usados--; }
+        rj++;
+        if (rj > reducao.length * totalBlocos) break;
+    }
+
+    return novo;
+}
+
 // T8: Distribuição round-robin ponderada por déficit acumulado.
 // Correta por construção: a cada posição escolhe a matéria com maior
 // diferença entre a alocação ideal e a já posicionada, respeitando a
@@ -65,6 +113,23 @@ function exibirCicloVisual(blocos) {
             : ' — todas as matérias incluídas';
         faseBanner.innerHTML = `<strong style="color:#3F51B5;">Fase ${faseAtual}/${planoAdotado.maxFase}</strong><span style="color:#666;">${proximaFaseInfo}</span>`;
         container.appendChild(faseBanner);
+    }
+
+    if (blocos.length > 0 && blocos.every(b => b.concluido)) {
+        const doneBanner = document.createElement('div');
+        doneBanner.className = 'ciclo-completo-banner';
+        const texto = document.createElement('div');
+        texto.innerHTML = '<strong>Ciclo concluído!</strong><span>Todos os blocos foram estudados.</span>';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ciclo-completo-banner__btn';
+        btn.textContent = 'Iniciar Próximo Ciclo';
+        btn.addEventListener('click', () => {
+            if (typeof iniciarProximoCiclo === 'function') iniciarProximoCiclo();
+        });
+        doneBanner.appendChild(texto);
+        doneBanner.appendChild(btn);
+        container.appendChild(doneBanner);
     }
 
     const bps = configuracoes.blocosPorSessao;
@@ -255,10 +320,12 @@ function verificarConclusao() {
         const fatores = typeof calcularFatoresDesempenho === 'function' ? calcularFatoresDesempenho() : {};
         const temAjuste = Object.keys(fatores).length > 0;
         const partes = [`Parabéns! Você completou o ciclo ${(typeof cicloNumero !== 'undefined' ? cicloNumero : 2) - 1}!`];
-        if (temAjuste) partes.push('Com base no seu desempenho em questões, o próximo ciclo será ajustado automaticamente — matérias com menor acerto receberão mais blocos.');
+        if (temAjuste) partes.push('Com base no seu desempenho em questões, matérias com menor acerto receberão mais blocos no próximo ciclo.');
 
         const itensPendentes = contarItensRevisaoPendente();
         if (itensPendentes > 0) partes.push(`Há ${itensPendentes} itens do edital pendentes de revisão. Confira na aba Revisão.`);
+
+        partes.push('Quando estiver pronto, clique em "Iniciar Próximo Ciclo" no topo do seu ciclo.');
 
         alert(partes.join('\n\n'));
         salvarEstado();
@@ -385,6 +452,72 @@ function abrirDetalheBloco(index) {
 function continuarEstudo() {
     exibirCicloVisual(blocosAtivos);
     alternarAba('meuciclo');
+}
+
+// ── Próximo ciclo ────────────────────────────────────────────────────────────
+// Ao concluir 100% do ciclo, verificarConclusao() apenas incrementa
+// cicloNumero e avisa — nada regenera os blocos, então o aluno fica travado
+// com tudo marcado como concluído. iniciarProximoCiclo() abre uma confirmação
+// (não bloqueante, apenas informativa) sobre revisão pendente e então
+// redistribui o MESMO total de blocos do ciclo anterior, ponderado pelo
+// desempenho em questões — sem alterar nenhum status de edital_progresso.
+function iniciarProximoCiclo() {
+    if (!blocosAtivos || blocosAtivos.length === 0 || !blocosAtivos.every(b => b.concluido)) return;
+
+    const itensPendentes = typeof contarItensRevisaoPendente === 'function' ? contarItensRevisaoPendente() : 0;
+    const textoEl = document.getElementById('confirmarCicloRevisaoTexto');
+    if (textoEl) {
+        textoEl.textContent = itensPendentes > 0
+            ? `Você tem ${itensPendentes} item(ns) do edital pendente(s) de revisão do ciclo anterior.`
+            : 'Não há itens pendentes de revisão no momento.';
+    }
+    if (typeof abrirModal === 'function') abrirModal('modalConfirmarProximoCiclo');
+}
+
+function _gerarProximoCiclo() {
+    if (!blocosAtivos || blocosAtivos.length === 0) return;
+
+    // Agrupa por matéria: template (para clonar campos como nome/cor/duração)
+    // e total de blocos que a matéria tinha no ciclo que acabou de terminar.
+    const grupos = {};
+    blocosAtivos.forEach(bloco => {
+        if (!grupos[bloco.legenda]) grupos[bloco.legenda] = { template: bloco, total: 0 };
+        grupos[bloco.legenda].total++;
+    });
+
+    const totais = {};
+    Object.keys(grupos).forEach(leg => { totais[leg] = grupos[leg].total; });
+
+    const fatoresDesemp = typeof calcularFatoresDesempenho === 'function' ? calcularFatoresDesempenho() : {};
+    const novoTotais = _calcularRedistribuicaoPorDesempenho(totais, fatoresDesemp);
+
+    const novosBlocos = [];
+    Object.entries(novoTotais).forEach(([leg, qtd]) => {
+        const template = grupos[leg].template;
+        for (let i = 0; i < qtd; i++) {
+            const clone = { ...template };
+            delete clone.id; // ids são reatribuídos por garantirIdsBlocos no próximo merge/conclusão
+            clone.concluido = false;
+            clone.assunto = null;
+            clone.questoes = null;
+            novosBlocos.push(clone);
+        }
+    });
+
+    if (typeof _distribuirPorDeficit === 'function' && novosBlocos.length > 1) {
+        const contagem = {};
+        novosBlocos.forEach(b => { contagem[b.legenda] = (contagem[b.legenda] || 0) + 1; });
+        const entradas = Object.entries(contagem).map(([leg, qtd]) => ({ legenda: leg, qtdBlocos: qtd }));
+        const ordem = _distribuirPorDeficit(entradas);
+        const porLegenda = {};
+        novosBlocos.forEach(b => { (porLegenda[b.legenda] = porLegenda[b.legenda] || []).push(b); });
+        blocosAtivos = ordem.map(leg => porLegenda[leg].shift());
+    } else {
+        blocosAtivos = novosBlocos;
+    }
+
+    exibirCicloVisual(blocosAtivos);
+    salvarEstado();
 }
 
 function iniciarNovoEstudo() {

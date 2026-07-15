@@ -623,3 +623,44 @@
     font-size: 13px;
     margin: 12px 0;
 }
+
+/* Banner de ciclo concluído + botão para iniciar o próximo */
+.ciclo-completo-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    background: #E8F5E9;
+    border: 1px solid #A5D6A7;
+}
+
+.ciclo-completo-banner strong {
+    color: #2E7D32;
+    font-size: 15px;
+    margin-right: 8px;
+}
+
+.ciclo-completo-banner span {
+    color: #388E3C;
+    font-size: 13px;
+}
+
+.ciclo-completo-banner__btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ciclo-completo-banner__btn:hover {
+    background: #388E3C;
+}
