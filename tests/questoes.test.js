@@ -145,6 +145,45 @@ assert(
     'múltiplas materias: encontra na segunda materia'
 );
 
+// ── Resolução por nome da aula no curso (curso_nome) ─────────────────────────
+console.log('\nencontrarChaveParaTexto — curso_nome:');
+
+global.planoAdotado = {
+    edital: [
+        {
+            materia: 'Contabilidade',
+            topicos: [
+                {
+                    nome: 'Demonstrações Contábeis',
+                    curso_nome: 'Aula 03 - DFC e DRE',
+                    subtopicos: [
+                        { nome: 'Balanço Patrimonial', curso_nome: 'Aula 01 - Balanço (Estratégia)' },
+                        'DRE'
+                    ]
+                },
+                { nome: 'Provisões', curso_nome: 'Aula 07 - Provisões e Passivos', subtopicos: [] }
+            ]
+        }
+    ]
+};
+
+assert(
+    encontrarChaveParaTexto('Aula 01 - Balanço (Estratégia)') === 'Contabilidade|Demonstrações Contábeis|Balanço Patrimonial',
+    'subtópico por curso_nome: chave usa o nome OFICIAL'
+);
+assert(
+    encontrarChaveParaTexto('Balanço Patrimonial') === 'Contabilidade|Demonstrações Contábeis|Balanço Patrimonial',
+    'subtópico por nome oficial continua funcionando'
+);
+assert(
+    encontrarChaveParaTexto('Aula 07 - Provisões e Passivos') === 'Contabilidade|Provisões|',
+    'tópico sem subtópicos por curso_nome: chave oficial'
+);
+assert(
+    encontrarChaveParaTexto('DRE') === 'Contabilidade|Demonstrações Contábeis|DRE',
+    'subtópico string (sem mapeamento) inalterado'
+);
+
 // ── Resumo ───────────────────────────────────────────────────────────────────
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

@@ -191,7 +191,7 @@ function renderizarEdital() {
                             <div class="edital-topico__header" onclick="toggleEditalTopico(this)">
                                 <span class="edital-topico__drag" style="cursor:grab; color:#bbb; margin-right:4px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>
                                 <span class="edital-topico__arrow">&#9654;</span>
-                                <span class="edital-topico__nome">${nomeExibicaoEdital(topicoObj)}</span>
+                                <span class="edital-topico__nome">${nomeExibicaoEdital(topicoObj)}${topicoObj.curso_nome && topicoObj.curso_nome !== topicoObj.nome ? `<span class="edital-topico__oficial" title="Nome oficial no edital">Edital: ${topicoObj.nome}</span>` : ''}</span>
                                 <span class="edital-topico__progresso">${topicoProgresso.concluidos}/${topicoProgresso.total}</span>
                                 <div class="edital-barra-container edital-barra-container--sm">
                                     <div class="edital-barra" style="width:${topicoProgresso.pct}%;"></div>
@@ -324,7 +324,7 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
 
     let secundario = '';
     if (cursoNome && cursoNome !== nomeOficial) {
-        secundario = `<span class="edital-item__nome-oficial" title="Nome no edital">${nomeOficial}</span>`;
+        secundario = `<span class="edital-item__nome-oficial" title="Nome oficial no edital">Edital: ${nomeOficial}</span>`;
     }
 
     let tecBtn = '';
@@ -422,11 +422,34 @@ async function alterarStatusEdital(select, materia, topico, subtopico) {
 
 // ── Match automático: assunto → tópico do edital ────────────────────────────
 
+// Match exato (nome oficial OU nome da aula no curso) dentro da matéria do
+// bloco. Preferido ao fuzzy: quando o assunto veio da lista do edital, a
+// correspondência é inequívoca e nenhum item errado pode ser marcado.
+function _matchExatoEdital(materiaBloco, assunto) {
+    const materiaObj = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
+    if (!materiaObj) return null;
+    for (const topicoObj of (materiaObj.topicos || [])) {
+        const subtopicos = topicoObj.subtopicos || [];
+        if (subtopicos.length > 0) {
+            for (const sub of subtopicos) {
+                const nomeSub = nomeSubtopico(sub);
+                const cursoSub = (typeof sub === 'object' && sub) ? sub.curso_nome : null;
+                if (nomeSub === assunto || cursoSub === assunto) {
+                    return { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: nomeSub };
+                }
+            }
+        } else if (topicoObj.nome === assunto || topicoObj.curso_nome === assunto) {
+            return { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: null };
+        }
+    }
+    return null;
+}
+
 function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
     if (!planoAdotado?.edital || !assunto) return;
 
     const edital = planoAdotado.edital;
-    const match = encontrarMatchEdital(materia, assunto, edital);
+    const match = _matchExatoEdital(materia, assunto) || encontrarMatchEdital(materia, assunto, edital);
 
     if (match) {
         const chave = gerarChaveEdital(match.materia, match.topico, match.subtopico);
@@ -611,7 +634,12 @@ function preencherDatalistEdital(materiaBloco) {
 
 // ── Visibilidade da aba Edital ──────────────────────────────────────────────
 
-function obterAssuntoSugerido(materiaBloco) {
+// Sugestão detalhada do próximo item a estudar: retorna a correlação completa
+// aula do curso ↔ tópico do edital ↔ assunto TEC, para exibição ao aluno.
+// `exibicao` prioriza o nome da aula no curso (é o que o aluno vê na
+// plataforma dele); o nome oficial do edital fica como referência.
+// Somente leitura — nunca altera status de edital_progresso.
+function obterSugestaoDetalhada(materiaBloco) {
     if (!planoAdotado?.edital) return null;
 
     const melhorMateria = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
@@ -622,10 +650,44 @@ function obterAssuntoSugerido(materiaBloco) {
         .find(m => m.nome === materiaBloco || m.legenda === materiaBloco);
     const modoMateria = typeof modosMateria !== 'undefined' ? (modosMateria[matSel?.legenda] || null) : null;
 
+    const montar = (topicoObj, sub, origem) => {
+        // Para tópico sem subtópicos, o mapeamento (curso/TEC) vive no próprio tópico
+        const itemObj = sub !== null ? (typeof sub === 'object' ? sub : null) : topicoObj;
+        const nomeOficial = sub !== null ? nomeSubtopico(sub) : topicoObj.nome;
+        const cursoNome = itemObj?.curso_nome || null;
+        return {
+            exibicao: cursoNome || nomeOficial,
+            nomeOficial,
+            cursoNome,
+            tecAssunto: itemObj?.tec_assunto || null,
+            materiaEdital: melhorMateria.materia,
+            topicoOficial: topicoObj.nome,
+            revisao: origem !== 'pendente',
+            origem // 'pendente' | 'revisao_modo' | 'revisao_ciclo'
+        };
+    };
+
+    const localizarPorNomeOficial = (nome, origem) => {
+        for (const topicoObj of (melhorMateria.topicos || [])) {
+            const subtopicos = topicoObj.subtopicos || [];
+            if (subtopicos.length > 0) {
+                for (const sub of subtopicos) {
+                    if (nomeSubtopico(sub) === nome) return montar(topicoObj, sub, origem);
+                }
+            } else if (topicoObj.nome === nome) {
+                return montar(topicoObj, null, origem);
+            }
+        }
+        return null;
+    };
+
     // If in review mode, prioritize items pending revision (2+ cycles since last review)
     if (modoMateria === 'revisao') {
         const pendente = _encontrarItemRevisaoPendente(melhorMateria, cicloAtual);
-        if (pendente) return pendente;
+        if (pendente) {
+            const d = localizarPorNomeOficial(pendente, 'revisao_modo');
+            if (d) return d;
+        }
     }
 
     const topicos = [...(melhorMateria.topicos || [])].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
@@ -638,20 +700,29 @@ function obterAssuntoSugerido(materiaBloco) {
                 const nomeSub = nomeSubtopico(sub);
                 const chave = gerarChaveEdital(melhorMateria.materia, topicoObj.nome, nomeSub);
                 const prog = editalProgresso[chave];
-                if (!prog || prog.status === 'pendente') return nomeSub;
+                if (!prog || prog.status === 'pendente') return montar(topicoObj, sub, 'pendente');
             }
         } else {
             const chave = gerarChaveEdital(melhorMateria.materia, topicoObj.nome, null);
             const prog = editalProgresso[chave];
-            if (!prog || prog.status === 'pendente') return topicoObj.nome;
+            if (!prog || prog.status === 'pendente') return montar(topicoObj, null, 'pendente');
         }
     }
 
     // Second pass: if all items seen, suggest one needing revision
     const pendente = _encontrarItemRevisaoPendente(melhorMateria, cicloAtual);
-    if (pendente) return '⟳ ' + pendente;
+    if (pendente) {
+        const d = localizarPorNomeOficial(pendente, 'revisao_ciclo');
+        if (d) return d;
+    }
 
     return null;
+}
+
+function obterAssuntoSugerido(materiaBloco) {
+    const d = obterSugestaoDetalhada(materiaBloco);
+    if (!d) return null;
+    return (d.origem === 'revisao_ciclo' ? '⟳ ' : '') + d.exibicao;
 }
 
 function _encontrarItemRevisaoPendente(materiaObj, cicloAtual) {

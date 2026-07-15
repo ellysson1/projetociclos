@@ -150,15 +150,23 @@ function preencherListaAssuntosEdital(materiaBloco) {
             const topicos = materiaObj.topicos || [];
             const topicosOrdenados = [...topicos].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
 
+            // Exibe o nome da aula no curso quando mapeado (é o que o aluno vê
+            // na plataforma dele); encontrarChaveParaTexto resolve de volta
+            // para a chave oficial do edital.
             topicosOrdenados.forEach(topicoObj => {
                 const subtopicos = topicoObj.subtopicos || [];
                 if (subtopicos.length > 0) {
                     subtopicos.forEach(sub => {
-                        const nome = typeof nomeSubtopico === 'function' ? nomeSubtopico(sub) : (typeof sub === 'string' ? sub : sub?.nome || '');
+                        const nome = typeof nomeExibicaoEdital === 'function'
+                            ? nomeExibicaoEdital(sub)
+                            : (typeof sub === 'string' ? sub : sub?.nome || '');
                         if (nome) itens.push(nome);
                     });
                 } else {
-                    itens.push(topicoObj.nome);
+                    const nome = typeof nomeExibicaoEdital === 'function'
+                        ? nomeExibicaoEdital(topicoObj)
+                        : topicoObj.nome;
+                    itens.push(nome);
                 }
             });
         });
@@ -239,6 +247,9 @@ function preencherListaAssuntosEdital(materiaBloco) {
 }
 
 function encontrarChaveParaTexto(texto) {
+    // Aceita tanto o nome oficial do edital quanto o nome da aula no curso
+    // (curso_nome); a chave retornada usa SEMPRE os nomes oficiais — é ela
+    // que indexa edital_progresso.
     if (!planoAdotado?.edital) return null;
     const _nome = typeof nomeSubtopico === 'function' ? nomeSubtopico : (s => typeof s === 'string' ? s : s?.nome || '');
     for (const materiaObj of planoAdotado.edital) {
@@ -247,9 +258,12 @@ function encontrarChaveParaTexto(texto) {
             if (subtopicos.length > 0) {
                 for (const sub of subtopicos) {
                     const nomeSub = _nome(sub);
-                    if (nomeSub === texto) return gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub);
+                    const cursoSub = (typeof sub === 'object' && sub) ? sub.curso_nome : null;
+                    if (nomeSub === texto || cursoSub === texto) {
+                        return gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub);
+                    }
                 }
-            } else if (topicoObj.nome === texto) {
+            } else if (topicoObj.nome === texto || topicoObj.curso_nome === texto) {
                 return gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
             }
         }

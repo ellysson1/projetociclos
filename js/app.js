@@ -70,6 +70,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Modais de conclusao
     inicializarModaisQuestoes();
 
+    // Detalhe do bloco (aula do curso / edital / TEC)
+    const btnFecharDetalhe = document.getElementById('btnFecharDetalheBloco');
+    if (btnFecharDetalhe) btnFecharDetalhe.addEventListener('click', () => fecharModal('modalDetalheBloco'));
+
     // Planos (professor)
     document.getElementById('btnCriarPlano').addEventListener('click', () => abrirEditorPlano(null));
     document.getElementById('btnSalvarPlano').addEventListener('click', async () => {

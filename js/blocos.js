@@ -182,6 +182,14 @@ function criarCardBloco(bloco, index) {
         document.getElementById('tempoControle').scrollIntoView({ behavior: 'smooth' });
     });
 
+    // Clique no corpo do card (fora de Concluir/Cronômetro): detalhe do estudo —
+    // aula do curso, correlação com o edital e assunto no TEC.
+    card.addEventListener('click', function(e) {
+        if (e.target.closest('.bloco-card__check') || e.target.closest('.bloco-card__btn-timer')) return;
+        const idx = parseInt(card.getAttribute('data-index'));
+        if (typeof abrirDetalheBloco === 'function') abrirDetalheBloco(idx);
+    });
+
     // Drag and drop
     card.addEventListener('dragstart', function(e) {
         this.classList.add('dragging');
@@ -286,6 +294,92 @@ function atualizarSugestoesBlocos() {
             card.appendChild(div);
         }
     });
+}
+
+// ── Detalhe do bloco: aula do curso ↔ edital ↔ TEC ──────────────────────────
+// Montado com textContent (nunca innerHTML) porque os nomes vêm de dados
+// editáveis por usuários.
+function abrirDetalheBloco(index) {
+    const bloco = blocosAtivos && blocosAtivos[index];
+    if (!bloco) return;
+    const cont = document.getElementById('detalheBlocoConteudo');
+    const titulo = document.getElementById('detalheBlocoMateria');
+    if (!cont || !titulo) return;
+
+    titulo.textContent = `${bloco.nome} (${bloco.legenda})`;
+    cont.innerHTML = '';
+
+    const addLinha = (rotulo, valor) => {
+        const div = document.createElement('div');
+        div.className = 'detalhe-bloco__linha';
+        const lab = document.createElement('span');
+        lab.className = 'detalhe-bloco__rotulo';
+        lab.textContent = rotulo;
+        const val = document.createElement('span');
+        val.className = 'detalhe-bloco__valor';
+        val.textContent = valor;
+        div.appendChild(lab);
+        div.appendChild(val);
+        cont.appendChild(div);
+        return val;
+    };
+
+    if (bloco.concluido) {
+        const aviso = document.createElement('p');
+        aviso.className = 'detalhe-bloco__concluido';
+        aviso.textContent = 'Bloco concluído';
+        cont.appendChild(aviso);
+        if (bloco.assunto) addLinha('Assunto estudado', bloco.assunto);
+        if (bloco.questoes && bloco.questoes.feitas > 0) {
+            const pct = Math.round((bloco.questoes.corretas / bloco.questoes.feitas) * 100);
+            addLinha('Questões', `${bloco.questoes.corretas}/${bloco.questoes.feitas} (${pct}%)`);
+        }
+    } else {
+        const d = typeof obterSugestaoDetalhada === 'function' ? obterSugestaoDetalhada(bloco.nome) : null;
+        if (!d) {
+            const p = document.createElement('p');
+            p.className = 'detalhe-bloco__vazio';
+            p.textContent = planoAdotado?.edital
+                ? 'Nenhum assunto pendente no edital para esta matéria.'
+                : 'Este plano não possui edital vinculado.';
+            cont.appendChild(p);
+        } else {
+            const destaque = document.createElement('div');
+            destaque.className = 'detalhe-bloco__destaque';
+            const rotuloDestaque = document.createElement('span');
+            rotuloDestaque.className = 'detalhe-bloco__rotulo';
+            rotuloDestaque.textContent = d.revisao ? 'Revisar agora' : 'Estudar agora';
+            const aulaNome = document.createElement('p');
+            aulaNome.className = 'detalhe-bloco__aula';
+            aulaNome.textContent = d.exibicao;
+            destaque.appendChild(rotuloDestaque);
+            destaque.appendChild(aulaNome);
+            cont.appendChild(destaque);
+
+            // Correlação com o edital: sempre visível, mostra o caminho oficial
+            const caminho = d.nomeOficial && d.nomeOficial !== d.topicoOficial
+                ? `${d.materiaEdital} › ${d.topicoOficial} › ${d.nomeOficial}`
+                : `${d.materiaEdital} › ${d.topicoOficial}`;
+            addLinha('No edital', caminho);
+
+            if (d.tecAssunto) {
+                const val = addLinha('No TEC', d.tecAssunto);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'edital-item__tec-copy';
+                btn.textContent = 'Copiar';
+                btn.title = 'Copiar nome do assunto para buscar no TEC Concursos';
+                btn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(d.tecAssunto);
+                    btn.textContent = 'Copiado!';
+                    setTimeout(() => { btn.textContent = 'Copiar'; }, 1500);
+                });
+                val.parentNode.appendChild(btn);
+            }
+        }
+    }
+
+    if (typeof abrirModal === 'function') abrirModal('modalDetalheBloco');
 }
 
 function continuarEstudo() {

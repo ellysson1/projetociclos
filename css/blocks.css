@@ -562,3 +562,64 @@
 .assunto-item--progress {
     color: #E65100;
 }
+
+/* Nome oficial do edital ao lado do nome da aula (cabeçalho de tópico) */
+.edital-topico__oficial {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    font-style: italic;
+    font-weight: normal;
+}
+
+/* Modal de detalhe do bloco: aula do curso ↔ edital ↔ TEC */
+.detalhe-bloco__destaque {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #E8F5E9;
+    border: 1px solid #A5D6A7;
+}
+
+.detalhe-bloco__rotulo {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #388E3C;
+}
+
+.detalhe-bloco__aula {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2E7D32;
+    margin-top: 4px;
+}
+
+.detalhe-bloco__linha {
+    margin-top: 12px;
+}
+
+.detalhe-bloco__linha .detalhe-bloco__rotulo {
+    color: #667085;
+}
+
+.detalhe-bloco__valor {
+    display: block;
+    font-size: 13px;
+    color: #333;
+    margin-top: 2px;
+}
+
+.detalhe-bloco__concluido {
+    font-weight: 600;
+    color: #2E7D32;
+    margin: 10px 0 4px;
+}
+
+.detalhe-bloco__vazio {
+    color: #888;
+    font-size: 13px;
+    margin: 12px 0;
+}
