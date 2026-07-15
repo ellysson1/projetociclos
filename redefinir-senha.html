@@ -169,13 +169,77 @@ function normalizeError(error) {
             <div id="msg" class="msg"></div>
 
             <div class="links">
-                <a href="https://ellysson1.github.io/ciclos/login.html">Voltar para login</a>
+                <a id="linkNovoEmail" href="esqueci-senha.html" style="display:none; font-weight:bold;">Solicitar novo link</a>
+                <a href="login.html">Voltar para login</a>
             </div>
         </div>
     </div>
 
 <script>
+// ── Fluxo de recuperação ─────────────────────────────────────────────────────
+// Suporta três formatos de link, do mais novo ao legado:
+//   1. ?token_hash=...&type=recovery  → token só é consumido no clique em
+//      "Salvar" (verifyOtp). Resiste a scanners corporativos de e-mail
+//      (Outlook SafeLinks etc.), que visitam o link e consumiriam um token
+//      de uso único antes do usuário.
+//   2. ?code=...                      → PKCE: troca por sessão no load.
+//   3. #access_token=...              → fluxo implícito: a SDK processa o
+//      hash sozinha; aguardamos a sessão aparecer.
+
+let tokenHash = null;
+
+function mostrarLinkNovo() {
+    const el = document.getElementById('linkNovoEmail');
+    if (el) el.style.display = 'inline';
+}
+
+function msgLinkInvalido(motivo) {
+    setMsg((motivo || 'Este link expirou ou já foi utilizado.') +
+        ' Clique em "Solicitar novo link" para receber outro e-mail.', 'error');
+    mostrarLinkNovo();
+}
+
+(function initRecovery() {
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+
+    // Erro devolvido pelo Supabase no redirect (token expirado/consumido)
+    const errCode = hashParams.get('error_code') || params.get('error_code');
+    const errDesc = hashParams.get('error_description') || params.get('error_description') || '';
+    if (errCode || hashParams.get('error') || params.get('error')) {
+        if (errCode === 'otp_expired' || /expired|invalid/i.test(errDesc)) {
+            msgLinkInvalido('Este link expirou ou já foi utilizado (alguns provedores de e-mail corporativos "visitam" o link automaticamente e o invalidam).');
+        } else {
+            msgLinkInvalido('Não foi possível validar o link' + (errDesc ? ': ' + errDesc.replace(/\+/g, ' ') : '.'));
+        }
+        return;
+    }
+
+    // Fluxo 1: token_hash — validação adiada para o clique em Salvar
+    tokenHash = params.get('token_hash');
+    if (tokenHash) return;
+
+    // Fluxo 2: PKCE
+    const code = params.get('code');
+    if (code) {
+        supabaseClient.auth.exchangeCodeForSession(code).then(({ error }) => {
+            if (error) msgLinkInvalido();
+        });
+        return;
+    }
+
+    // Fluxo 3: implícito — a SDK processa o #access_token; se após a
+    // inicialização não houver sessão nem token na URL, avisar já no load.
+    supabaseClient.auth.getSession().then(({ data }) => {
+        if (data.session) return;
+        if (!hashParams.get('access_token')) {
+            msgLinkInvalido('Nenhuma sessão de recuperação encontrada. Abra esta página pelo link enviado por e-mail — se já fez isso, o link pode ter expirado.');
+        }
+    });
+})();
+
 document.getElementById('btnSalvar').addEventListener('click', async () => {
+    const btn = document.getElementById('btnSalvar');
     const password = document.getElementById('senha').value;
     const password2 = document.getElementById('senha2').value;
 
@@ -192,16 +256,41 @@ document.getElementById('btnSalvar').addEventListener('click', async () => {
         return;
     }
 
-    const { error } = await supabaseClient.auth.updateUser({ password });
-    if (error) {
-        setMsg(normalizeError(error), 'error');
-        return;
-    }
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+    try {
+        // Fluxo token_hash: consumir o token agora (ação explícita do usuário,
+        // fora do alcance dos scanners de e-mail).
+        if (tokenHash) {
+            const { error: otpErr } = await supabaseClient.auth.verifyOtp({
+                type: 'recovery',
+                token_hash: tokenHash
+            });
+            if (otpErr) {
+                msgLinkInvalido();
+                return;
+            }
+            tokenHash = null;
+        }
 
-    setMsg('Senha alterada com sucesso. Redirecionando para o login...');
-    setTimeout(() => {
-        window.location.href = BASE_URL + '/login.html';
-    }, 1600);
+        const { error } = await supabaseClient.auth.updateUser({ password });
+        if (error) {
+            if (/auth session missing/i.test(error.message || '')) {
+                msgLinkInvalido('A sessão de recuperação não foi encontrada — o link provavelmente expirou ou já foi utilizado.');
+            } else {
+                setMsg(normalizeError(error), 'error');
+            }
+            return;
+        }
+
+        setMsg('Senha alterada com sucesso. Redirecionando para o login...');
+        setTimeout(() => {
+            window.location.href = BASE_URL + '/login.html';
+        }, 1600);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar nova senha';
+    }
 });
 </script>
 </body>
