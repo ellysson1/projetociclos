@@ -44,7 +44,7 @@ const editalFuncs = [
     'gerarChaveEdital', 'normalizarTexto', 'calcularSimilaridade',
     '_encontrarMateriaEditalPorId', '_encontrarMateriaEditalFuzzy',
     '_encontrarItemRevisaoPendente', 'obterSugestaoDetalhada', 'obterAssuntoSugerido',
-    '_matchExatoEdital', 'atualizarProgressoEdital', 'encontrarMatchEdital'
+    '_matchesExatosEdital', 'atualizarProgressoEdital', 'encontrarMatchEdital'
 ];
 editalFuncs.forEach(fn => vm.runInThisContext(extrairBloco(editalCode, fn)));
 vm.runInThisContext(extrairBloco(blocosCode, 'contarItensRevisaoPendente'));
@@ -266,25 +266,25 @@ assert(det.origem === 'revisao_ciclo', 'origem = revisao_ciclo');
 assert(det.cursoNome !== null || det.nomeOficial !== null, 'revisão mantém correlação');
 assert(obterAssuntoSugerido('Contabilidade').startsWith('⟳ '), 'wrapper mantém prefixo ⟳ na revisão cíclica');
 
-// ── _matchExatoEdital ────────────────────────────────────────────────────────
-console.log('\n_matchExatoEdital:');
+// ── _matchesExatosEdital ─────────────────────────────────────────────────────
+console.log('\n_matchesExatosEdital:');
 
 resetState();
 planoAdotado = planoComCurso;
 
-let m = _matchExatoEdital('Contabilidade', 'Aula 01 - Balanço');
-assert(m !== null && m.subtopico === 'Balanço Patrimonial',
+let ms = _matchesExatosEdital('Contabilidade', 'Aula 01 - Balanço');
+assert(ms.length === 1 && ms[0].subtopico === 'Balanço Patrimonial',
     'match exato por curso_nome resolve para o nome oficial');
 
-m = _matchExatoEdital('Contabilidade', 'Balanço Patrimonial');
-assert(m !== null && m.topico === 'Demonstrações', 'match exato por nome oficial');
+ms = _matchesExatosEdital('Contabilidade', 'Balanço Patrimonial');
+assert(ms.length === 1 && ms[0].topico === 'Demonstrações', 'match exato por nome oficial');
 
-m = _matchExatoEdital('Contabilidade', 'Aula 07 - Provisões');
-assert(m !== null && m.topico === 'Provisões' && m.subtopico === null,
+ms = _matchesExatosEdital('Contabilidade', 'Aula 07 - Provisões');
+assert(ms.length === 1 && ms[0].topico === 'Provisões' && ms[0].subtopico === null,
     'tópico sem subtópicos por curso_nome');
 
-m = _matchExatoEdital('Contabilidade', 'Aula inexistente XYZ');
-assert(m === null, 'sem correspondência exata: null (cai no fuzzy)');
+ms = _matchesExatosEdital('Contabilidade', 'Aula inexistente XYZ');
+assert(ms.length === 0, 'sem correspondência exata: array vazio (cai no fuzzy)');
 
 // atualizarProgressoEdital com nome do curso marca o item OFICIAL correto
 resetState();
@@ -295,6 +295,61 @@ const chaveBP = gerarChaveEdital('Contabilidade', 'Demonstrações', 'Balanço P
 assert(editalProgresso[chaveBP]?.status === 'visto',
     'conclusão com nome do curso marca a chave oficial como vista');
 assert(editalProgresso[chaveBP]?.questoes_feitas === 10, 'questões somadas na chave oficial');
+
+// ── Uma aula cobrindo múltiplos itens do edital (curso_nome repetido) ───────
+console.log('\ncurso_nome cobrindo múltiplos itens do edital:');
+
+const planoAulaMultipla = {
+    id: 'test-3',
+    nome: 'Plano Aula Múltipla',
+    maxFase: 1,
+    materias: [
+        { nome: 'Direito Administrativo', legenda: 'DADM', fase: 1, materia_edital_id: 'mat-dadm' }
+    ],
+    edital: [{
+        materia: 'Direito Administrativo',
+        id: 'mat-dadm',
+        topicos: [
+            {
+                nome: 'Poderes Administrativos',
+                subtopicos: [
+                    { nome: 'Poder Vinculado', curso_nome: 'Aula 05 - Poderes da Administração' },
+                    { nome: 'Poder Discricionário', curso_nome: 'Aula 05 - Poderes da Administração' },
+                    { nome: 'Poder Hierárquico', curso_nome: 'Aula 05 - Poderes da Administração' }
+                ]
+            }
+        ]
+    }]
+};
+
+resetState();
+planoAdotado = planoAulaMultipla;
+
+ms = _matchesExatosEdital('Direito Administrativo', 'Aula 05 - Poderes da Administração');
+assert(ms.length === 3, `aula cobrindo 3 subtópicos: retorna os 3 matches (obteve ${ms.length})`);
+
+cicloNumero = 1;
+atualizarProgressoEdital('Direito Administrativo', 'Aula 05 - Poderes da Administração', { feitas: 6, corretas: 5 }, 'visto');
+
+const chaveVinc = gerarChaveEdital('Direito Administrativo', 'Poderes Administrativos', 'Poder Vinculado');
+const chaveDisc = gerarChaveEdital('Direito Administrativo', 'Poderes Administrativos', 'Poder Discricionário');
+const chaveHier = gerarChaveEdital('Direito Administrativo', 'Poderes Administrativos', 'Poder Hierárquico');
+
+assert(editalProgresso[chaveVinc]?.status === 'visto', 'conclui a aula: 1º subtópico marcado visto');
+assert(editalProgresso[chaveDisc]?.status === 'visto', 'conclui a aula: 2º subtópico marcado visto');
+assert(editalProgresso[chaveHier]?.status === 'visto', 'conclui a aula: 3º subtópico marcado visto');
+
+assert(editalProgresso[chaveVinc].questoes_feitas === 6, 'questões somadas apenas no 1º item');
+assert((editalProgresso[chaveDisc].questoes_feitas || 0) === 0, '2º item não duplica a contagem de questões');
+assert((editalProgresso[chaveHier].questoes_feitas || 0) === 0, '3º item não duplica a contagem de questões');
+
+// Nunca faz downgrade de 'concluido' (nem de 'visto' para 'em_andamento) em
+// nenhum dos itens agrupados — a mesma regra anti-downgrade do item único
+// se aplica a cada item do grupo individualmente.
+editalProgresso[chaveDisc].status = 'concluido';
+atualizarProgressoEdital('Direito Administrativo', 'Aula 05 - Poderes da Administração', null, 'em_andamento');
+assert(editalProgresso[chaveDisc].status === 'concluido', 'item já concluído manualmente não é rebaixado pelo grupo');
+assert(editalProgresso[chaveVinc].status === 'visto', 'item já visto não é rebaixado para em_andamento pelo grupo');
 
 // ── Resultado ────────────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -422,12 +422,14 @@ async function alterarStatusEdital(select, materia, topico, subtopico) {
 
 // ── Match automático: assunto → tópico do edital ────────────────────────────
 
-// Match exato (nome oficial OU nome da aula no curso) dentro da matéria do
-// bloco. Preferido ao fuzzy: quando o assunto veio da lista do edital, a
-// correspondência é inequívoca e nenhum item errado pode ser marcado.
-function _matchExatoEdital(materiaBloco, assunto) {
+// Todos os matches exatos (nome oficial OU nome da aula no curso) dentro da
+// matéria do bloco. Uma mesma aula do curso pode cobrir vários tópicos/
+// subtópicos do edital (curso_nome repetido) — todos devem ser retornados
+// para que a conclusão marque cada um, não apenas o primeiro encontrado.
+function _matchesExatosEdital(materiaBloco, assunto) {
     const materiaObj = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
-    if (!materiaObj) return null;
+    if (!materiaObj) return [];
+    const matches = [];
     for (const topicoObj of (materiaObj.topicos || [])) {
         const subtopicos = topicoObj.subtopicos || [];
         if (subtopicos.length > 0) {
@@ -435,23 +437,25 @@ function _matchExatoEdital(materiaBloco, assunto) {
                 const nomeSub = nomeSubtopico(sub);
                 const cursoSub = (typeof sub === 'object' && sub) ? sub.curso_nome : null;
                 if (nomeSub === assunto || cursoSub === assunto) {
-                    return { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: nomeSub };
+                    matches.push({ materia: materiaObj.materia, topico: topicoObj.nome, subtopico: nomeSub });
                 }
             }
         } else if (topicoObj.nome === assunto || topicoObj.curso_nome === assunto) {
-            return { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: null };
+            matches.push({ materia: materiaObj.materia, topico: topicoObj.nome, subtopico: null });
         }
     }
-    return null;
+    return matches;
 }
 
 function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
     if (!planoAdotado?.edital || !assunto) return;
 
     const edital = planoAdotado.edital;
-    const match = _matchExatoEdital(materia, assunto) || encontrarMatchEdital(materia, assunto, edital);
+    const exatos = _matchesExatosEdital(materia, assunto);
+    const matches = exatos.length > 0 ? exatos : [encontrarMatchEdital(materia, assunto, edital)].filter(Boolean);
+    if (matches.length === 0) return;
 
-    if (match) {
+    matches.forEach((match, idx) => {
         const chave = gerarChaveEdital(match.materia, match.topico, match.subtopico);
         if (!editalProgresso[chave]) {
             editalProgresso[chave] = { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
@@ -467,7 +471,9 @@ function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
             editalProgresso[chave].ciclo_visto = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
         }
         editalProgresso[chave].ultimo_ciclo_revisado = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
-        if (questoes && questoes.feitas > 0) {
+        // Questões contam uma única vez (no primeiro item) para não multiplicar
+        // a contagem de acertos quando a mesma aula cobre vários itens.
+        if (idx === 0 && questoes && questoes.feitas > 0) {
             editalProgresso[chave].questoes_feitas += questoes.feitas;
             editalProgresso[chave].questoes_corretas += questoes.corretas;
         }
@@ -478,14 +484,15 @@ function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
                 topico: match.topico,
                 subtopico: match.subtopico || null,
                 status: editalProgresso[chave].status,
-                questoes: questoes || null
+                questoes: (idx === 0 ? questoes : null) || null
             });
         }
 
         salvarEditalProgressoItem(match.materia, match.topico, match.subtopico, editalProgresso[chave]);
-        if (typeof renderizarEdital === 'function') renderizarEdital();
-        if (typeof renderizarRevisao === 'function') renderizarRevisao();
-    }
+    });
+
+    if (typeof renderizarEdital === 'function') renderizarEdital();
+    if (typeof renderizarRevisao === 'function') renderizarRevisao();
 }
 
 function encontrarMatchEdital(materiaBloco, assunto, edital) {

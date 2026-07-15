@@ -130,6 +130,7 @@ function preencherListaAssuntosEdital(materiaBloco) {
     outroContainer.style.display = 'none';
 
     const itens = [];
+    const itensVistos = new Set();
 
     if (planoAdotado?.edital) {
         const materiaEdital = (typeof _encontrarMateriaEditalPorId === 'function' && _encontrarMateriaEditalPorId(materiaBloco))
@@ -151,8 +152,10 @@ function preencherListaAssuntosEdital(materiaBloco) {
             const topicosOrdenados = [...topicos].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
 
             // Exibe o nome da aula no curso quando mapeado (é o que o aluno vê
-            // na plataforma dele); encontrarChaveParaTexto resolve de volta
-            // para a chave oficial do edital.
+            // na plataforma dele); encontrarChavesParaTexto resolve de volta
+            // para as chaves oficiais do edital. Uma mesma aula pode cobrir
+            // vários tópicos/subtópicos (curso_nome repetido) — dedupe para
+            // não listar o mesmo nome mais de uma vez.
             topicosOrdenados.forEach(topicoObj => {
                 const subtopicos = topicoObj.subtopicos || [];
                 if (subtopicos.length > 0) {
@@ -160,13 +163,19 @@ function preencherListaAssuntosEdital(materiaBloco) {
                         const nome = typeof nomeExibicaoEdital === 'function'
                             ? nomeExibicaoEdital(sub)
                             : (typeof sub === 'string' ? sub : sub?.nome || '');
-                        if (nome) itens.push(nome);
+                        if (nome && !itensVistos.has(nome)) {
+                            itensVistos.add(nome);
+                            itens.push(nome);
+                        }
                     });
                 } else {
                     const nome = typeof nomeExibicaoEdital === 'function'
                         ? nomeExibicaoEdital(topicoObj)
                         : topicoObj.nome;
-                    itens.push(nome);
+                    if (nome && !itensVistos.has(nome)) {
+                        itensVistos.add(nome);
+                        itens.push(nome);
+                    }
                 }
             });
         });
@@ -188,9 +197,16 @@ function preencherListaAssuntosEdital(materiaBloco) {
     }
 
     itens.forEach(texto => {
-        const chave = encontrarChaveParaTexto(texto);
-        const prog = chave ? editalProgresso[chave] : null;
-        const status = prog?.status || 'pendente';
+        // Uma aula pode cobrir vários itens do edital: agrega o status de
+        // TODOS eles (concluído só se todos estiverem concluídos, em
+        // andamento se algum já foi tocado).
+        const chaves = encontrarChavesParaTexto(texto);
+        const statuses = chaves.map(c => editalProgresso[c]?.status || 'pendente');
+        const status = statuses.length === 0 ? 'pendente'
+            : statuses.every(s => s === 'concluido') ? 'concluido'
+            : statuses.every(s => s === 'visto' || s === 'concluido') ? 'visto'
+            : statuses.some(s => s !== 'pendente') ? 'em_andamento'
+            : 'pendente';
 
         const div = document.createElement('div');
         div.className = 'assunto-item';
@@ -246,12 +262,13 @@ function preencherListaAssuntosEdital(materiaBloco) {
     }
 }
 
-function encontrarChaveParaTexto(texto) {
-    // Aceita tanto o nome oficial do edital quanto o nome da aula no curso
-    // (curso_nome); a chave retornada usa SEMPRE os nomes oficiais — é ela
-    // que indexa edital_progresso.
-    if (!planoAdotado?.edital) return null;
+// Todas as chaves do edital que correspondem ao texto — nome oficial OU nome
+// da aula no curso (curso_nome). Uma mesma aula pode cobrir vários tópicos/
+// subtópicos do edital; as chaves retornadas usam SEMPRE os nomes oficiais.
+function encontrarChavesParaTexto(texto) {
+    if (!planoAdotado?.edital || !texto) return [];
     const _nome = typeof nomeSubtopico === 'function' ? nomeSubtopico : (s => typeof s === 'string' ? s : s?.nome || '');
+    const chaves = [];
     for (const materiaObj of planoAdotado.edital) {
         for (const topicoObj of (materiaObj.topicos || [])) {
             const subtopicos = topicoObj.subtopicos || [];
@@ -260,15 +277,20 @@ function encontrarChaveParaTexto(texto) {
                     const nomeSub = _nome(sub);
                     const cursoSub = (typeof sub === 'object' && sub) ? sub.curso_nome : null;
                     if (nomeSub === texto || cursoSub === texto) {
-                        return gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub);
+                        chaves.push(gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub));
                     }
                 }
             } else if (topicoObj.nome === texto || topicoObj.curso_nome === texto) {
-                return gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
+                chaves.push(gerarChaveEdital(materiaObj.materia, topicoObj.nome, null));
             }
         }
     }
-    return null;
+    return chaves;
+}
+
+function encontrarChaveParaTexto(texto) {
+    const chaves = encontrarChavesParaTexto(texto);
+    return chaves.length > 0 ? chaves[0] : null;
 }
 
 function finalizarConclusao(questoes) {

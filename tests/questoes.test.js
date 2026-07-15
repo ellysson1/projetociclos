@@ -31,8 +31,9 @@ function extrairBloco(codigo, nomeFuncao) {
 
 eval(extrairBloco(editalCode, 'gerarChaveEdital'));
 
-// ── Carregar encontrarChaveParaTexto de questoes.js ───────────────────────────
+// ── Carregar encontrarChave(s)ParaTexto de questoes.js ─────────────────────────
 const questoesCode = fs.readFileSync(path.join(__dirname, '..', 'js', 'questoes.js'), 'utf8');
+eval(extrairBloco(questoesCode, 'encontrarChavesParaTexto'));
 eval(extrairBloco(questoesCode, 'encontrarChaveParaTexto'));
 
 // ── Harness ──────────────────────────────────────────────────────────────────
@@ -183,6 +184,42 @@ assert(
     encontrarChaveParaTexto('DRE') === 'Contabilidade|Demonstrações Contábeis|DRE',
     'subtópico string (sem mapeamento) inalterado'
 );
+
+// ── encontrarChavesParaTexto — aula cobrindo múltiplos itens ────────────────
+console.log('\nencontrarChavesParaTexto — curso_nome repetido:');
+
+global.planoAdotado = {
+    edital: [
+        {
+            materia: 'Direito Administrativo',
+            topicos: [
+                {
+                    nome: 'Poderes Administrativos',
+                    subtopicos: [
+                        { nome: 'Poder Vinculado', curso_nome: 'Aula 05 - Poderes' },
+                        { nome: 'Poder Discricionário', curso_nome: 'Aula 05 - Poderes' },
+                        { nome: 'Poder Hierárquico', curso_nome: 'Aula 05 - Poderes' },
+                        { nome: 'Poder de Polícia', curso_nome: 'Aula 06 - Poder de Polícia' }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
+const chavesMultiplas = encontrarChavesParaTexto('Aula 05 - Poderes');
+assert(chavesMultiplas.length === 3, `retorna as 3 chaves cobertas pela aula (obteve ${chavesMultiplas.length})`);
+assert(chavesMultiplas.includes('Direito Administrativo|Poderes Administrativos|Poder Vinculado'), 'inclui Poder Vinculado');
+assert(chavesMultiplas.includes('Direito Administrativo|Poderes Administrativos|Poder Discricionário'), 'inclui Poder Discricionário');
+assert(chavesMultiplas.includes('Direito Administrativo|Poderes Administrativos|Poder Hierárquico'), 'inclui Poder Hierárquico');
+assert(!chavesMultiplas.includes('Direito Administrativo|Poderes Administrativos|Poder de Polícia'), 'não inclui aula diferente');
+
+assert(encontrarChavesParaTexto('Aula inexistente').length === 0, 'sem correspondência: array vazio');
+assert(encontrarChavesParaTexto('').length === 0, 'texto vazio: array vazio');
+
+// encontrarChaveParaTexto (singular) continua retornando a primeira chave
+assert(encontrarChaveParaTexto('Aula 05 - Poderes') === chavesMultiplas[0],
+    'versão singular retorna a primeira chave do grupo');
 
 // ── Resumo ───────────────────────────────────────────────────────────────────
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
