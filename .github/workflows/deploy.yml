@@ -1,0 +1,11 @@
+name: Deploy para Hostinger
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acionar Webhook da Hostinger
+        run: curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.HOSTINGER_WEBHOOK_URL }}"

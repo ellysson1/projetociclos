@@ -53,12 +53,20 @@ function removerMateria(legenda) {
 
 function avancarHorasSemanais(event) {
     event.preventDefault();
-    const horasSemanais = document.getElementById("horasSemanais").value;
-    if (horasSemanais && parseInt(horasSemanais) > 0) {
-        alternarAba('materias');
-    } else {
+    const horasSemanais = parseInt(document.getElementById("horasSemanais").value);
+    if (!horasSemanais || horasSemanais <= 0) {
         alert("Por favor, insira um número válido de horas semanais.");
+        return;
     }
+    // Auto-select all available materials and go straight to variables
+    coresUsadas = [];
+    materiasSelecionadas = materiasList.map(m => ({ ...m, cor: gerarCorUnica() }));
+    if (materiasSelecionadas.length === 0) {
+        alert("Nenhuma matéria disponível. Configure as matérias na aba Configurações.");
+        return;
+    }
+    preencherTabelaVariaveis();
+    alternarAba('variaveis');
 }
 
 function avancarSelecaoMaterias() {

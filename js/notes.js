@@ -1,34 +1,20 @@
-async function salvarAnotacoes() {
-    const anotacoes = document.getElementById('anotacoesTexto').value;
-    localStorage.setItem('cicloEstudosAnotacoes', anotacoes);
-    await salvarEstadoNuvem();
-    alert('Anotações salvas com sucesso!');
-}
-
-function carregarAnotacoes() {
-    const anotacoesSalvas = localStorage.getItem('cicloEstudosAnotacoes');
-    if (anotacoesSalvas) {
-        document.getElementById('anotacoesTexto').value = anotacoesSalvas;
-    }
-}
-
 function salvarConfiguracoes() {
     const novaDuracaoBloco = parseInt(document.getElementById('duracaoBloco').value);
     const novoIntervaloEntreBlocos = parseInt(document.getElementById('intervaloEntreBlocos').value);
     const novoBlocosPorSessao = parseInt(document.getElementById('blocosPorSessao').value);
 
     if (isNaN(novaDuracaoBloco) || novaDuracaoBloco < 1) {
-        alert('A duração do bloco deve ser um número positivo.');
+        alert('A duracao do bloco deve ser um numero positivo.');
         return;
     }
 
     if (isNaN(novoIntervaloEntreBlocos) || novoIntervaloEntreBlocos < 0) {
-        alert('O intervalo entre blocos deve ser um número não negativo.');
+        alert('O intervalo entre blocos deve ser um numero nao negativo.');
         return;
     }
 
     if (isNaN(novoBlocosPorSessao) || novoBlocosPorSessao < 1) {
-        alert('O número de blocos por sessão deve ser um número positivo.');
+        alert('O numero de blocos por sessao deve ser um numero positivo.');
         return;
     }
 
@@ -37,10 +23,10 @@ function salvarConfiguracoes() {
     configuracoes.blocosPorSessao = novoBlocosPorSessao;
 
     localStorage.setItem('cicloEstudosConfiguracoes', JSON.stringify(configuracoes));
-    alert('Configurações salvas com sucesso!');
+    alert('Configuracoes salvas com sucesso!');
 
     if (blocosAtivos.length > 0) {
-        if (confirm('Deseja recalcular os blocos com as novas configurações?')) {
+        if (confirm('Deseja recalcular os blocos com as novas configuracoes?')) {
             calcularBlocos();
         } else {
             exibirCicloVisual(blocosAtivos);
