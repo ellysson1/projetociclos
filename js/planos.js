@@ -709,14 +709,25 @@ async function verificarEAplicarPlanoAtribuido() {
     const plano = atr.planos;
     if (!plano) return;
 
-    // Skip if student already has this plan applied
-    if (planoAdotado?.id === plano.id) return;
+    // Reaplicar quando o plano mudou OU quando o professor alterou a atribuição
+    // (perfil, nível, blocos...). Comparar só o id do plano descartava
+    // silenciosamente qualquer reatribuição do mesmo plano.
+    const atrCarimbo = atr.updated_at || atr.created_at || null;
+    if (planoAdotado?.id === plano.id && planoAdotado?.atribuicaoEm === atrCarimbo) return;
 
     // Merge configs (plan defaults < atribuicao overrides)
     const cfg = { ...(plano.configuracoes || {}), ...(atr.configuracoes || {}) };
     if (cfg.duracaoBloco) configuracoes.duracaoBloco = cfg.duracaoBloco;
     if (cfg.intervaloEntreBlocos !== undefined) configuracoes.intervaloEntreBlocos = cfg.intervaloEntreBlocos;
     if (cfg.blocosPorSessao) configuracoes.blocosPorSessao = cfg.blocosPorSessao;
+
+    // Perfil de acesso definido pelo professor na aba Alunos. Fica na
+    // atribuição (linha do professor) porque a RLS não permite que ele
+    // escreva no `progresso` do aluno.
+    if (cfg.tipo_perfil) {
+        tipoPerfil = cfg.tipo_perfil;
+        if (typeof aplicarVisibilidadePerfil === 'function') aplicarVisibilidadePerfil();
+    }
 
     // Apply nivel_conteudo from teacher assignment
     if (cfg.nivel_conteudo) {
@@ -741,7 +752,7 @@ async function verificarEAplicarPlanoAtribuido() {
     }
 
     const maxFase = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
-    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase, regras_evolucao: plano.regras_evolucao || [] };
+    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase, regras_evolucao: plano.regras_evolucao || [], atribuicaoEm: atrCarimbo };
 
     // Only include current-phase matérias in active lists
     const materiasDoPlano = todasMaterias.filter(m => (m.fase || 1) <= faseAtual);
@@ -826,7 +837,21 @@ async function verificarEAplicarPlanoAtribuido() {
             }
             blocos.forEach(b => { delete b._vp; delete b._share; });
         } else {
-            return; // Sem horas e sem blocos definidos, não é possível gerar ciclo
+            // Sem horas e sem blocos definidos não há como gerar o ciclo. Antes
+            // isso era um return silencioso: o aluno ficava com o plano aplicado
+            // (aba Edital visível) mas nenhum bloco, sem saber o motivo.
+            console.warn('Plano atribuído sem horas semanais nem blocos por matéria — ciclo não gerado.');
+            salvarEstado();
+            alert('Seu plano foi atribuído, mas ainda não tem carga horária definida. Peça ao seu professor para informar as horas semanais na atribuição do plano.');
+            return;
+        }
+
+        const totalGerado = blocos.reduce((s, b) => s + (b.quantidadeBlocos || 0), 0);
+        if (totalGerado === 0) {
+            console.warn('Plano atribuído resultou em 0 blocos.', { materias: materiasDoPlano.length });
+            salvarEstado();
+            alert('Seu plano foi atribuído, mas nenhum bloco pôde ser gerado com a configuração atual. Avise seu professor para revisar a atribuição.');
+            return;
         }
 
         materiasSelecionadas = blocos;

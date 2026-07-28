@@ -68,6 +68,10 @@ function atualizarUIRole() {
     const videosAluno = document.getElementById('videosAluno');
     const videosProfessor = document.getElementById('videosProfessor');
 
+    // Aba Alunos: exclusiva do professor
+    const tabAlunos = document.querySelector('.tab-container > .tab[data-tab="alunos"]');
+    if (tabAlunos) tabAlunos.style.display = isTeacher() ? 'inline-block' : 'none';
+
     if (isTeacher()) {
         if (planosAluno) planosAluno.style.display = 'none';
         if (planosProfessor) planosProfessor.style.display = 'block';
