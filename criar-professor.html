@@ -182,6 +182,11 @@ function setMsg2(text, type='success') {
     el.className = 'msg ' + type;
 }
 
+// ATENÇÃO: este código NÃO é um segredo — ele vive no JavaScript do
+// navegador e é legível por qualquer visitante no DevTools. Serve apenas
+// como atrito de UX. A barreira real é a trigger `impedir_auto_promocao`
+// (sql/fase6_seguranca.sql): toda conta criada pelo navegador nasce como
+// 'aluno' e o role só é elevado via service_role (painel do Supabase).
 document.getElementById('btnValidarCodigo').addEventListener('click', () => {
     const codigo = document.getElementById('codigo').value.trim();
     if (codigo === CODIGO_PROFESSOR) {

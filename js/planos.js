@@ -110,15 +110,15 @@ async function renderizarListaPlanosProfessor() {
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:start; gap:12px;">
                 <div>
-                    <strong style="font-size:16px;">${plano.nome}</strong>
-                    <p style="font-size:13px; color:#666; margin-top:4px;">${plano.descricao || 'Sem descrição'}</p>
+                    <strong style="font-size:16px;">${escapeHtml(plano.nome)}</strong>
+                    <p style="font-size:13px; color:#666; margin-top:4px;">${escapeHtml(plano.descricao || 'Sem descrição')}</p>
                     <p style="font-size:12px; color:#999; margin-top:4px;">${materiasCount} matéria(s) | ${plano.publico ? 'Público' : 'Privado'}</p>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
-                    <button class="btn-painel-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#3F51B5; color:white; border:none; border-radius:6px; cursor:pointer;">Painel</button>
-                    <button class="btn-atribuir-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Atribuir</button>
-                    <button class="btn-editar-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px;">Editar</button>
-                    <button class="btn-excluir-plano" data-id="${plano.id}" style="font-size:12px; padding:6px 12px; background:#FF6B6B;">Excluir</button>
+                    <button class="btn-painel-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:#3F51B5; color:white; border:none; border-radius:6px; cursor:pointer;">Painel</button>
+                    <button class="btn-atribuir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Atribuir</button>
+                    <button class="btn-editar-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px;">Editar</button>
+                    <button class="btn-excluir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:#FF6B6B;">Excluir</button>
                 </div>
             </div>
         `;
@@ -200,7 +200,9 @@ function atribuirPassoNext() {
     // Pré-preencher configs com valores do plano
     const cfg = _atribuirPlano.configuracoes || {};
     document.getElementById('atribuirDuracaoBloco').value = cfg.duracaoBloco || 60;
-    document.getElementById('atribuirIntervalo').value = cfg.intervaloEntreBlocos ?? 5;
+    // Number.isFinite (e não `??`) porque atribuições gravadas antes da
+    // correção do BUG 13 podem conter NaN no banco.
+    document.getElementById('atribuirIntervalo').value = Number.isFinite(cfg.intervaloEntreBlocos) ? cfg.intervaloEntreBlocos : 5;
     document.getElementById('atribuirBlocosSessao').value = cfg.blocosPorSessao || 4;
     document.getElementById('atribuirHorasSemanais').value = cfg.horasSemanais || '';
     document.getElementById('atribuirNivelConteudo').value = cfg.nivel_conteudo || 'avancado';
@@ -213,8 +215,8 @@ function atribuirPassoNext() {
     } else {
         container.innerHTML = materias.map(m => `
             <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid #f0f0f0;">
-                <span style="font-size:14px; font-weight:600;">${m.legenda} <span style="color:#888; font-weight:400;">– ${m.nome}</span></span>
-                <select class="atribuir-modo-select" data-legenda="${m.legenda}" style="font-size:13px; padding:4px 8px; border:1px solid var(--border-color); border-radius:6px;">
+                <span style="font-size:14px; font-weight:600;">${escapeHtml(m.legenda)} <span style="color:#888; font-weight:400;">– ${escapeHtml(m.nome)}</span></span>
+                <select class="atribuir-modo-select" data-legenda="${escapeHtml(m.legenda)}" style="font-size:13px; padding:4px 8px; border:1px solid var(--border-color); border-radius:6px;">
                     <option value="">Normal</option>
                     <option value="questoes">Só Questões</option>
                     <option value="revisao">Só Revisão</option>
@@ -357,11 +359,18 @@ async function confirmarAtribuicao() {
     const user = await getUsuarioLogado();
     if (!user) return;
 
+    // parseInt devolve NaN (não null) para campo vazio, então `?? 5` nunca
+    // aplicava o default e gravava NaN na configuração do aluno.
+    const _num = (id, padrao) => {
+        const v = parseInt(document.getElementById(id).value, 10);
+        return Number.isFinite(v) ? v : padrao;
+    };
+
     const cfg = {
-        duracaoBloco: parseInt(document.getElementById('atribuirDuracaoBloco').value) || 60,
-        intervaloEntreBlocos: parseInt(document.getElementById('atribuirIntervalo').value) ?? 5,
-        blocosPorSessao: parseInt(document.getElementById('atribuirBlocosSessao').value) || 4,
-        horasSemanais: parseInt(document.getElementById('atribuirHorasSemanais').value) || null,
+        duracaoBloco: _num('atribuirDuracaoBloco', 60),
+        intervaloEntreBlocos: _num('atribuirIntervalo', 5),
+        blocosPorSessao: _num('atribuirBlocosSessao', 4),
+        horasSemanais: _num('atribuirHorasSemanais', null),
         nivel_conteudo: document.getElementById('atribuirNivelConteudo').value || 'avancado'
     };
 
@@ -644,11 +653,11 @@ async function renderizarPlanosDisponiveis() {
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
                 <span style="background:#7C4DFF; color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:uppercase;">Atribuído pelo Professor</span>
             </div>
-            <strong style="font-size:15px; color:#5E35B1;">${plano.nome}</strong>
-            <p style="font-size:13px; color:#666; margin:4px 0;">${plano.descricao || ''}</p>
+            <strong style="font-size:15px; color:#5E35B1;">${escapeHtml(plano.nome)}</strong>
+            <p style="font-size:13px; color:#666; margin:4px 0;">${escapeHtml(plano.descricao || '')}</p>
             <p style="font-size:12px; color:#888;">${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}${cfg.duracaoBloco ? ' | ' + cfg.duracaoBloco + 'min/bloco' : ''}</p>
             ${modosTexto ? `<p style="font-size:12px; color:#7C4DFF; margin-top:4px;">${modosTexto}</p>` : ''}
-            <button class="btn-adotar-atribuido" data-atr-id="${atr.id}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
+            <button class="btn-adotar-atribuido" data-atr-id="${escapeHtml(atr.id)}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
         `;
         container.appendChild(card);
     });
@@ -666,10 +675,10 @@ async function renderizarPlanosDisponiveis() {
         const cfg = plano.configuracoes || {};
 
         card.innerHTML = `
-            <strong style="font-size:15px; color:var(--primary-color);">${plano.nome}</strong>
-            <p style="font-size:13px; color:#666; margin:4px 0;">${plano.descricao || ''}</p>
-            <p style="font-size:12px; color:#999;">Por: ${profNome} | ${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}</p>
-            <button class="btn-adotar-plano" data-id="${plano.id}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
+            <strong style="font-size:15px; color:var(--primary-color);">${escapeHtml(plano.nome)}</strong>
+            <p style="font-size:13px; color:#666; margin:4px 0;">${escapeHtml(plano.descricao || '')}</p>
+            <p style="font-size:12px; color:#999;">Por: ${escapeHtml(profNome)} | ${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}</p>
+            <button class="btn-adotar-plano" data-id="${escapeHtml(plano.id)}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
         `;
         container.appendChild(card);
     });
@@ -717,9 +726,11 @@ async function verificarEAplicarPlanoAtribuido() {
 
     // Merge configs (plan defaults < atribuicao overrides)
     const cfg = { ...(plano.configuracoes || {}), ...(atr.configuracoes || {}) };
-    if (cfg.duracaoBloco) configuracoes.duracaoBloco = cfg.duracaoBloco;
-    if (cfg.intervaloEntreBlocos !== undefined) configuracoes.intervaloEntreBlocos = cfg.intervaloEntreBlocos;
-    if (cfg.blocosPorSessao) configuracoes.blocosPorSessao = cfg.blocosPorSessao;
+    // Number.isFinite protege contra NaN gravado por atribuições antigas
+    // (BUG 13) — antes o aluno via "Intervalo: NaN min".
+    if (Number.isFinite(cfg.duracaoBloco)) configuracoes.duracaoBloco = cfg.duracaoBloco;
+    if (Number.isFinite(cfg.intervaloEntreBlocos)) configuracoes.intervaloEntreBlocos = cfg.intervaloEntreBlocos;
+    if (Number.isFinite(cfg.blocosPorSessao)) configuracoes.blocosPorSessao = cfg.blocosPorSessao;
 
     // Perfil de acesso definido pelo professor na aba Alunos. Fica na
     // atribuição (linha do professor) porque a RLS não permite que ele
@@ -1047,7 +1058,7 @@ async function abrirPainelAlunos(plano) {
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <div>
-                    <strong style="font-size:15px;">${nome}</strong>
+                    <strong style="font-size:15px;">${escapeHtml(nome)}</strong>
                     <span style="font-size:12px; color:white; background:#3F51B5; padding:1px 8px; border-radius:10px; margin-left:8px;">Fase ${fase}/${maxFase}</span>
                 </div>
                 <div style="font-size:12px; color:#999;">Atividade: ${ultimaAtividade}</div>
@@ -1061,8 +1072,8 @@ async function abrirPainelAlunos(plano) {
                 <div style="display:flex; flex-wrap:wrap; gap:4px;">${materiasResumo || '<span style="font-size:12px; color:#999;">Nenhum bloco</span>'}</div>
                 ${proximaFaseHtml}
                 <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="btn-visualizar-aluno" data-uid="${uid}" data-nome="${nome}" style="font-size:12px; padding:4px 12px; background:#FF6B6B; color:white; border:none; border-radius:6px; cursor:pointer;">Visualizar como aluno</button>
-                    <button class="btn-reatribuir" data-uid="${uid}" style="font-size:12px; padding:4px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Reatribuir Plano</button>
+                    <button class="btn-visualizar-aluno" data-uid="${escapeHtml(uid)}" data-nome="${escapeHtml(nome)}" style="font-size:12px; padding:4px 12px; background:#FF6B6B; color:white; border:none; border-radius:6px; cursor:pointer;">Visualizar como aluno</button>
+                    <button class="btn-reatribuir" data-uid="${escapeHtml(uid)}" style="font-size:12px; padding:4px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Reatribuir Plano</button>
                 </div>
             </div>
         `;

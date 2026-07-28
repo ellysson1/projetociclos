@@ -87,8 +87,9 @@ function mesclarEstados(eLocal, eServidor, versaoLocal, versaoServidor) {
         }
     });
 
-    // 2. Fase: vence a maior
+    // 2. Fase e ciclo: vence o maior (nunca regridem)
     m.faseAtual = Math.max(m.faseAtual || 1, outro.faseAtual || 1);
+    m.cicloNumero = Math.max(m.cicloNumero || 1, outro.cicloNumero || 1);
 
     // 3. Revisões: maior contador por chave
     const revBase = m.revisoesContador || {};

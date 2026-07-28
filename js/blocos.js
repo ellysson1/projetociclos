@@ -520,8 +520,49 @@ function _gerarProximoCiclo() {
     salvarEstado();
 }
 
-function iniciarNovoEstudo() {
+// Limpar só o localStorage não bastava: no reload, carregarEstadoNuvem via
+// `temDadosLocais=false` e adotava o estado do servidor, ressuscitando o ciclo
+// antigo inteiro. É preciso zerar também na nuvem, respeitando o
+// versionamento, antes de recarregar.
+async function iniciarNovoEstudo() {
+    if (!confirm('Isso vai limpar seu ciclo atual e começar do zero. Continuar?')) return;
+
     salvarAoSair = false;
+    blocosAtivos = [];
+    materiasSelecionadas = [];
+    faseAtual = 1;
+    cicloNumero = 1;
+
+    if (typeof supabaseConfigurado === 'function' && supabaseConfigurado()) {
+        try {
+            const user = await getUsuarioLogado();
+            if (user) {
+                const vazio = montarEstadoLocal();
+                const { data: row } = await supabaseClient
+                    .from('progresso')
+                    .select('versao')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+                const novaVersao = (row?.versao || 0) + 1;
+                await supabaseClient
+                    .from('progresso')
+                    .upsert({
+                        user_id: user.id,
+                        estado: vazio,
+                        versao: novaVersao,
+                        device_id: typeof getDeviceId === 'function' ? getDeviceId() : null,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
+                if (typeof setVersaoLocal === 'function') setVersaoLocal(novaVersao);
+            }
+        } catch (e) {
+            console.error('Erro ao limpar o ciclo na nuvem:', e);
+            alert('Não foi possível limpar seu ciclo no servidor. Verifique sua conexão e tente novamente.');
+            salvarAoSair = true;
+            return;
+        }
+    }
+
     localStorage.removeItem('cicloEstudosEstado');
     location.reload();
 }

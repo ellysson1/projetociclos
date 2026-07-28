@@ -191,7 +191,7 @@ function renderizarEdital() {
                             <div class="edital-topico__header" onclick="toggleEditalTopico(this)">
                                 <span class="edital-topico__drag" style="cursor:grab; color:#bbb; margin-right:4px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>
                                 <span class="edital-topico__arrow">&#9654;</span>
-                                <span class="edital-topico__nome">${nomeExibicaoEdital(topicoObj)}${topicoObj.curso_nome && topicoObj.curso_nome !== topicoObj.nome ? `<span class="edital-topico__oficial" title="Nome oficial no edital">Edital: ${topicoObj.nome}</span>` : ''}</span>
+                                <span class="edital-topico__nome">${escapeHtml(nomeExibicaoEdital(topicoObj))}${topicoObj.curso_nome && topicoObj.curso_nome !== topicoObj.nome ? `<span class="edital-topico__oficial" title="Nome oficial no edital">Edital: ${escapeHtml(topicoObj.nome)}</span>` : ''}</span>
                                 <span class="edital-topico__progresso">${topicoProgresso.concluidos}/${topicoProgresso.total}</span>
                                 <div class="edital-barra-container edital-barra-container--sm">
                                     <div class="edital-barra" style="width:${topicoProgresso.pct}%;"></div>
@@ -227,7 +227,7 @@ function renderizarEdital() {
         materiaDiv.innerHTML = `
             <div class="edital-materia__header" onclick="toggleEditalMateria(this)">
                 <span class="edital-materia__arrow">&#9654;</span>
-                <strong class="edital-materia__nome">${materiaObj.materia}</strong>
+                <strong class="edital-materia__nome">${escapeHtml(materiaObj.materia)}</strong>
                 <span class="edital-materia__progresso">${materiaConcluidos}/${materiaItens} (${materiaPct}%)</span>
                 <div class="edital-barra-container">
                     <div class="edital-barra" style="width:${materiaPct}%;"></div>
@@ -247,6 +247,7 @@ function renderizarEdital() {
 
     // Drag and drop para reordenar tópicos
     inicializarDragDropEdital(arvore);
+    inicializarControlesItensEdital(arvore);
 
     // Atualizar sugestões nos cards de blocos (edital agora confirmado carregado)
     if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
@@ -324,16 +325,18 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
 
     let secundario = '';
     if (cursoNome && cursoNome !== nomeOficial) {
-        secundario = `<span class="edital-item__nome-oficial" title="Nome oficial no edital">Edital: ${nomeOficial}</span>`;
+        secundario = `<span class="edital-item__nome-oficial" title="Nome oficial no edital">Edital: ${escapeHtml(nomeOficial)}</span>`;
     }
 
+    // Botão TEC: sem onclick inline — o nome do assunto vai no dataset e o
+    // listener é ligado em inicializarDragDropEdital. Nomes com aspas
+    // quebravam o JS gerado (e abriam vetor de injeção).
     let tecBtn = '';
     if (tecAssunto) {
-        const tecEscaped = tecAssunto.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        tecBtn = `<button class="edital-item__tec-copy" onclick="event.stopPropagation(); navigator.clipboard.writeText('${tecEscaped}'); this.textContent='Copiado!'; setTimeout(()=>this.textContent='TEC: ${tecEscaped}', 1500);" title="Copiar nome do TEC para buscar questoes">TEC: ${tecAssunto}</button>`;
+        tecBtn = `<button class="edital-item__tec-copy" data-tec="${escapeHtml(tecAssunto)}" title="Copiar nome do TEC para buscar questoes">TEC: ${escapeHtml(tecAssunto)}</button>`;
     }
 
-    const dataAttrs = `data-materia="${materia}" data-topico="${topico}" data-subtopico="${subtopico || ''}"`;
+    const dataAttrs = `data-materia="${escapeHtml(materia)}" data-topico="${escapeHtml(topico)}" data-subtopico="${escapeHtml(subtopico || '')}"`;
     const dragAttrs = !subtopico && topicoIdx !== undefined
         ? `draggable="true" data-materia-idx="${materiaIdx}" data-topico-idx="${topicoIdx}"`
         : '';
@@ -345,13 +348,13 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
         <div class="edital-item ${statusClass}" ${dataAttrs} ${dragAttrs}>
             ${dragHandle}
             <div class="edital-item__info">
-                <span class="edital-item__label">${label}</span>
+                <span class="edital-item__label">${escapeHtml(label)}</span>
                 ${secundario}
                 ${tecBtn}
                 ${questoesInfo}
             </div>
             <div class="edital-item__actions">
-                <select class="edital-item__select" onchange="alterarStatusEdital(this, '${materia}', '${topico}', '${subtopico || ''}')">
+                <select class="edital-item__select">
                     <option value="pendente" ${prog.status === 'pendente' ? 'selected' : ''}>Pendente</option>
                     <option value="em_andamento" ${prog.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
                     <option value="visto" ${prog.status === 'visto' ? 'selected' : ''}>Visto</option>
@@ -360,6 +363,29 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
             </div>
         </div>
     `;
+}
+
+// Liga os controles dos itens do edital lendo os data-* do próprio elemento.
+// Substitui os handlers inline (que quebravam com aspas nos nomes).
+function inicializarControlesItensEdital(container) {
+    container.querySelectorAll('.edital-item__select').forEach(sel => {
+        sel.addEventListener('change', function () {
+            const item = this.closest('.edital-item');
+            if (!item) return;
+            alterarStatusEdital(this, item.dataset.materia, item.dataset.topico, item.dataset.subtopico || '');
+        });
+    });
+
+    container.querySelectorAll('.edital-item__tec-copy').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const tec = this.dataset.tec || '';
+            navigator.clipboard.writeText(tec);
+            const original = this.textContent;
+            this.textContent = 'Copiado!';
+            setTimeout(() => { this.textContent = original; }, 1500);
+        });
+    });
 }
 
 function calcularProgressoTopico(materia, topico, subtopicos) {
@@ -1000,12 +1026,16 @@ function converterLinhasParaEdital(rows) {
     const tecMapa = {};
 
     rows.forEach(row => {
-        const materia = (row['Materia'] || row['materia'] || row['MATERIA'] || row['Matéria'] || row['matéria'] || '').trim();
-        const topico = (row['Topico'] || row['topico'] || row['TOPICO'] || row['Tópico'] || row['tópico'] || '').trim();
-        const subtopico = (row['Subtopico'] || row['subtopico'] || row['SUBTOPICO'] || row['Subtópico'] || row['subtópico'] || '').trim();
-        const ordem = parseInt(row['Ordem'] || row['ordem'] || row['ORDEM'] || '') || 999;
-        const cursoNome = (row['Curso_Nome'] || row['curso_nome'] || row['CURSO_NOME'] || row['Nome_Curso'] || '').trim();
-        const tecAssunto = (row['TEC_Assunto'] || row['tec_assunto'] || row['TEC_ASSUNTO'] || row['TEC'] || '').trim();
+        // sheet_to_json devolve numeros como Number: sem String(), uma celula
+        // numerica (ex.: topico "101") lançava TypeError e derrubava o import
+        // inteiro com "Erro ao ler o arquivo".
+        const _txt = v => String(v ?? '').trim();
+        const materia = _txt(row['Materia'] || row['materia'] || row['MATERIA'] || row['Matéria'] || row['matéria']);
+        const topico = _txt(row['Topico'] || row['topico'] || row['TOPICO'] || row['Tópico'] || row['tópico']);
+        const subtopico = _txt(row['Subtopico'] || row['subtopico'] || row['SUBTOPICO'] || row['Subtópico'] || row['subtópico']);
+        const ordem = parseInt(_txt(row['Ordem'] || row['ordem'] || row['ORDEM']), 10) || 999;
+        const cursoNome = _txt(row['Curso_Nome'] || row['curso_nome'] || row['CURSO_NOME'] || row['Nome_Curso']);
+        const tecAssunto = _txt(row['TEC_Assunto'] || row['tec_assunto'] || row['TEC_ASSUNTO'] || row['TEC']);
 
         if (!materia || !topico) return;
 

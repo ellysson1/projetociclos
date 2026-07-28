@@ -23,9 +23,16 @@ async function salvarEstadoNuvem() {
                 .maybeSingle();
 
             if (errSel) {
-                // Coluna versao ainda não existe (migração não aplicada):
-                // cair no comportamento legado para não interromper o sync.
-                await _salvarEstadoNuvemLegado(user);
+                // Só cair no legado quando a coluna `versao` realmente não
+                // existe (42703 = undefined_column). Antes, QUALQUER erro —
+                // inclusive falha de rede transitória — caía aqui, e o legado
+                // faz upsert incondicional: um dispositivo com estado antigo
+                // sobrescrevia o estado mais novo de outro sem merge.
+                if (errSel.code === '42703') {
+                    await _salvarEstadoNuvemLegado(user);
+                } else {
+                    console.warn('Sync adiado (erro ao ler versão do servidor):', errSel);
+                }
                 return;
             }
 

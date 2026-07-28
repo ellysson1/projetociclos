@@ -171,16 +171,15 @@ async function renderizarVideosAluno() {
                 const foiAssistida = videosAssistidos.has(aula.id);
                 if (foiAssistida) assistidas++;
                 const embedUrl = gerarEmbedUrl(aula.vimeo_url) || '';
-                const tituloEscapado = aula.titulo.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 aulasHTML += `
                     <div class="video-aula ${foiAssistida ? 'video-aula--assistida' : ''}">
                         <label class="video-aula__check">
                             <input type="checkbox" ${foiAssistida ? 'checked' : ''}
-                                onchange="marcarVideoAssistido('${aula.id}', this.checked); this.closest('.video-aula').classList.toggle('video-aula--assistida')">
+                                onchange="marcarVideoAssistido('${escapeJsString(aula.id)}', this.checked); this.closest('.video-aula').classList.toggle('video-aula--assistida')">
                         </label>
-                        <span class="video-aula__titulo" onclick="abrirPlayer('${embedUrl}', '${tituloEscapado}')">
-                            &#9654; ${aula.titulo}
+                        <span class="video-aula__titulo" onclick="abrirPlayer('${escapeHtml(escapeJsString(embedUrl))}', '${escapeHtml(escapeJsString(aula.titulo))}')">
+                            &#9654; ${escapeHtml(aula.titulo)}
                         </span>
                     </div>`;
             });
@@ -189,7 +188,7 @@ async function renderizarVideosAluno() {
                 <div class="video-assunto">
                     <div class="video-assunto__header" onclick="toggleVideoAssunto(this)">
                         <span class="video-assunto__arrow">&#9654;</span>
-                        <span class="video-assunto__nome">${assuntoNome}</span>
+                        <span class="video-assunto__nome">${escapeHtml(assuntoNome)}</span>
                         <span class="video-assunto__count">${aulas.length} aula(s)</span>
                     </div>
                     <div class="video-assunto__aulas" style="display:none;">
@@ -202,7 +201,7 @@ async function renderizarVideosAluno() {
             <div class="video-curso">
                 <div class="video-curso__header" onclick="toggleVideoCurso(this)">
                     <span class="video-curso__arrow">&#9654;</span>
-                    <strong class="video-curso__nome">${cursoNome}</strong>
+                    <strong class="video-curso__nome">${escapeHtml(cursoNome)}</strong>
                     <span class="video-curso__count">${assistidas}/${totalAulas} assistida(s)</span>
                 </div>
                 <div class="video-curso__conteudo" style="display:none;">
@@ -243,17 +242,21 @@ async function renderizarVideosProfessor() {
 
     Object.entries(cursos).forEach(([cursoNome, assuntos]) => {
         html += `<div style="margin-bottom:16px; border:1px solid var(--border-color); border-radius:8px; padding:12px;">
-            <h4 style="color:var(--primary-color); margin-bottom:8px;">${cursoNome}</h4>`;
+            <h4 style="color:var(--primary-color); margin-bottom:8px;">${escapeHtml(cursoNome)}</h4>`;
 
         Object.entries(assuntos).forEach(([assuntoNome, aulas]) => {
             html += `<div style="margin-left:12px; margin-bottom:8px;">
-                <strong style="font-size:13px; color:#555;">${assuntoNome}</strong>`;
+                <strong style="font-size:13px; color:#555;">${escapeHtml(assuntoNome)}</strong>`;
 
             aulas.forEach(aula => {
+                // rel="noopener noreferrer" evita reverse tabnabbing; a URL só
+                // é usada como href se for http(s) do Vimeo.
+                const urlSegura = /^https?:\/\/(player\.)?vimeo\.com\//i.test(aula.vimeo_url || '')
+                    ? escapeHtml(aula.vimeo_url) : '#';
                 html += `<div class="video-prof-item">
-                    <span>&#9654; ${aula.titulo}</span>
-                    <a href="${aula.vimeo_url}" target="_blank">ver</a>
-                    <button onclick="removerVideo('${aula.id}')">&#215;</button>
+                    <span>&#9654; ${escapeHtml(aula.titulo)}</span>
+                    <a href="${urlSegura}" target="_blank" rel="noopener noreferrer">ver</a>
+                    <button onclick="removerVideo('${escapeJsString(aula.id)}')">&#215;</button>
                 </div>`;
             });
 
