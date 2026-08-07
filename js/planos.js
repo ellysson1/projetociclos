@@ -419,7 +419,7 @@ function abrirEditorPlano(planoId) {
 
     if (planoId) {
         carregarPlanosProfessor().then(planos => {
-            planoEditando = planos.find(p => p.id === planoId) || null;
+            planoEditando = planos.find(p => String(p.id) === String(planoId)) || null;
             preencherEditorPlano();
         });
     } else {
@@ -442,10 +442,14 @@ function fecharEditorPlano() {
     if (btnCriar) btnCriar.style.display = 'inline-block';
 
     planoEditando = null;
+    const planoIdInput = document.getElementById('planoId');
+    if (planoIdInput) planoIdInput.value = '';
     renderizarListaPlanosProfessor();
 }
 
 function preencherEditorPlano() {
+    const planoIdInput = document.getElementById('planoId');
+    if (planoIdInput) planoIdInput.value = planoEditando?.id || '';
     document.getElementById('planoNome').value = planoEditando?.nome || '';
     document.getElementById('planoDescricao').value = planoEditando?.descricao || '';
     document.getElementById('planoPublico').checked = planoEditando?.publico !== false;
@@ -569,8 +573,10 @@ function coletarDadosPlano() {
         if (m.nome && m.legenda) materias.push(m);
     });
 
+    const planoId = document.getElementById('planoId')?.value || null;
+
     return {
-        id: planoEditando?.id || null,
+        id: planoId || planoEditando?.id || null,
         nome: document.getElementById('planoNome').value.trim(),
         descricao: document.getElementById('planoDescricao').value.trim(),
         publico: document.getElementById('planoPublico').checked,
