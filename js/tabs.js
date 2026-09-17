@@ -44,6 +44,9 @@ function ativarMainTab(tabName) {
     if (tabName === 'planos' && typeof renderizarListaPlanosProfessor === 'function') {
         renderizarListaPlanosProfessor();
     }
+    if (tabName === 'alunos' && typeof renderizarAbaAlunos === 'function') {
+        renderizarAbaAlunos();
+    }
 }
 
 function ativarSubTab(parentTabId, subtabId) {

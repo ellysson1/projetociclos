@@ -10,14 +10,19 @@ function _lerTimerState() {
     catch { return null; }
 }
 
+// Persiste também a sessão PAUSADA: antes, pausar zerava cronometroRodando
+// antes de salvar, o que apagava a chave — quem pausasse e recarregasse a
+// página perdia todo o tempo estudado. A chave só é removida no reset/fim.
 function _salvarTimerState() {
-    if (!cronometroRodando) {
+    if (_timerInicioEm === 0) {
         localStorage.removeItem(TIMER_STATE_KEY);
         return;
     }
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify({
         inicioEm: _timerInicioEm,
         pausasAcumuladas: _timerPausasAcumuladas,
+        pausaInicioEm: _timerPausaInicioEm || 0,
+        rodando: !!cronometroRodando,
         modo: modoCronometro ? 'cronometro' : 'timer',
         tempoTotal: tempoTotal
     }));
@@ -33,16 +38,32 @@ function inicializarControlesTempo() {
 }
 
 function _tentarResumir() {
+    // exibirCicloVisual roda a cada merge/drag/conclusão e chama esta função.
+    // Sem esta guarda, cada re-render criava um setInterval novo sem limpar o
+    // anterior — os vazados continuavam reescrevendo o display depois de
+    // pausar ou encerrar.
+    if (cronometroRodando) return;
+
     const st = _lerTimerState();
     if (!st || !st.inicioEm) return;
 
     _timerInicioEm = st.inicioEm;
     _timerPausasAcumuladas = st.pausasAcumuladas || 0;
+    _timerPausaInicioEm = st.pausaInicioEm || 0;
     modoCronometro = st.modo === 'cronometro';
     if (!modoCronometro) tempoTotal = st.tempoTotal || 0;
 
     document.getElementById('tipoTempo').value = modoCronometro ? 'cronometro' : 'timer';
     document.getElementById('timerConfig').style.display = modoCronometro ? 'none' : 'block';
+
+    // Sessão salva como pausada: restaura o tempo na tela sem voltar a contar.
+    if (st.rodando === false) {
+        if (!_timerPausaInicioEm) _timerPausaInicioEm = Date.now();
+        cronometroRodando = false;
+        document.getElementById('iniciarPausar').textContent = 'Retomar';
+        _renderTick();
+        return;
+    }
 
     const decorrido = _calcDecorrido();
     if (!modoCronometro && decorrido >= tempoTotal) {
@@ -50,6 +71,7 @@ function _tentarResumir() {
         return;
     }
 
+    clearInterval(cronometroInterval);
     cronometroRodando = true;
     cronometroInterval = setInterval(_renderTick, 1000);
     document.getElementById('iniciarPausar').textContent = 'Pausar';
@@ -93,6 +115,7 @@ function iniciarPausarTempo() {
         _timerPausaInicioEm = 0;
     }
 
+    clearInterval(cronometroInterval);
     cronometroRodando = true;
     cronometroInterval = setInterval(_renderTick, 1000);
     document.getElementById('iniciarPausar').textContent = 'Pausar';

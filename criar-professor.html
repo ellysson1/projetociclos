@@ -182,6 +182,11 @@ function setMsg2(text, type='success') {
     el.className = 'msg ' + type;
 }
 
+// ATENÇÃO: este código NÃO é um segredo — ele vive no JavaScript do
+// navegador e é legível por qualquer visitante no DevTools. Serve apenas
+// como atrito de UX. A barreira real é a trigger `impedir_auto_promocao`
+// (sql/fase6_seguranca.sql): toda conta criada pelo navegador nasce como
+// 'aluno' e o role só é elevado via service_role (painel do Supabase).
 document.getElementById('btnValidarCodigo').addEventListener('click', () => {
     const codigo = document.getElementById('codigo').value.trim();
     if (codigo === CODIGO_PROFESSOR) {
@@ -223,23 +228,6 @@ document.getElementById('btnCriarProfessor').addEventListener('click', async () 
     if (signUpError) {
         setMsg2(signUpError.message || String(signUpError), 'error');
         return;
-    }
-
-    const userId = signUpData.user?.id;
-    if (userId) {
-        const { error: profileError } = await supabaseClient
-            .from('profiles')
-            .upsert({
-                user_id: userId,
-                role: 'professor',
-                nome: nome
-            }, { onConflict: 'user_id' });
-
-        if (profileError) {
-            console.error('Erro ao definir role professor:', profileError);
-            setMsg2('Conta criada, mas houve erro ao definir perfil de professor. Entre em contato com o administrador.', 'error');
-            return;
-        }
     }
 
     setMsg2('Conta de professor criada com sucesso! Verifique seu e-mail para confirmar o cadastro.');

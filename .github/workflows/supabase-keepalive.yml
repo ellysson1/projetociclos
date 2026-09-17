@@ -1,0 +1,21 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    - cron: '0 12 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/profiles?select=user_id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "HTTP status: $STATUS (qualquer resposta confirma que a chamada alcancou o Supabase)"
+        env:
+          SUPABASE_URL: https://znkxhacjuejmxhgcaqvz.supabase.co
+          SUPABASE_ANON_KEY: sb_publishable_ULAmkcVfbsAzJ6tRCQJarQ_WGMbMaTo

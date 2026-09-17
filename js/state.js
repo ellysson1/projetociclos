@@ -19,6 +19,10 @@ let planoAdotado = null; // { id, nome, edital }
 let modosMateria = {}; // { legenda: 'questoes' | 'revisao' }
 let faseAtual = 1; // Progressive cycle: current phase
 let cicloNumero = 1; // Cycle counter: increments when all blocks are completed
+let tipoPerfil = null; // 'autodidata' | 'curso' | 'mentoria'
+let nivelConteudo = null; // 'basico' | 'intermediario' | 'avancado'
+let _modoVisualizacaoAluno = false;
+let _estadoProfessorBackup = null;
 
 let configuracoes = {
     duracaoBloco: 60,
@@ -39,6 +43,8 @@ function montarEstadoLocal() {
         modosMateria,
         faseAtual,
         cicloNumero,
+        tipoPerfil,
+        nivelConteudo,
         revisoesContador: typeof revisoesContador !== 'undefined' ? revisoesContador : {},
         horasSemanais: document.getElementById('horasSemanais')?.value || null,
         atualizadoEm: new Date().toISOString()
@@ -62,6 +68,8 @@ function aplicarEstadoGlobals(estado, opts = {}) {
     if (estado.modosMateria) modosMateria = estado.modosMateria;
     if (estado.faseAtual) faseAtual = estado.faseAtual;
     if (estado.cicloNumero) cicloNumero = estado.cicloNumero;
+    if (estado.tipoPerfil) tipoPerfil = estado.tipoPerfil;
+    if (estado.nivelConteudo) nivelConteudo = estado.nivelConteudo;
     if (estado.revisoesContador && typeof revisoesContador !== 'undefined') revisoesContador = estado.revisoesContador;
     if (estado.horasSemanais) {
         const el = document.getElementById('horasSemanais');
@@ -70,6 +78,7 @@ function aplicarEstadoGlobals(estado, opts = {}) {
 }
 
 function salvarEstado() {
+    if (_modoVisualizacaoAluno) return;
     const estado = montarEstadoLocal();
     localStorage.setItem('cicloEstudosEstado', JSON.stringify(estado));
     salvarEstadoNuvem();

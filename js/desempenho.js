@@ -53,6 +53,9 @@ async function renderizarDesempenho() {
         container.innerHTML = html;
     }
 
+    // Ajuste automatico por desempenho
+    renderizarDesempenhoAjuste(porMateria);
+
     // Progresso no edital
     renderizarDesempenhoEdital();
 }
@@ -72,6 +75,64 @@ async function carregarQuestoesHistorico() {
         return [];
     }
     return data || [];
+}
+
+function renderizarDesempenhoAjuste(porMateriaHistorico) {
+    const wrapper = document.getElementById('desempenhoAjuste');
+    const conteudo = document.getElementById('desempenhoAjusteConteudo');
+    if (!wrapper || !conteudo) return;
+
+    const fatores = typeof calcularFatoresDesempenho === 'function'
+        ? calcularFatoresDesempenho() : {};
+
+    if (Object.keys(fatores).length === 0) {
+        wrapper.style.display = 'none';
+        return;
+    }
+
+    wrapper.style.display = 'block';
+
+    let totalFeitas = 0, totalCorretas = 0;
+    Object.values(porMateriaHistorico).forEach(d => {
+        totalFeitas += d.feitas;
+        totalCorretas += d.corretas;
+    });
+    const mediaGlobal = totalFeitas > 0 ? Math.round((totalCorretas / totalFeitas) * 100) : 0;
+
+    const entries = Object.entries(fatores).sort((a, b) => b[1] - a[1]);
+
+    let html = `<p style="font-size:13px; color:#888; margin-bottom:12px;">Media geral: <strong>${mediaGlobal}%</strong> de acerto (minimo 5 questoes por materia para ativar)</p>`;
+
+    entries.forEach(([legenda, fator]) => {
+        const dados = porMateriaHistorico[legenda];
+        const pctAcerto = dados && dados.feitas > 0 ? Math.round((dados.corretas / dados.feitas) * 100) : 0;
+        const pctAjuste = Math.round((fator - 1) * 100);
+        const sinal = pctAjuste >= 0 ? '+' : '';
+        const cor = pctAjuste > 0 ? '#e53935' : pctAjuste < 0 ? 'var(--success-color)' : '#666';
+        const icone = pctAjuste > 0 ? '&#9650;' : pctAjuste < 0 ? '&#9660;' : '&#9679;';
+        const descricao = pctAjuste > 0
+            ? 'Abaixo da media — ganha mais blocos'
+            : pctAjuste < 0
+                ? 'Acima da media — ganha menos blocos'
+                : 'Na media';
+
+        const nome = materiasSelecionadas.find(m => m.legenda === legenda)?.nome || legenda;
+
+        html += `
+            <div class="desempenho-materia">
+                <div class="desempenho-materia__header">
+                    <span class="desempenho-materia__nome">${nome}</span>
+                    <span style="font-size:14px; font-weight:bold; color:${cor};">${icone} ${sinal}${pctAjuste}%</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#888;">
+                    <span>Acerto: ${pctAcerto}%</span>
+                    <span>${descricao}</span>
+                </div>
+            </div>
+        `;
+    });
+
+    conteudo.innerHTML = html;
 }
 
 function renderizarDesempenhoEdital() {

@@ -37,6 +37,7 @@ eval(extrairBloco(editalCode, 'calcularSimilaridade'));
 eval(extrairBloco(editalCode, '_encontrarMateriaEditalPorId'));
 eval(extrairBloco(editalCode, '_encontrarMateriaEditalFuzzy'));
 eval(extrairBloco(editalCode, 'calcularProgressoTopico'));
+eval(extrairBloco(editalCode, 'coletarEditalDoEditor'));
 
 // ── Harness ──────────────────────────────────────────────────────────────────
 let passed = 0, failed = 0;
@@ -212,6 +213,43 @@ assert(r4.concluidos === 2, 'todos visto/concluido: concluidos = 2');
 global.editalProgresso = {};
 const r5 = calcularProgressoTopico('DIR', 'T1', ['S1', 'S2', 'S3']);
 assert(r5.concluidos === 0 && r5.pct === 0, 'nenhum no progresso: 0 concluidos');
+
+// ── coletarEditalDoEditor: preservação de ids estáveis ────────────────────────
+console.log('\ncoletarEditalDoEditor — preserva ids:');
+
+global.editalEditando = [
+    {
+        id: 'mat-abc',
+        materia: '  Direito Constitucional  ',
+        topicos: [
+            {
+                id: 'top-1',
+                nome: ' Princípios ',
+                curso_nome: 'Aula 01 - Princípios',
+                tec_assunto: null,
+                subtopicos: [
+                    { id: 'sub-1', nome: ' Isonomia ' },
+                    { id: 'sub-2', nome: 'Legalidade', tec_assunto: 'Legalidade Admin' },
+                    'Proporcionalidade'
+                ]
+            }
+        ]
+    },
+    { id: 'mat-vazia', materia: '   ', topicos: [] }
+];
+
+const coletado = coletarEditalDoEditor();
+
+assert(coletado.length === 1, 'descarta matéria sem nome');
+assert(coletado[0].id === 'mat-abc', 'preserva id da matéria');
+assert(coletado[0].materia === 'Direito Constitucional', 'faz trim do nome da matéria');
+assert(coletado[0].topicos[0].id === 'top-1', 'preserva id do tópico');
+assert(coletado[0].topicos[0].curso_nome === 'Aula 01 - Princípios', 'preserva curso_nome do tópico');
+
+const subs = coletado[0].topicos[0].subtopicos;
+assert(subs[0].id === 'sub-1' && subs[0].nome === 'Isonomia', 'subtópico com id vira objeto com id preservado');
+assert(subs[1].id === 'sub-2' && subs[1].tec_assunto === 'Legalidade Admin', 'subtópico com id + mapeamento preserva ambos');
+assert(subs[2] === 'Proporcionalidade', 'subtópico novo (string, sem id) permanece string');
 
 // ── Resumo ───────────────────────────────────────────────────────────────────
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

@@ -41,7 +41,7 @@ async function carregarNotificacoes() {
         const div = document.createElement('div');
         div.style.cssText = `padding:8px 10px; border-radius:6px; margin-bottom:4px; font-size:13px; cursor:pointer; ${n.lido ? 'background:#f9f9f9; color:#888;' : 'background:#E8EAF6; color:#333; font-weight:500;'}`;
         const tempo = formatarTempoNotificacao(n.created_at);
-        div.innerHTML = `<div>${n.mensagem}</div><div style="font-size:11px; color:#999; margin-top:2px;">${tempo}</div>`;
+        div.innerHTML = `<div>${escapeHtml(n.mensagem)}</div><div style="font-size:11px; color:#999; margin-top:2px;">${escapeHtml(tempo)}</div>`;
         if (!n.lido) {
             div.addEventListener('click', async () => {
                 await marcarNotificacaoLida(n.id);

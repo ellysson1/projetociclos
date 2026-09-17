@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ciclo de Estudos</title>
     <link rel="stylesheet" href="css/variables.css?v=1">
-    <link rel="stylesheet" href="css/layout.css?v=1">
+    <link rel="stylesheet" href="css/layout.css?v=2">
     <link rel="stylesheet" href="css/forms.css?v=1">
-    <link rel="stylesheet" href="css/blocks.css?v=2">
+    <link rel="stylesheet" href="css/blocks.css?v=7">
     <link rel="stylesheet" href="css/modals.css?v=1">
     <link rel="stylesheet" href="css/videos.css?v=1">
 </head>
@@ -44,6 +44,20 @@
             </div>
         </div>
 
+        <!-- Banner: Modo Visualizacao Aluno -->
+        <div id="bannerVisualizacao" style="display:none; background:linear-gradient(135deg, #FF6B6B, #ee5a24); color:white; padding:12px 18px; border-radius:8px; margin-bottom:14px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <strong style="font-size:15px;">Visualizando como aluno</strong>
+                    <span id="bannerVisualizacaoNome" style="margin-left:8px; font-size:14px; opacity:0.9;"></span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span style="font-size:12px; background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:12px;">Somente leitura</span>
+                    <button id="btnSairVisualizacao" type="button" style="background:white; color:#ee5a24; border:none; border-radius:6px; padding:6px 16px; font-size:13px; font-weight:bold; cursor:pointer;">Voltar ao modo professor</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Main tabs -->
         <div class="tab-container">
             <button class="tab active" data-tab="ciclo">Ciclo</button>
@@ -51,7 +65,8 @@
             <button class="tab" data-tab="revisao" style="display:none;">Revisão</button>
             <button class="tab" data-tab="desempenho">Desempenho</button>
             <button class="tab" data-tab="videos">Videos</button>
-            <button class="tab" data-tab="planos">Planos</button>
+            <button class="tab" data-tab="planos" data-perfil-oculto="mentoria">Planos</button>
+            <button class="tab" data-tab="alunos" style="display:none;">Alunos</button>
             <button class="tab" data-tab="exportar">Exportar</button>
         </div>
 
@@ -59,9 +74,9 @@
         <div id="ciclo" class="tab-content active">
             <div class="subtab-container">
                 <button class="subtab active" data-subtab="subtab-meuciclo">Meu Ciclo</button>
-                <button class="subtab" data-subtab="subtab-variaveis">Variaveis</button>
-                <button class="subtab" data-subtab="subtab-ajustes">Ajustes</button>
-                <button class="subtab" data-subtab="subtab-config">Configuracoes</button>
+                <button class="subtab" data-subtab="subtab-variaveis" data-perfil-oculto="mentoria">Variaveis</button>
+                <button class="subtab" data-subtab="subtab-ajustes" data-perfil-oculto="mentoria">Ajustes</button>
+                <button class="subtab" data-subtab="subtab-config" data-perfil-oculto="mentoria">Configuracoes</button>
             </div>
 
             <!-- Sub-tab: Meu Ciclo (default) -->
@@ -112,7 +127,7 @@
             </div>
 
             <!-- Sub-tab: Variaveis (always editable) -->
-            <div id="subtab-variaveis" class="subtab-content">
+            <div id="subtab-variaveis" class="subtab-content" data-perfil-oculto="mentoria">
                 <h2>Pesos por Materia</h2>
                 <p style="font-size:13px; color:#666; margin-bottom:12px;">Ajuste os pesos e clique em Calcular para gerar um novo ciclo.</p>
                 <table id="tabelaVariaveis">
@@ -130,7 +145,7 @@
             </div>
 
             <!-- Sub-tab: Ajustes (always editable) -->
-            <div id="subtab-ajustes" class="subtab-content">
+            <div id="subtab-ajustes" class="subtab-content" data-perfil-oculto="mentoria">
                 <h2>Ajustar Blocos por Materia</h2>
                 <p style="font-size:13px; color:#666; margin-bottom:12px;">Edite manualmente a quantidade de blocos e confirme.</p>
                 <table id="tabelaAjustes">
@@ -146,7 +161,7 @@
             </div>
 
             <!-- Sub-tab: Configuracoes -->
-            <div id="subtab-config" class="subtab-content">
+            <div id="subtab-config" class="subtab-content" data-perfil-oculto="mentoria">
                 <h2>Configuracoes Avancadas</h2>
                 <div>
                     <label for="duracaoBloco">Duracao do Bloco (minutos):</label>
@@ -254,6 +269,12 @@
                 <p style="color:#999;">Carregando...</p>
             </div>
 
+            <div id="desempenhoAjuste" style="display:none; margin-top:24px;">
+                <h3 style="margin-bottom:12px;">Ajuste automatico de blocos</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">Com base no seu desempenho, materias com acerto abaixo da media ganham mais blocos e materias acima da media ganham menos.</p>
+                <div id="desempenhoAjusteConteudo"></div>
+            </div>
+
             <div id="desempenhoEdital" style="display:none; margin-top:24px;">
                 <h3 style="margin-bottom:12px;">Progresso no Edital</h3>
                 <div id="desempenhoEditalConteudo"></div>
@@ -312,7 +333,14 @@
         </div>
 
         <!-- ============ PLANOS TAB ============ -->
-        <div id="planos" class="tab-content">
+        <!-- ============ ALUNOS TAB (professor) ============ -->
+        <div id="alunos" class="tab-content">
+            <h2>Meus Alunos</h2>
+            <p style="margin-bottom:16px; color:#666; font-size:14px;">Perfil de acesso, nível de conteúdo e plano de cada aluno. As mudanças são aplicadas no próximo acesso do aluno.</p>
+            <div id="alunosConteudo"></div>
+        </div>
+
+        <div id="planos" class="tab-content" data-perfil-oculto="mentoria">
             <!-- Student view -->
             <div id="planosAluno">
                 <h2>Planos Disponiveis</h2>
@@ -465,6 +493,15 @@
                         <input type="number" id="atribuirHorasSemanais" min="1" placeholder="Ex: 20">
                     </div>
                 </div>
+                <div style="margin-bottom:16px;">
+                    <label for="atribuirNivelConteudo" style="font-size:14px; font-weight:600;">Nivel de conteudo:</label>
+                    <p style="font-size:12px; color:#888; margin:4px 0 8px;">Define quantas materias o aluno estuda simultaneamente.</p>
+                    <select id="atribuirNivelConteudo" style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:14px;">
+                        <option value="basico">Basico — ate 6 materias por fase</option>
+                        <option value="intermediario">Intermediario — ate 12 materias por fase</option>
+                        <option value="avancado" selected>Avancado — todas as materias desde o inicio</option>
+                    </select>
+                </div>
                 <h4 style="margin-bottom:8px; font-size:14px;">Modo por Matéria</h4>
                 <div id="atribuirModosMateria" style="max-height:220px; overflow-y:auto; border:1px solid var(--border-color); border-radius:8px; margin-bottom:16px;"></div>
                 <div class="modal-actions">
@@ -512,6 +549,29 @@
             <input type="hidden" id="assuntoSelecionado" value="">
             <div class="modal-actions">
                 <button id="btnConfirmarAssunto">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalDetalheBloco" class="modal-overlay">
+        <div class="modal-card">
+            <h3>O que estudar</h3>
+            <p>Matéria: <strong id="detalheBlocoMateria"></strong></p>
+            <div id="detalheBlocoConteudo"></div>
+            <div class="modal-actions">
+                <button id="btnFecharDetalheBloco" type="button" style="background:#9E9E9E;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalConfirmarProximoCiclo" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Iniciar Próximo Ciclo</h3>
+            <p>Você revisou os assuntos pendentes do ciclo anterior?</p>
+            <p id="confirmarCicloRevisaoTexto" style="font-size:13px; color:#888; margin-top:6px;"></p>
+            <div class="modal-actions">
+                <button id="btnCicloRevisouSim" type="button" style="background:#4CAF50;">Sim, já revisei</button>
+                <button id="btnCicloRevisouNao" type="button" style="background:#FFA726;">Ainda não, quero revisar</button>
             </div>
         </div>
     </div>
@@ -614,47 +674,48 @@
     </div>
 
     <!-- Onboarding Wizard Overlay -->
-    <div id="onboardingOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:9999; justify-content:center; align-items:center; padding:16px;">
-        <div style="background:white; border-radius:16px; max-width:560px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 16px 48px rgba(0,0,0,.15);">
-            <div style="padding:16px 20px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <span id="onboardingStepLabel" style="font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:1px;">Etapa 1 de 5</span>
+    <div id="onboardingOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index:9999; justify-content:center; align-items:center; overflow-y:auto;">
+        <div style="background:white; border-radius:20px; max-width:640px; width:94%; margin:24px auto; box-shadow:0 20px 60px rgba(0,0,0,.25); overflow:hidden;">
+            <div style="padding:20px 24px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                    <span id="onboardingStepLabel" style="font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:1px;">Etapa 1 de 6</span>
                 </div>
-                <div style="height:4px; background:#E1E4E8; border-radius:2px; margin-bottom:20px;">
-                    <div id="onboardingProgresso" style="height:100%; background:linear-gradient(90deg, #3F51B5, #7C4DFF); border-radius:2px; width:20%; transition:width 0.3s;"></div>
+                <div style="height:4px; background:#E1E4E8; border-radius:2px; margin-bottom:24px;">
+                    <div id="onboardingProgresso" style="height:100%; background:linear-gradient(90deg, #3F51B5, #7C4DFF); border-radius:2px; width:16%; transition:width 0.3s;"></div>
                 </div>
             </div>
-            <div id="onboardingConteudo" style="padding:0 20px 20px;"></div>
+            <div id="onboardingConteudo" style="padding:0 24px 24px;"></div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config.js?v=1"></script>
-    <script src="js/sync-engine.js?v=2"></script>
-    <script src="js/state.js?v=6"></script>
-    <script src="js/tabs.js?v=3"></script>
+    <script src="js/config.js?v=3"></script>
+    <script src="js/sync-engine.js?v=4"></script>
+    <script src="js/state.js?v=8"></script>
+    <script src="js/tabs.js?v=5"></script>
     <script src="js/supabase-auth.js?v=1"></script>
-    <script src="js/supabase-sync.js?v=5"></script>
-    <script src="js/profile.js?v=1"></script>
+    <script src="js/supabase-sync.js?v=4"></script>
+    <script src="js/profile.js?v=3"></script>
     <script src="js/materias.js?v=1"></script>
     <script src="js/variaveis.js?v=8"></script>
-    <script src="js/blocos.js?v=10"></script>
-    <script src="js/questoes.js?v=6"></script>
+    <script src="js/blocos.js?v=16"></script>
+    <script src="js/questoes.js?v=10"></script>
     <script src="js/matcher.js?v=1"></script>
-    <script src="js/planos.js?v=11"></script>
-    <script src="js/edital.js?v=12"></script>
-    <script src="js/reconciliacao.js?v=1"></script>
-    <script src="js/notificacoes.js?v=2"></script>
+    <script src="js/planos.js?v=17"></script>
+    <script src="js/alunos.js?v=2"></script>
+    <script src="js/edital.js?v=20"></script>
+    <script src="js/reconciliacao.js?v=2"></script>
+    <script src="js/notificacoes.js?v=4"></script>
     <script src="js/revisao.js?v=2"></script>
-    <script src="js/videos.js?v=1"></script>
-    <script src="js/desempenho.js?v=1"></script>
+    <script src="js/videos.js?v=3"></script>
+    <script src="js/desempenho.js?v=2"></script>
     <script src="js/batch-upload.js?v=1"></script>
-    <script src="js/timer.js?v=3"></script>
+    <script src="js/timer.js?v=5"></script>
     <script src="js/notes.js?v=1"></script>
     <script src="js/export.js?v=1"></script>
     <script src="js/lgpd.js?v=2"></script>
-    <script src="js/onboarding.js?v=3"></script>
-    <script src="js/app.js?v=14"></script>
+    <script src="js/onboarding.js?v=7"></script>
+    <script src="js/app.js?v=21"></script>
 </body>
 </html>

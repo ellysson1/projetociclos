@@ -70,6 +70,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Modais de conclusao
     inicializarModaisQuestoes();
 
+    // Detalhe do bloco (aula do curso / edital / TEC)
+    const btnFecharDetalhe = document.getElementById('btnFecharDetalheBloco');
+    if (btnFecharDetalhe) btnFecharDetalhe.addEventListener('click', () => fecharModal('modalDetalheBloco'));
+
+    // Confirmação de revisão ao iniciar o próximo ciclo
+    const btnCicloRevisouSim = document.getElementById('btnCicloRevisouSim');
+    if (btnCicloRevisouSim) btnCicloRevisouSim.addEventListener('click', () => {
+        fecharModal('modalConfirmarProximoCiclo');
+        if (typeof _gerarProximoCiclo === 'function') _gerarProximoCiclo();
+    });
+    const btnCicloRevisouNao = document.getElementById('btnCicloRevisouNao');
+    if (btnCicloRevisouNao) btnCicloRevisouNao.addEventListener('click', () => {
+        fecharModal('modalConfirmarProximoCiclo');
+        alternarAba('revisao');
+    });
+
     // Planos (professor)
     document.getElementById('btnCriarPlano').addEventListener('click', () => abrirEditorPlano(null));
     document.getElementById('btnSalvarPlano').addEventListener('click', async () => {
@@ -117,6 +133,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Painel de alunos (professor)
     document.getElementById('btnFecharPainel').addEventListener('click', fecharPainelAlunos);
+    document.getElementById('btnSairVisualizacao').addEventListener('click', sairModoVisualizacao);
 
     // Notificacoes
     document.getElementById('notificacaoBadge').addEventListener('click', () => {
@@ -173,6 +190,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     inicializarSelecaoMaterias();
     carregarConfiguracoes();
     carregarEstado();
+    if (typeof aplicarVisibilidadePerfil === 'function') aplicarVisibilidadePerfil();
 
     const logado = await atualizarUIAuth();
     if (supabaseConfigurado()) {
@@ -240,6 +258,9 @@ setInterval(async () => { if (await getUsuarioLogado()) salvarEstado(); }, 30000
 // principal é visibilitychange + fetch keepalive (sobrevive ao fechamento
 // da aba); beforeunload fica como fallback para desktop.
 document.addEventListener('visibilitychange', () => {
+    // Modo visualização: não sobrescrever o localStorage nem a nuvem do
+    // professor com o estado do aluno que está sendo visualizado.
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return;
     if (document.visibilityState === 'hidden' && salvarAoSair) {
         localStorage.setItem('cicloEstudosEstado', JSON.stringify(montarEstadoLocal()));
         if (typeof enviarBeaconSync === 'function') enviarBeaconSync();

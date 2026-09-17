@@ -32,6 +32,7 @@ async function carregarEditalProgresso() {
 }
 
 async function salvarEditalProgressoItem(materia, topico, subtopico, dados) {
+    if (_modoVisualizacaoAluno) return;
     if (!supabaseConfigurado() || !planoAdotado?.id) return;
     const user = await getUsuarioLogado();
     if (!user) return;
@@ -89,6 +90,12 @@ async function salvarEditalProgressoItem(materia, topico, subtopico, dados) {
 
 function gerarChaveEdital(materia, topico, subtopico) {
     return [materia, topico, subtopico || ''].join('|');
+}
+
+function nomeExibicaoEdital(item) {
+    if (!item) return '';
+    if (typeof item === 'string') return item;
+    return item.curso_nome || item.nome || '';
 }
 
 // ── Lookup de matéria por ID estável (T2) ──────────────────────────────────
@@ -168,12 +175,13 @@ function renderizarEdital() {
                     materiaItens++;
                     if (prog.status === 'concluido' || prog.status === 'visto') { itensConcluidos++; materiaConcluidos++; }
 
+                    const displayNome = nomeExibicaoEdital(sub);
                     if (filtroStatus !== 'todos' && prog.status !== filtroStatus) return;
-                    if (busca && !nomeSub.toLowerCase().includes(busca) && !topicoObj.nome.toLowerCase().includes(busca)) return;
+                    if (busca && !displayNome.toLowerCase().includes(busca) && !nomeSub.toLowerCase().includes(busca) && !topicoObj.nome.toLowerCase().includes(busca)) return;
 
                     topicoVisivel = true;
                     temItemVisivel = true;
-                    subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, nomeSub, prog, undefined, undefined);
+                    subtopicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, nomeSub, prog, undefined, undefined, typeof sub === 'object' ? sub : null);
                 });
 
                 if (topicoVisivel || (!busca && filtroStatus === 'todos')) {
@@ -183,7 +191,7 @@ function renderizarEdital() {
                             <div class="edital-topico__header" onclick="toggleEditalTopico(this)">
                                 <span class="edital-topico__drag" style="cursor:grab; color:#bbb; margin-right:4px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>
                                 <span class="edital-topico__arrow">&#9654;</span>
-                                <span class="edital-topico__nome">${topicoObj.nome}</span>
+                                <span class="edital-topico__nome">${escapeHtml(nomeExibicaoEdital(topicoObj))}${topicoObj.curso_nome && topicoObj.curso_nome !== topicoObj.nome ? `<span class="edital-topico__oficial" title="Nome oficial no edital">Edital: ${escapeHtml(topicoObj.nome)}</span>` : ''}</span>
                                 <span class="edital-topico__progresso">${topicoProgresso.concluidos}/${topicoProgresso.total}</span>
                                 <div class="edital-barra-container edital-barra-container--sm">
                                     <div class="edital-barra" style="width:${topicoProgresso.pct}%;"></div>
@@ -203,11 +211,12 @@ function renderizarEdital() {
                 materiaItens++;
                 if (prog.status === 'concluido' || prog.status === 'visto') { itensConcluidos++; materiaConcluidos++; }
 
+                const displayNomeTopic = nomeExibicaoEdital(topicoObj);
                 if (filtroStatus !== 'todos' && prog.status !== filtroStatus) return;
-                if (busca && !topicoObj.nome.toLowerCase().includes(busca)) return;
+                if (busca && !displayNomeTopic.toLowerCase().includes(busca) && !topicoObj.nome.toLowerCase().includes(busca)) return;
 
                 temItemVisivel = true;
-                topicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, null, prog, topicoIdx, materiaIdx);
+                topicosHTML += criarItemEdital(materiaObj.materia, topicoObj.nome, null, prog, topicoIdx, materiaIdx, topicoObj);
             }
         });
 
@@ -218,7 +227,7 @@ function renderizarEdital() {
         materiaDiv.innerHTML = `
             <div class="edital-materia__header" onclick="toggleEditalMateria(this)">
                 <span class="edital-materia__arrow">&#9654;</span>
-                <strong class="edital-materia__nome">${materiaObj.materia}</strong>
+                <strong class="edital-materia__nome">${escapeHtml(materiaObj.materia)}</strong>
                 <span class="edital-materia__progresso">${materiaConcluidos}/${materiaItens} (${materiaPct}%)</span>
                 <div class="edital-barra-container">
                     <div class="edital-barra" style="width:${materiaPct}%;"></div>
@@ -238,6 +247,7 @@ function renderizarEdital() {
 
     // Drag and drop para reordenar tópicos
     inicializarDragDropEdital(arvore);
+    inicializarControlesItensEdital(arvore);
 
     // Atualizar sugestões nos cards de blocos (edital agora confirmado carregado)
     if (typeof atualizarSugestoesBlocos === 'function') atualizarSugestoesBlocos();
@@ -300,8 +310,11 @@ function inicializarDragDropEdital(container) {
     });
 }
 
-function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx) {
-    const label = subtopico || topico;
+function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx, itemObj) {
+    const nomeOficial = subtopico || topico;
+    const cursoNome = itemObj?.curso_nome || null;
+    const tecAssunto = itemObj?.tec_assunto || null;
+    const label = cursoNome || nomeOficial;
     const statusClass = `edital-status--${prog.status}`;
 
     let questoesInfo = '';
@@ -310,7 +323,20 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
         questoesInfo = `<span class="edital-item__questoes">${prog.questoes_corretas}/${prog.questoes_feitas} questões (${pct}%)</span>`;
     }
 
-    const dataAttrs = `data-materia="${materia}" data-topico="${topico}" data-subtopico="${subtopico || ''}"`;
+    let secundario = '';
+    if (cursoNome && cursoNome !== nomeOficial) {
+        secundario = `<span class="edital-item__nome-oficial" title="Nome oficial no edital">Edital: ${escapeHtml(nomeOficial)}</span>`;
+    }
+
+    // Botão TEC: sem onclick inline — o nome do assunto vai no dataset e o
+    // listener é ligado em inicializarDragDropEdital. Nomes com aspas
+    // quebravam o JS gerado (e abriam vetor de injeção).
+    let tecBtn = '';
+    if (tecAssunto) {
+        tecBtn = `<button class="edital-item__tec-copy" data-tec="${escapeHtml(tecAssunto)}" title="Copiar nome do TEC para buscar questoes">TEC: ${escapeHtml(tecAssunto)}</button>`;
+    }
+
+    const dataAttrs = `data-materia="${escapeHtml(materia)}" data-topico="${escapeHtml(topico)}" data-subtopico="${escapeHtml(subtopico || '')}"`;
     const dragAttrs = !subtopico && topicoIdx !== undefined
         ? `draggable="true" data-materia-idx="${materiaIdx}" data-topico-idx="${topicoIdx}"`
         : '';
@@ -322,11 +348,13 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
         <div class="edital-item ${statusClass}" ${dataAttrs} ${dragAttrs}>
             ${dragHandle}
             <div class="edital-item__info">
-                <span class="edital-item__label">${label}</span>
+                <span class="edital-item__label">${escapeHtml(label)}</span>
+                ${secundario}
+                ${tecBtn}
                 ${questoesInfo}
             </div>
             <div class="edital-item__actions">
-                <select class="edital-item__select" onchange="alterarStatusEdital(this, '${materia}', '${topico}', '${subtopico || ''}')">
+                <select class="edital-item__select">
                     <option value="pendente" ${prog.status === 'pendente' ? 'selected' : ''}>Pendente</option>
                     <option value="em_andamento" ${prog.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
                     <option value="visto" ${prog.status === 'visto' ? 'selected' : ''}>Visto</option>
@@ -335,6 +363,29 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
             </div>
         </div>
     `;
+}
+
+// Liga os controles dos itens do edital lendo os data-* do próprio elemento.
+// Substitui os handlers inline (que quebravam com aspas nos nomes).
+function inicializarControlesItensEdital(container) {
+    container.querySelectorAll('.edital-item__select').forEach(sel => {
+        sel.addEventListener('change', function () {
+            const item = this.closest('.edital-item');
+            if (!item) return;
+            alterarStatusEdital(this, item.dataset.materia, item.dataset.topico, item.dataset.subtopico || '');
+        });
+    });
+
+    container.querySelectorAll('.edital-item__tec-copy').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const tec = this.dataset.tec || '';
+            navigator.clipboard.writeText(tec);
+            const original = this.textContent;
+            this.textContent = 'Copiado!';
+            setTimeout(() => { this.textContent = original; }, 1500);
+        });
+    });
 }
 
 function calcularProgressoTopico(materia, topico, subtopicos) {
@@ -397,13 +448,40 @@ async function alterarStatusEdital(select, materia, topico, subtopico) {
 
 // ── Match automático: assunto → tópico do edital ────────────────────────────
 
+// Todos os matches exatos (nome oficial OU nome da aula no curso) dentro da
+// matéria do bloco. Uma mesma aula do curso pode cobrir vários tópicos/
+// subtópicos do edital (curso_nome repetido) — todos devem ser retornados
+// para que a conclusão marque cada um, não apenas o primeiro encontrado.
+function _matchesExatosEdital(materiaBloco, assunto) {
+    const materiaObj = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
+    if (!materiaObj) return [];
+    const matches = [];
+    for (const topicoObj of (materiaObj.topicos || [])) {
+        const subtopicos = topicoObj.subtopicos || [];
+        if (subtopicos.length > 0) {
+            for (const sub of subtopicos) {
+                const nomeSub = nomeSubtopico(sub);
+                const cursoSub = (typeof sub === 'object' && sub) ? sub.curso_nome : null;
+                if (nomeSub === assunto || cursoSub === assunto) {
+                    matches.push({ materia: materiaObj.materia, topico: topicoObj.nome, subtopico: nomeSub });
+                }
+            }
+        } else if (topicoObj.nome === assunto || topicoObj.curso_nome === assunto) {
+            matches.push({ materia: materiaObj.materia, topico: topicoObj.nome, subtopico: null });
+        }
+    }
+    return matches;
+}
+
 function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
     if (!planoAdotado?.edital || !assunto) return;
 
     const edital = planoAdotado.edital;
-    const match = encontrarMatchEdital(materia, assunto, edital);
+    const exatos = _matchesExatosEdital(materia, assunto);
+    const matches = exatos.length > 0 ? exatos : [encontrarMatchEdital(materia, assunto, edital)].filter(Boolean);
+    if (matches.length === 0) return;
 
-    if (match) {
+    matches.forEach((match, idx) => {
         const chave = gerarChaveEdital(match.materia, match.topico, match.subtopico);
         if (!editalProgresso[chave]) {
             editalProgresso[chave] = { status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 };
@@ -419,7 +497,9 @@ function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
             editalProgresso[chave].ciclo_visto = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
         }
         editalProgresso[chave].ultimo_ciclo_revisado = typeof cicloNumero !== 'undefined' ? cicloNumero : 1;
-        if (questoes && questoes.feitas > 0) {
+        // Questões contam uma única vez (no primeiro item) para não multiplicar
+        // a contagem de acertos quando a mesma aula cobre vários itens.
+        if (idx === 0 && questoes && questoes.feitas > 0) {
             editalProgresso[chave].questoes_feitas += questoes.feitas;
             editalProgresso[chave].questoes_corretas += questoes.corretas;
         }
@@ -430,14 +510,15 @@ function atualizarProgressoEdital(materia, assunto, questoes, statusDesejado) {
                 topico: match.topico,
                 subtopico: match.subtopico || null,
                 status: editalProgresso[chave].status,
-                questoes: questoes || null
+                questoes: (idx === 0 ? questoes : null) || null
             });
         }
 
         salvarEditalProgressoItem(match.materia, match.topico, match.subtopico, editalProgresso[chave]);
-        if (typeof renderizarEdital === 'function') renderizarEdital();
-        if (typeof renderizarRevisao === 'function') renderizarRevisao();
-    }
+    });
+
+    if (typeof renderizarEdital === 'function') renderizarEdital();
+    if (typeof renderizarRevisao === 'function') renderizarRevisao();
 }
 
 function encontrarMatchEdital(materiaBloco, assunto, edital) {
@@ -462,7 +543,11 @@ function encontrarMatchEdital(materiaBloco, assunto, edital) {
             if (subtopicos.length > 0) {
                 subtopicos.forEach(sub => {
                     const nomeSub = nomeSubtopico(sub);
-                    const score = calcularSimilaridade(assuntoNorm, normalizarTexto(nomeSub));
+                    const scoreNome = calcularSimilaridade(assuntoNorm, normalizarTexto(nomeSub));
+                    const scoreCurso = (typeof sub === 'object' && sub.curso_nome)
+                        ? calcularSimilaridade(assuntoNorm, normalizarTexto(sub.curso_nome))
+                        : 0;
+                    const score = Math.max(scoreNome, scoreCurso);
                     if (score > melhorScore && score >= 0.4) {
                         melhorScore = score;
                         melhorMatch = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: nomeSub };
@@ -470,15 +555,14 @@ function encontrarMatchEdital(materiaBloco, assunto, edital) {
                 });
             }
 
-            // Também comparar com o tópico
-            const scoreTopic = calcularSimilaridade(assuntoNorm, normalizarTexto(topicoObj.nome));
+            const scoreTopicNome = calcularSimilaridade(assuntoNorm, normalizarTexto(topicoObj.nome));
+            const scoreTopicCurso = topicoObj.curso_nome
+                ? calcularSimilaridade(assuntoNorm, normalizarTexto(topicoObj.curso_nome))
+                : 0;
+            const scoreTopic = Math.max(scoreTopicNome, scoreTopicCurso);
             if (scoreTopic > melhorScore && scoreTopic >= 0.4) {
                 melhorScore = scoreTopic;
-                melhorMatch = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: subtopicos.length > 0 ? null : null };
-                // Se não tem subtópicos, o match é o próprio tópico
-                if (subtopicos.length === 0) {
-                    melhorMatch.subtopico = null;
-                }
+                melhorMatch = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: null };
             }
         });
     });
@@ -559,21 +643,23 @@ function preencherDatalistEdital(materiaBloco) {
         if (subtopicos.length > 0) {
             subtopicos.forEach(sub => {
                 const nomeSub = nomeSubtopico(sub);
+                const displayName = nomeExibicaoEdital(sub);
                 const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, nomeSub);
                 const prog = editalProgresso[chave];
                 const jaConcluido = prog && prog.status === 'concluido';
                 const opt = document.createElement('option');
-                opt.value = nomeSub;
-                opt.label = jaConcluido ? `${nomeSub} (concluído)` : nomeSub;
+                opt.value = displayName;
+                opt.label = jaConcluido ? `${displayName} (concluído)` : displayName;
                 datalist.appendChild(opt);
             });
         } else {
+            const displayName = nomeExibicaoEdital(topicoObj);
             const chave = gerarChaveEdital(materiaObj.materia, topicoObj.nome, null);
             const prog = editalProgresso[chave];
             const jaConcluido = prog && prog.status === 'concluido';
             const opt = document.createElement('option');
-            opt.value = topicoObj.nome;
-            opt.label = jaConcluido ? `${topicoObj.nome} (concluído)` : topicoObj.nome;
+            opt.value = displayName;
+            opt.label = jaConcluido ? `${displayName} (concluído)` : displayName;
             datalist.appendChild(opt);
         }
     });
@@ -581,7 +667,12 @@ function preencherDatalistEdital(materiaBloco) {
 
 // ── Visibilidade da aba Edital ──────────────────────────────────────────────
 
-function obterAssuntoSugerido(materiaBloco) {
+// Sugestão detalhada do próximo item a estudar: retorna a correlação completa
+// aula do curso ↔ tópico do edital ↔ assunto TEC, para exibição ao aluno.
+// `exibicao` prioriza o nome da aula no curso (é o que o aluno vê na
+// plataforma dele); o nome oficial do edital fica como referência.
+// Somente leitura — nunca altera status de edital_progresso.
+function obterSugestaoDetalhada(materiaBloco) {
     if (!planoAdotado?.edital) return null;
 
     const melhorMateria = _encontrarMateriaEditalPorId(materiaBloco) || _encontrarMateriaEditalFuzzy(materiaBloco);
@@ -592,10 +683,44 @@ function obterAssuntoSugerido(materiaBloco) {
         .find(m => m.nome === materiaBloco || m.legenda === materiaBloco);
     const modoMateria = typeof modosMateria !== 'undefined' ? (modosMateria[matSel?.legenda] || null) : null;
 
+    const montar = (topicoObj, sub, origem) => {
+        // Para tópico sem subtópicos, o mapeamento (curso/TEC) vive no próprio tópico
+        const itemObj = sub !== null ? (typeof sub === 'object' ? sub : null) : topicoObj;
+        const nomeOficial = sub !== null ? nomeSubtopico(sub) : topicoObj.nome;
+        const cursoNome = itemObj?.curso_nome || null;
+        return {
+            exibicao: cursoNome || nomeOficial,
+            nomeOficial,
+            cursoNome,
+            tecAssunto: itemObj?.tec_assunto || null,
+            materiaEdital: melhorMateria.materia,
+            topicoOficial: topicoObj.nome,
+            revisao: origem !== 'pendente',
+            origem // 'pendente' | 'revisao_modo' | 'revisao_ciclo'
+        };
+    };
+
+    const localizarPorNomeOficial = (nome, origem) => {
+        for (const topicoObj of (melhorMateria.topicos || [])) {
+            const subtopicos = topicoObj.subtopicos || [];
+            if (subtopicos.length > 0) {
+                for (const sub of subtopicos) {
+                    if (nomeSubtopico(sub) === nome) return montar(topicoObj, sub, origem);
+                }
+            } else if (topicoObj.nome === nome) {
+                return montar(topicoObj, null, origem);
+            }
+        }
+        return null;
+    };
+
     // If in review mode, prioritize items pending revision (2+ cycles since last review)
     if (modoMateria === 'revisao') {
         const pendente = _encontrarItemRevisaoPendente(melhorMateria, cicloAtual);
-        if (pendente) return pendente;
+        if (pendente) {
+            const d = localizarPorNomeOficial(pendente, 'revisao_modo');
+            if (d) return d;
+        }
     }
 
     const topicos = [...(melhorMateria.topicos || [])].sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
@@ -608,20 +733,29 @@ function obterAssuntoSugerido(materiaBloco) {
                 const nomeSub = nomeSubtopico(sub);
                 const chave = gerarChaveEdital(melhorMateria.materia, topicoObj.nome, nomeSub);
                 const prog = editalProgresso[chave];
-                if (!prog || prog.status === 'pendente') return nomeSub;
+                if (!prog || prog.status === 'pendente') return montar(topicoObj, sub, 'pendente');
             }
         } else {
             const chave = gerarChaveEdital(melhorMateria.materia, topicoObj.nome, null);
             const prog = editalProgresso[chave];
-            if (!prog || prog.status === 'pendente') return topicoObj.nome;
+            if (!prog || prog.status === 'pendente') return montar(topicoObj, null, 'pendente');
         }
     }
 
     // Second pass: if all items seen, suggest one needing revision
     const pendente = _encontrarItemRevisaoPendente(melhorMateria, cicloAtual);
-    if (pendente) return '⟳ ' + pendente;
+    if (pendente) {
+        const d = localizarPorNomeOficial(pendente, 'revisao_ciclo');
+        if (d) return d;
+    }
 
     return null;
+}
+
+function obterAssuntoSugerido(materiaBloco) {
+    const d = obterSugestaoDetalhada(materiaBloco);
+    if (!d) return null;
+    return (d.origem === 'revisao_ciclo' ? '⟳ ' : '') + d.exibicao;
 }
 
 function _encontrarItemRevisaoPendente(materiaObj, cicloAtual) {
@@ -706,10 +840,18 @@ function renderizarTopicosEditor(topicos, mIdx) {
         html += `
             <div style="margin-bottom:8px; padding:8px; background:white; border:1px solid #eee; border-radius:4px;">
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                    <input type="text" value="${topico.nome || ''}" placeholder="Nome do Tópico"
+                    <input type="text" value="${topico.nome || ''}" placeholder="Nome no edital"
                         onchange="editalEditando[${mIdx}].topicos[${tIdx}].nome = this.value.trim()"
                         style="font-size:13px; border:1px solid var(--border-color); border-radius:4px; padding:4px 8px; flex:1;">
                     <button onclick="removerTopicoEdital(${mIdx}, ${tIdx})" style="background:#FF6B6B; padding:2px 8px; font-size:11px;">&times;</button>
+                </div>
+                <div style="display:flex; gap:6px; margin-bottom:4px;">
+                    <input type="text" value="${topico.curso_nome || ''}" placeholder="Nome no curso (opcional)"
+                        onchange="editalEditando[${mIdx}].topicos[${tIdx}].curso_nome = this.value.trim() || null"
+                        style="font-size:12px; border:1px solid #E0D8FF; border-radius:4px; padding:3px 8px; flex:1; color:#7C4DFF;">
+                    <input type="text" value="${topico.tec_assunto || ''}" placeholder="Assunto no TEC (opcional)"
+                        onchange="editalEditando[${mIdx}].topicos[${tIdx}].tec_assunto = this.value.trim() || null"
+                        style="font-size:12px; border:1px solid #C8E6C9; border-radius:4px; padding:3px 8px; flex:1; color:#2E7D32;">
                 </div>
                 <div style="margin-left:20px;">
                     ${renderizarSubtopicosEditor(topico.subtopicos || [], mIdx, tIdx)}
@@ -725,13 +867,25 @@ function renderizarSubtopicosEditor(subtopicos, mIdx, tIdx) {
     let html = '';
     subtopicos.forEach((sub, sIdx) => {
         const nomeSub = typeof nomeSubtopico === 'function' ? nomeSubtopico(sub) : (typeof sub === 'string' ? sub : sub?.nome || '');
+        const cursoSub = (typeof sub === 'object' && sub?.curso_nome) ? sub.curso_nome : '';
+        const tecSub = (typeof sub === 'object' && sub?.tec_assunto) ? sub.tec_assunto : '';
         html += `
-            <div style="display:flex; align-items:center; gap:4px; margin-bottom:3px;">
-                <span style="color:#999; font-size:11px;">&#8226;</span>
-                <input type="text" value="${nomeSub}" placeholder="Subtópico"
-                    onchange="editalEditando[${mIdx}].topicos[${tIdx}].subtopicos[${sIdx}] = this.value.trim()"
-                    style="font-size:12px; border:1px solid #ddd; border-radius:3px; padding:3px 6px; flex:1;">
-                <button onclick="removerSubtopicoEdital(${mIdx}, ${tIdx}, ${sIdx})" style="background:#FF6B6B; padding:1px 6px; font-size:10px;">&times;</button>
+            <div style="margin-bottom:4px; padding:3px 0;">
+                <div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
+                    <span style="color:#999; font-size:11px;">&#8226;</span>
+                    <input type="text" value="${nomeSub}" placeholder="Subtopico (edital)"
+                        onchange="_atualizarSubtopicoEditor(${mIdx}, ${tIdx}, ${sIdx}, 'nome', this.value)"
+                        style="font-size:12px; border:1px solid #ddd; border-radius:3px; padding:3px 6px; flex:1;">
+                    <button onclick="removerSubtopicoEdital(${mIdx}, ${tIdx}, ${sIdx})" style="background:#FF6B6B; padding:1px 6px; font-size:10px;">&times;</button>
+                </div>
+                <div style="display:flex; gap:4px; margin-left:16px;">
+                    <input type="text" value="${cursoSub}" placeholder="Curso (opcional)"
+                        onchange="_atualizarSubtopicoEditor(${mIdx}, ${tIdx}, ${sIdx}, 'curso_nome', this.value)"
+                        style="font-size:11px; border:1px solid #E0D8FF; border-radius:3px; padding:2px 6px; flex:1; color:#7C4DFF;">
+                    <input type="text" value="${tecSub}" placeholder="TEC (opcional)"
+                        onchange="_atualizarSubtopicoEditor(${mIdx}, ${tIdx}, ${sIdx}, 'tec_assunto', this.value)"
+                        style="font-size:11px; border:1px solid #C8E6C9; border-radius:3px; padding:2px 6px; flex:1; color:#2E7D32;">
+                </div>
             </div>
         `;
     });
@@ -759,9 +913,19 @@ function removerTopicoEdital(mIdx, tIdx) {
     atualizarEditorEditalUI();
 }
 
+function _atualizarSubtopicoEditor(mIdx, tIdx, sIdx, campo, valor) {
+    let sub = editalEditando[mIdx].topicos[tIdx].subtopicos[sIdx];
+    if (typeof sub === 'string') {
+        sub = { nome: sub };
+        editalEditando[mIdx].topicos[tIdx].subtopicos[sIdx] = sub;
+    }
+    if (campo === 'nome') sub.nome = valor.trim();
+    else sub[campo] = valor.trim() || null;
+}
+
 function adicionarSubtopicoEdital(mIdx, tIdx) {
     if (!editalEditando[mIdx].topicos[tIdx].subtopicos) editalEditando[mIdx].topicos[tIdx].subtopicos = [];
-    editalEditando[mIdx].topicos[tIdx].subtopicos.push('');
+    editalEditando[mIdx].topicos[tIdx].subtopicos.push({ nome: '', curso_nome: null, tec_assunto: null });
     atualizarEditorEditalUI();
 }
 
@@ -771,18 +935,41 @@ function removerSubtopicoEdital(mIdx, tIdx, sIdx) {
 }
 
 function coletarEditalDoEditor() {
+    // Preserva os ids estáveis (matéria/tópico/subtópico) atribuídos por
+    // garantirIdsEdital. Sem isso, cada salvamento gera novos UUIDs e quebra
+    // os vínculos materia_edital_id que os alunos já reconciliaram.
     return editalEditando
         .filter(m => m.materia && m.materia.trim())
-        .map(m => ({
-            materia: m.materia.trim(),
-            topicos: (m.topicos || [])
-                .filter(t => t.nome && t.nome.trim())
-                .map((t, idx) => ({
-                    nome: t.nome.trim(),
-                    subtopicos: (t.subtopicos || []).filter(s => s && s.trim()).map(s => s.trim()),
-                    ordem: t.ordem || (idx + 1)
-                }))
-        }));
+        .map(m => {
+            const materiaObj = {
+                materia: m.materia.trim(),
+                topicos: (m.topicos || [])
+                    .filter(t => t.nome && t.nome.trim())
+                    .map((t, idx) => {
+                        const topicoObj = {
+                            nome: t.nome.trim(),
+                            curso_nome: t.curso_nome || null,
+                            tec_assunto: t.tec_assunto || null,
+                            subtopicos: (t.subtopicos || [])
+                                .filter(s => (typeof s === 'object' ? s?.nome : s) && (typeof s === 'object' ? s.nome.trim() : s.trim()))
+                                .map(s => {
+                                    if (typeof s === 'string') return s.trim();
+                                    const obj = { nome: s.nome.trim() };
+                                    if (s.id) obj.id = s.id;
+                                    if (s.curso_nome) obj.curso_nome = s.curso_nome;
+                                    if (s.tec_assunto) obj.tec_assunto = s.tec_assunto;
+                                    // Manter como objeto se tiver id (vínculo com progresso) ou mapeamento.
+                                    return (obj.id || obj.curso_nome || obj.tec_assunto) ? obj : obj.nome;
+                                }),
+                            ordem: t.ordem || (idx + 1)
+                        };
+                        if (t.id) topicoObj.id = t.id;
+                        return topicoObj;
+                    })
+            };
+            if (m.id) materiaObj.id = m.id;
+            return materiaObj;
+        });
 }
 
 // ── Import/Export Edital Excel/CSV ──────────────────────────────────────────
@@ -835,12 +1022,20 @@ function processarArquivoEdital(file) {
 function converterLinhasParaEdital(rows) {
     const mapa = {};
     const ordemMapa = {};
+    const cursoMapa = {};
+    const tecMapa = {};
 
     rows.forEach(row => {
-        const materia = (row['Materia'] || row['materia'] || row['MATERIA'] || row['Matéria'] || row['matéria'] || '').trim();
-        const topico = (row['Topico'] || row['topico'] || row['TOPICO'] || row['Tópico'] || row['tópico'] || '').trim();
-        const subtopico = (row['Subtopico'] || row['subtopico'] || row['SUBTOPICO'] || row['Subtópico'] || row['subtópico'] || '').trim();
-        const ordem = parseInt(row['Ordem'] || row['ordem'] || row['ORDEM'] || '') || 999;
+        // sheet_to_json devolve numeros como Number: sem String(), uma celula
+        // numerica (ex.: topico "101") lançava TypeError e derrubava o import
+        // inteiro com "Erro ao ler o arquivo".
+        const _txt = v => String(v ?? '').trim();
+        const materia = _txt(row['Materia'] || row['materia'] || row['MATERIA'] || row['Matéria'] || row['matéria']);
+        const topico = _txt(row['Topico'] || row['topico'] || row['TOPICO'] || row['Tópico'] || row['tópico']);
+        const subtopico = _txt(row['Subtopico'] || row['subtopico'] || row['SUBTOPICO'] || row['Subtópico'] || row['subtópico']);
+        const ordem = parseInt(_txt(row['Ordem'] || row['ordem'] || row['ORDEM']), 10) || 999;
+        const cursoNome = _txt(row['Curso_Nome'] || row['curso_nome'] || row['CURSO_NOME'] || row['Nome_Curso']);
+        const tecAssunto = _txt(row['TEC_Assunto'] || row['tec_assunto'] || row['TEC_ASSUNTO'] || row['TEC']);
 
         if (!materia || !topico) return;
 
@@ -848,11 +1043,19 @@ function converterLinhasParaEdital(rows) {
         if (!mapa[materia][topico]) mapa[materia][topico] = [];
         if (!ordemMapa[materia]) ordemMapa[materia] = {};
         if (!ordemMapa[materia][topico]) ordemMapa[materia][topico] = ordem;
-        // Keep the lowest ordem value for this topic
         if (ordem < ordemMapa[materia][topico]) ordemMapa[materia][topico] = ordem;
 
-        if (subtopico && !mapa[materia][topico].includes(subtopico)) {
-            mapa[materia][topico].push(subtopico);
+        if (!cursoMapa[materia]) cursoMapa[materia] = {};
+        if (!tecMapa[materia]) tecMapa[materia] = {};
+
+        if (subtopico) {
+            const key = `${topico}|${subtopico}`;
+            if (!mapa[materia][topico].some(s => (typeof s === 'object' ? s.nome : s) === subtopico)) {
+                mapa[materia][topico].push(cursoNome || tecAssunto ? { nome: subtopico, curso_nome: cursoNome || null, tec_assunto: tecAssunto || null } : subtopico);
+            }
+        } else {
+            if (cursoNome) cursoMapa[materia][topico] = cursoNome;
+            if (tecAssunto) tecMapa[materia][topico] = tecAssunto;
         }
     });
 
@@ -861,6 +1064,8 @@ function converterLinhasParaEdital(rows) {
         topicos: Object.entries(topicos)
             .map(([nome, subtopicos]) => ({
                 nome,
+                curso_nome: cursoMapa[materia]?.[nome] || null,
+                tec_assunto: tecMapa[materia]?.[nome] || null,
                 subtopicos,
                 ordem: ordemMapa[materia]?.[nome] || 999
             }))
@@ -930,18 +1135,18 @@ function mostrarPreviewEdital(editalImportado) {
 function baixarModeloEdital() {
     const wb = XLSX.utils.book_new();
     const dados = [
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Ativo Circulante', Ordem: 1 },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Passivo Circulante', Ordem: 1 },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Patrimônio Líquido', Ordem: 1 },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Receitas', Ordem: 2 },
-        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Despesas', Ordem: 2 },
-        { Materia: 'AFO', Topico: 'Orçamento Público', Subtopico: '', Ordem: 1 },
-        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'PPA', Ordem: 2 },
-        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LDO', Ordem: 2 },
-        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LOA', Ordem: 2 }
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Ativo Circulante', Ordem: 1, Curso_Nome: 'Aula 02 - Ativo Circulante', TEC_Assunto: 'Ativo Circulante' },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Passivo Circulante', Ordem: 1, Curso_Nome: 'Aula 03 - Passivo', TEC_Assunto: '' },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Patrimônio Líquido', Ordem: 1, Curso_Nome: '', TEC_Assunto: '' },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Receitas', Ordem: 2, Curso_Nome: 'Aula 05 - DRE', TEC_Assunto: 'Demonstracao do Resultado' },
+        { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Despesas', Ordem: 2, Curso_Nome: '', TEC_Assunto: '' },
+        { Materia: 'AFO', Topico: 'Orçamento Público', Subtopico: '', Ordem: 1, Curso_Nome: 'Aula 01 - Orcamento', TEC_Assunto: 'Orcamento publico' },
+        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'PPA', Ordem: 2, Curso_Nome: 'Aula 02 - PPA', TEC_Assunto: 'Plano Plurianual' },
+        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LDO', Ordem: 2, Curso_Nome: '', TEC_Assunto: '' },
+        { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LOA', Ordem: 2, Curso_Nome: '', TEC_Assunto: '' }
     ];
     const ws = XLSX.utils.json_to_sheet(dados);
-    ws['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 10 }];
+    ws['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 10 }, { wch: 30 }, { wch: 25 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Edital');
     XLSX.writeFile(wb, 'modelo_edital.xlsx');
 }
@@ -1102,12 +1307,14 @@ function calcularPercentualPorLegendasEdital(legendasSet) {
                 subtopicos.forEach(sub => {
                     totalItens++;
                     const chave = gerarChaveEdital(materiaObj.materia, topico.nome, nomeSubtopico(sub));
-                    if (editalProgresso[chave]?.status === 'visto') itensConcluidos++;
+                    const st = editalProgresso[chave]?.status;
+                    if (st === 'visto' || st === 'concluido') itensConcluidos++;
                 });
             } else {
                 totalItens++;
                 const chave = gerarChaveEdital(materiaObj.materia, topico.nome, '');
-                if (editalProgresso[chave]?.status === 'visto') itensConcluidos++;
+                const st = editalProgresso[chave]?.status;
+                if (st === 'visto' || st === 'concluido') itensConcluidos++;
             }
         });
     });
