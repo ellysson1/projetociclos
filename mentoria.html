@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>No Controle · Planejamento Individual para Concursos de Controle</title>
+<meta name="description" content="Estudo sem controle é esforço inútil. O planejamento individual orientado por dados de quem foi aprovado em 15º no TCU.">
+<meta property="og:title" content="No Controle · Estudo no controle é vaga de Auditor.">
+<meta property="og:description" content="Planejamento individual para concursos de controle, com o Prof. Ellysson Rocha, Auditor do TCU.">
+<meta property="og:image" content="assets/og-no-controle.jpg">
+<meta name="theme-color" content="#0A2148">
+<link rel="icon" href="assets/logo-er.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="scrollcraft.css">
+<style>
+  :root {
+    --sc-canvas:     #0A2148;
+    --sc-surface:    #123A7E;
+    --sc-ink:        #FFFFFF;
+    --sc-ink-soft:   #C9D4EA;
+    --sc-accent:     #F5C842;
+    --sc-accent-ink: #0D2B5E;
+    --sc-font-display: "Nunito", system-ui, sans-serif;
+    --sc-font-text:    "Nunito", system-ui, sans-serif;
+    --sc-font-mono:    "Nunito", system-ui, sans-serif;
+    --sc-shadow-color: 222 70% 4%;
+    --sc-edge: inset 0 1px 0 rgb(255 255 255 / .12);
+
+    --nc-fundo: #0A2148;
+    --nc-azul: #0D2B5E;
+    --nc-azul-medio: #1A4A9C;
+    --nc-azul-claro: #2E6BD6;
+    --nc-azul-luz: #4C8BFF;
+    --nc-grafite: #14172B;
+    --nc-grafite-luz: #2A2F52;
+    --nc-gelo: #E8EBF2;
+    --nc-amarelo: #F5C842;
+    --nc-amarelo-hover: #E8B92F;
+    --nc-texto-amarelo-claro: #2A1F00;
+    --nc-alerta: #E24B4A;
+    --nc-sucesso: #1D9E75;
+    --nc-shadow-yellow: 0 2px 4px rgb(120 90 0 / .2), 0 12px 28px -8px rgb(160 120 0 / .5);
+  }
+  body { background: var(--nc-fundo); }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+  .hl { display: inline-block; background: var(--nc-amarelo); color: var(--nc-azul); padding: 0 .16em; border-radius: 6px; transform: rotate(-1.2deg); box-shadow: 0 2px 0 rgb(120 90 0 / .25); }
+  .label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+  .cta {
+    display: inline-flex; align-items: center; gap: .6em;
+    background: var(--nc-amarelo); color: var(--nc-azul);
+    font-weight: 900; font-size: 1.06rem; letter-spacing: -.005em;
+    padding: .95em 1.5em; border-radius: 10px; text-decoration: none;
+    box-shadow: var(--nc-shadow-yellow), inset 0 1px 0 rgb(255 255 255 / .55);
+    transition: transform 160ms var(--sc-ease-out), background-color 160ms var(--sc-ease-out), box-shadow 160ms var(--sc-ease-out);
+    min-height: 48px;
+  }
+  .cta:hover { background: var(--nc-amarelo-hover); transform: translateY(-2px); box-shadow: 0 4px 6px rgb(120 90 0 / .22), 0 18px 34px -10px rgb(160 120 0 / .55), inset 0 1px 0 rgb(255 255 255 / .55); }
+  .cta:active { transform: translateY(1px); box-shadow: 0 1px 2px rgb(120 90 0 / .25); }
+  .cta svg { width: 1.1em; height: 1.1em; }
+
+  /* ---- fundo com luz por seção */
+  .sec { position: relative; isolation: isolate; padding-block: clamp(4.5rem, 9vw, 9rem); }
+  .sec::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(var(--lw, 70rem) var(--lh, 46rem) at var(--lx, 85%) var(--ly, 0%), var(--lc, rgb(46 107 214 / .45)), transparent 62%),
+      radial-gradient(40rem 30rem at var(--l2x, 0%) var(--l2y, 100%), var(--l2c, rgb(26 74 156 / .35)), transparent 60%);
+  }
+  .sec--azul { background: var(--nc-azul); }
+  .sec--fundo { background: var(--nc-fundo); }
+  .sec--medio { background: var(--nc-azul-medio); --lc: rgb(76 139 255 / .42); --l2c: rgb(13 43 94 / .6); }
+  .sec--gelo { background: var(--nc-gelo); color: var(--nc-azul); --lc: rgb(255 255 255 / .9); --l2c: rgb(201 212 234 / .8); }
+  .sec--after-pin { padding-top: clamp(2rem, 4vw, 4rem); }
+  #mentor { overflow-x: clip; }
+  .sec + .sec::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: rgb(255 255 255 / .08); }
+  .sec--gelo::after { background: rgb(13 43 94 / .1) !important; }
+
+  .h2 { font-size: clamp(2rem, 1.3rem + 2.8vw, 3.6rem); font-weight: 900; line-height: 1.04; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+  .h3 { font-size: clamp(1.2rem, 1rem + .6vw, 1.5rem); font-weight: 800; line-height: 1.2; letter-spacing: -.01em; margin: 0; }
+  .p { font-size: clamp(1.02rem, .96rem + .25vw, 1.18rem); line-height: 1.62; color: var(--sc-ink-soft); max-width: 60ch; margin: 0; text-wrap: pretty; }
+  .sec--gelo .p { color: #3B4A66; }
+  .sec--gelo .h2, .sec--gelo .h3 { color: var(--nc-azul); }
+
+  /* anel do ciclo: objeto da marca, reaparece no hero, no simulador e no fecho */
+  .ring { position: absolute; pointer-events: none; }
+  .ring svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* ================================================================ 0 · HERO */
+  .hero { --hp: 0; --mx: 0; --my: 0; position: relative; isolation: isolate; overflow: clip; min-height: 100svh; display: grid; grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(60rem 48rem at 78% 42%, rgb(46 107 214 / .55), transparent 62%),
+      radial-gradient(38rem 30rem at 10% 100%, rgb(26 74 156 / .45), transparent 60%),
+      radial-gradient(30rem 22rem at 80% 40%, rgb(245 200 66 / .10), transparent 65%),
+      var(--nc-fundo); }
+  .hero::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .55;
+    background-image: linear-gradient(rgb(255 255 255 / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(55% 60% at 75% 45%, #000, transparent 75%); -webkit-mask-image: radial-gradient(55% 60% at 75% 45%, #000, transparent 75%);
+    transform: translateY(calc(var(--hp) * 120px)); }
+  .hero::after { content: ""; position: absolute; left: calc(50% - 1px); bottom: 0; width: 2px; height: 14vh; z-index: 5;
+    background: linear-gradient(to bottom, transparent, var(--nc-amarelo)); transform-origin: bottom; transform: scaleY(calc(.25 + var(--hp) * 2.2)); }
+
+  .hero__bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: clamp(1.1rem, 3vh, 2rem); position: relative; z-index: 6; }
+  .brand { display: inline-flex; align-items: center; gap: .7rem; text-decoration: none; font-weight: 900; font-size: 1.12rem; letter-spacing: -.01em; color: #fff; }
+  .brand__mark { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 99px; background: #fff; box-shadow: var(--sc-e2); }
+  .brand__mark img { width: 2.2rem; height: 2.2rem; }
+  .hero__targets { color: var(--sc-ink-soft); }
+  .hero__targets b { color: var(--nc-amarelo); font-weight: 800; }
+
+  .hero__grid { display: grid; grid-template-columns: minmax(0, 6.2fr) minmax(0, 5.8fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; padding-bottom: clamp(2rem, 6vh, 4rem); }
+  .hero__copy { position: relative; z-index: 4; }
+  .hero__kicker { display: inline-flex; align-items: center; gap: .55rem; margin: 0 0 1.4rem; padding: .42rem .8rem .42rem .5rem; border-radius: 99px;
+    background: rgb(255 255 255 / .06); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .12); color: #fff; font-weight: 700; font-size: .9rem; }
+  .hero__kicker i { width: .55rem; height: .55rem; border-radius: 99px; background: var(--nc-amarelo); box-shadow: 0 0 0 4px rgb(245 200 66 / .2); }
+  .hero__title { font-size: clamp(2.5rem, 1.2rem + 3.3vw, 4.5rem); font-weight: 900; line-height: 1.02; letter-spacing: -.035em; margin: 0; max-width: 17ch; text-wrap: balance; }
+  .nw { white-space: nowrap; }
+  .hero__copy > * { animation: copy-in 800ms var(--sc-ease-out) both; }
+  .hero__copy > :nth-child(2) { animation-delay: 80ms; }
+  .hero__copy > :nth-child(3) { animation-delay: 160ms; }
+  .hero__copy > :nth-child(4) { animation-delay: 240ms; }
+  @keyframes copy-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .hero__lede { font-size: clamp(1.05rem, .95rem + .4vw, 1.3rem); line-height: 1.55; color: var(--sc-ink-soft); max-width: 36ch; margin: 1.5rem 0 2.2rem; text-wrap: pretty; }
+  .hero__lede b { color: #fff; font-weight: 800; }
+  .hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.8rem; }
+  .link-more { color: #fff; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; min-height: 48px; }
+  .link-more span { border-bottom: 2px solid rgb(245 200 66 / .6); padding-bottom: 2px; transition: border-color 160ms ease-out; }
+  .link-more:hover span { border-color: var(--nc-amarelo); }
+
+  /* camadas: anel atrás, retrato, arco da frente, crachá */
+  .hero__visual { position: relative; width: min(40rem, 100%); aspect-ratio: 1 / 1.06; justify-self: center; }
+  .orbit { position: absolute; left: 3%; top: 7%; width: 94%; aspect-ratio: 1; pointer-events: none;
+    transform: translate(calc(var(--mx) * -14px), calc(var(--hp) * 190px + var(--my) * -10px)); will-change: transform; }
+  .orbit__turn { width: 100%; height: 100%; transform: rotate(calc(var(--hp) * 140deg)); }
+  .orbit__intro { width: 100%; height: 100%; animation: orbit-in 1400ms var(--sc-ease-out) both; }
+  .orbit svg { width: 100%; height: 100%; overflow: visible; }
+  .orbit--back { z-index: 1; opacity: .95; filter: drop-shadow(0 24px 40px rgb(3 10 30 / .55)); }
+  .orbit--front { z-index: 3; clip-path: inset(66% -10% -10% -10%); filter: drop-shadow(0 -10px 22px rgb(3 10 30 / .55)); }
+  @keyframes orbit-in { from { opacity: 0; transform: rotate(-50deg) scale(.9); } to { opacity: 1; transform: none; } }
+
+  .hero__halo { position: absolute; left: 18%; top: 18%; width: 64%; aspect-ratio: 1; border-radius: 50%; z-index: 0;
+    background: radial-gradient(closest-side, rgb(76 139 255 / .55), rgb(46 107 214 / .15) 60%, transparent);
+    transform: translateY(calc(var(--hp) * 150px)); }
+
+  .hero__person { position: absolute; left: 50%; bottom: 7%; height: 90%; z-index: 2;
+    transform: translate(calc(-50% + var(--mx) * 10px), calc(var(--hp) * 95px + var(--my) * 6px)); will-change: transform; }
+  .hero__person img { height: 100%; width: auto; max-width: none;
+    animation: person-in 1100ms 150ms var(--sc-ease-out) both;
+    mask-image: linear-gradient(to bottom, #000 72%, transparent 97%); -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 97%); }
+  @keyframes person-in { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+
+  .hero__badge { position: absolute; left: -2%; bottom: 17%; z-index: 4; display: grid; gap: .15rem; padding: .85rem 1.1rem .85rem 1rem; border-radius: 14px;
+    background: linear-gradient(180deg, #16408C, var(--nc-azul)); box-shadow: var(--sc-e3), var(--sc-edge);
+    transform: translate(calc(var(--mx) * 22px), calc(var(--hp) * -40px + var(--my) * 14px)); will-change: transform;
+    animation: badge-in 900ms 650ms var(--sc-ease-out) both; }
+  .hero__badge b { font-size: 1.02rem; font-weight: 900; color: #fff; }
+  .hero__badge span { font-size: .86rem; font-weight: 700; color: var(--sc-ink-soft); }
+  .hero__badge em { font-style: normal; color: var(--nc-amarelo); }
+  .hero__rank { position: absolute; right: 0; top: 16%; z-index: 4; display: grid; place-items: center; width: 6.4rem; height: 6.4rem; border-radius: 99px;
+    background: var(--nc-amarelo); color: var(--nc-azul); box-shadow: var(--nc-shadow-yellow), inset 0 1px 0 rgb(255 255 255 / .55); text-align: center; line-height: 1;
+    transform: translate(calc(var(--mx) * 26px), calc(var(--hp) * -70px + var(--my) * 18px)) rotate(8deg); will-change: transform;
+    animation: badge-in 900ms 800ms var(--sc-ease-out) both; }
+  .hero__rank b { display: block; font-size: 2.1rem; font-weight: 900; letter-spacing: -.04em; }
+  .hero__rank small { display: block; font-size: .66rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-top: .15rem; }
+  @keyframes badge-in { from { opacity: 0; scale: .92; } to { opacity: 1; scale: 1; } }
+
+  @media (max-width: 860px) {
+    .hero { min-height: auto; }
+    .hero::after { display: none; }
+    .hero__grid { grid-template-columns: 1fr; gap: .5rem; padding-bottom: 0; }
+    .hero__targets { display: none; }
+    .hero__title { font-size: clamp(2.3rem, 10vw, 3.2rem); max-width: 14ch; }
+    .hero__lede { margin: 1.1rem 0 1.6rem; }
+    .hero__kicker { font-size: .8rem; margin-bottom: 1rem; }
+    .hero__visual { width: min(26rem, 100%); margin-top: 1rem; }
+    .hero__badge { left: 0; bottom: 14%; padding: .65rem .85rem; }
+    .hero__badge b { font-size: .92rem; } .hero__badge span { font-size: .78rem; }
+    .hero__rank { width: 5rem; height: 5rem; right: 2%; top: 12%; }
+    .hero__rank b { font-size: 1.6rem; } .hero__rank small { font-size: .56rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero::before, .hero::after, .orbit, .orbit__turn, .hero__halo, .hero__badge, .hero__rank { transform: none !important; }
+    .hero__person { transform: translateX(-50%) !important; }
+    .hero__rank { rotate: 8deg; }
+    .orbit__intro, .hero__person img, .hero__badge, .hero__rank, .hero__copy > * { animation-duration: 1ms; animation-delay: 0ms; }
+  }
+
+  /* ================================================================ 1 · SPLIT */
+  .split { --k: clamp(0, calc((var(--sc-p, 0) - 0.70) / 0.16), 1); }
+
+  /* frases montadas palavra por palavra, dirigidas pelo scroll */
+  [data-w] { visibility: hidden; }
+  [data-w].on { visibility: visible; }
+  [data-w] .w { display: inline-block; vertical-align: top; }
+  [data-w] .wi { display: inline-block; will-change: transform, opacity; }
+  .side--no [data-w] .w { overflow: hidden; padding: 0 .04em .14em; margin: 0 -.04em -.14em; }
+  .side--no [data-w] .w:has(.hl) { overflow: visible; }
+  .split__stage { background: var(--nc-fundo); }
+  .side { position: absolute; top: 0; bottom: 0; display: grid; align-items: center; }
+  .side--no { inset: 0; overflow: clip;
+    background:
+      radial-gradient(75rem 55rem at 88% 12%, rgb(46 107 214 / .55), transparent 60%),
+      radial-gradient(50rem 40rem at 60% 100%, rgb(26 74 156 / .5), transparent 60%),
+      var(--nc-fundo);
+  }
+  .side--no .side__inner {
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 50%; z-index: 2;
+    display: grid; align-items: center;
+    padding-inline: clamp(1.5rem, 4.5vw, 5rem);
+    transform: translateX(calc(var(--k) * -50%));
+  }
+  .side--no .ring {
+    width: min(78vh, 60vw); aspect-ratio: 1; right: -12%; bottom: -22%; opacity: .55; z-index: 1;
+    transform: translate(calc(var(--k) * -22vw), calc(var(--k) * 8vh)) rotate(calc(var(--sc-p, 0) * 160deg)) scale(calc(1 + var(--k) * .25));
+    filter: drop-shadow(0 30px 40px rgb(4 10 30 / .5));
+    will-change: transform;
+  }
+  .side--sem {
+    left: 0; width: 50%; z-index: 3; overflow: clip;
+    padding-inline: clamp(1.5rem, 4.5vw, 5rem);
+    background:
+      radial-gradient(55rem 45rem at 8% 0%, rgb(60 66 110 / .55), transparent 60%),
+      radial-gradient(40rem 30rem at 100% 100%, rgb(0 0 0 / .45), transparent 60%),
+      var(--nc-grafite);
+    box-shadow: 18px 0 60px -12px rgb(2 6 20 / .8);
+    transform: translateX(calc(var(--k) * -100%));
+  }
+  .side--sem .stack-cues { position: relative; z-index: 2; }
+  .stack-cues { display: grid; }
+  .stack-cues > * { grid-area: 1 / 1; align-self: center; }
+
+  /* pilha de fichas bagunçadas atrás do lado "sem controle" */
+  .mess { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .mess span {
+    position: absolute; left: var(--x); top: var(--y);
+    font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+    padding: .42rem .6rem; border-radius: 5px; white-space: nowrap;
+    background: rgb(255 255 255 / .06); color: rgb(255 255 255 / .38); border: 1px solid rgb(255 255 255 / .1);
+    box-shadow: 0 6px 14px -6px rgb(0 0 0 / .6);
+    transform: translateY(calc(var(--sc-p, 0) * var(--d) * -520px)) rotate(calc(var(--r) + var(--sc-p, 0) * var(--d) * 70deg));
+    will-change: transform;
+  }
+  .mess span.late { background: rgb(226 75 74 / .14); color: rgb(255 138 137 / .7); border-color: rgb(226 75 74 / .3); text-decoration: line-through; }
+
+  .split h2, .split .hero-line { font-weight: 900; line-height: 1.02; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+  .hero-line { font-size: clamp(2.2rem, 1.2rem + 3.6vw, 4.6rem); }
+  .side--sem .hero-line { color: rgb(255 255 255 / .92); }
+  .pair { font-size: clamp(1.5rem, 1rem + 1.9vw, 2.75rem); font-weight: 800; line-height: 1.12; letter-spacing: -.02em; margin: 0; max-width: 18ch; text-wrap: balance; }
+  .side--sem .pair { color: rgb(255 255 255 / .88); }
+  .pair em { font-style: normal; color: var(--nc-amarelo); }
+  .hero-sub { font-size: clamp(1rem, .9rem + .35vw, 1.2rem); color: var(--sc-ink-soft); max-width: 40ch; margin: 1.1rem 0 1.8rem; line-height: 1.5; }
+  .peak { width: min(54rem, 86vw); margin-left: calc(25vw - clamp(1.5rem, 4.5vw, 5rem) - min(27rem, 43vw)); }
+  .peak h2 { text-wrap: wrap; font-size: clamp(2.6rem, 1.2rem + 4.2vw, 5.2rem); }
+  .stack-cues { justify-items: start; }
+  .peak .hero-sub { margin-top: 1.4rem; }
+
+  .divider {
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 0; z-index: 4;
+    transform: translateX(calc(var(--k) * -50vw));
+    pointer-events: none;
+  }
+  .divider::before, .divider::after { content: ""; position: absolute; top: 0; bottom: 0; left: -1px; width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--nc-amarelo) 12%, var(--nc-amarelo) 88%, transparent); }
+  .divider::before { opacity: .3; }
+  .divider::after { left: -2px; width: 4px; transform-origin: top; transform: scaleY(min(1, calc(var(--sc-p, 0) / .7)));
+    box-shadow: 0 0 0 1px rgb(245 200 66 / .15); }
+  .divider__tags { position: absolute; top: clamp(1.25rem, 4vh, 2.5rem); left: 0; display: flex; opacity: calc(1 - var(--k) * 1.6); }
+  .divider__tags span { position: absolute; white-space: nowrap; top: 0; }
+  .divider__tags .t-sem { right: 1rem; color: rgb(255 255 255 / .74); }
+  .divider__tags .t-no { left: 1rem; color: var(--nc-amarelo); display: inline-flex; align-items: center; gap: .5rem; }
+  .divider__tags img { width: 22px; height: 22px; }
+  .divider__steps { position: absolute; bottom: clamp(1.25rem, 5vh, 3rem); left: 0; transform: translateX(-50%); display: grid; gap: .55rem; justify-items: center; opacity: calc(1 - var(--k) * 1.6); }
+  .divider__step { display: block; background: var(--nc-fundo); color: var(--nc-amarelo); padding: .35rem .7rem; border-radius: 5px; border: 1px solid var(--nc-amarelo); min-width: 8.5rem; text-align: center; box-shadow: var(--sc-e2); }
+  .divider__dots { display: flex; gap: 6px; }
+  .divider__dots i { width: 7px; height: 7px; border-radius: 99px; background: rgb(255 255 255 / .28); transition: background-color 180ms ease-out; }
+  .divider__dots i.on { background: var(--nc-amarelo); }
+
+  @media (max-width: 760px) {
+    .side--sem { left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 50%; padding: 3.2rem 1.25rem 1.5rem; align-items: center; transform: translateY(calc(var(--k) * -100%)); box-shadow: 0 18px 60px -12px rgb(2 6 20 / .8); }
+    .side--no .side__inner { left: 0; width: 100%; top: 50%; bottom: auto; height: 50%; padding: 1.6rem 1.25rem 1.25rem; align-items: center; transform: translateY(calc(var(--k) * -50%)); }
+    .side--no .ring { width: 70vw; right: -25%; bottom: -12%; opacity: .4; transform: translate(0, calc(var(--k) * -20vh)) rotate(calc(var(--sc-p, 0) * 160deg)); }
+    .mess span { font-size: .58rem; padding: .3rem .45rem; }
+    .mess span[data-m="0"] { display: none; }
+    .divider { left: 0; right: 0; top: 50%; bottom: auto; width: auto; height: 0; transform: translateY(calc(var(--k) * -50svh)); }
+    .divider::before, .divider::after { left: 0; right: 0; top: -1px; bottom: auto; width: auto; height: 2px; background: linear-gradient(to right, transparent, var(--nc-amarelo) 10%, var(--nc-amarelo) 90%, transparent); }
+    .divider::after { top: -2px; height: 4px; transform-origin: left; transform: scaleX(min(1, calc(var(--sc-p, 0) / .7))); }
+    .mess span { transform: translateY(calc(var(--sc-p, 0) * var(--d) * -260px)) rotate(calc(var(--r) + var(--sc-p, 0) * var(--d) * 50deg)); }
+    .divider__tags { top: 0; left: 1.25rem; right: 1.25rem; }
+    .divider__tags .t-sem { right: auto; left: 0; bottom: .6rem; top: auto; }
+    .divider__tags .t-no { left: 0; top: .6rem; }
+    .divider__steps { bottom: auto; top: -.95rem; left: auto; right: 1.25rem; transform: none; }
+    .divider__dots { display: none; }
+    .divider__step { min-width: 0; font-size: .64rem; }
+    .hero-line { font-size: clamp(1.9rem, 8.4vw, 2.6rem); }
+    .pair { font-size: clamp(1.35rem, 6vw, 1.7rem); max-width: 22ch; }
+    .hero-sub { font-size: .95rem; margin: .7rem 0 1rem; }
+    .side--no .hero-group .cta { padding: .8em 1.2em; font-size: 1rem; }
+    .peak h2 { font-size: clamp(2.3rem, 10vw, 3rem); }
+    .peak { width: auto; margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .side--sem { transform: none; opacity: calc(1 - var(--k)); }
+    .side--no .side__inner, .divider { transform: none; }
+    .divider { opacity: calc(1 - var(--k)); }
+    .divider::after { transform: none; }
+    .mess span { transform: rotate(var(--r)); }
+    .side--no .ring { transform: none; }
+  }
+
+  /* ============================================================ MENTOR */
+  .mentor { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 6vw, 6rem); align-items: end; }
+  .mentor__stack { position: relative; }
+  .mentor__back { position: absolute; inset: 8% -8% -6% 10%; border-radius: 22px; background: var(--nc-amarelo); opacity: .9; z-index: 0;
+    box-shadow: 0 30px 60px -20px rgb(120 90 0 / .5); }
+  .mentor__photo { position: relative; z-index: 1; margin: 0; background: #fff; border-radius: 18px; aspect-ratio: 4 / 5; overflow: hidden;
+    box-shadow: var(--sc-e3), inset 0 0 0 1px rgb(255 255 255 / .6); }
+  .mentor__photo img { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 96%; width: auto; max-width: none; }
+  .mentor__photo figcaption { position: absolute; left: 1rem; bottom: 1rem; background: var(--nc-azul); color: #fff; padding: .45rem .7rem; border-radius: 5px; box-shadow: var(--sc-e1); }
+  .mentor__grid { position: absolute; inset: -12% -30% auto -20%; height: 60%; z-index: 0; opacity: .5; pointer-events: none;
+    background-image: linear-gradient(rgb(255 255 255 / .07) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .07) 1px, transparent 1px);
+    background-size: 28px 28px; mask-image: radial-gradient(60% 60% at 40% 40%, #000, transparent); -webkit-mask-image: radial-gradient(60% 60% at 40% 40%, #000, transparent); }
+  .facts { display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 4vw, 3.5rem); margin: 2.4rem 0 0; padding: 0; list-style: none; }
+  .facts li { display: grid; gap: .2rem; }
+  .facts b { font-size: clamp(3rem, 2rem + 3vw, 4.8rem); font-weight: 900; line-height: .9; letter-spacing: -.04em; color: var(--nc-amarelo); font-variant-numeric: tabular-nums; }
+  .facts span { color: #fff; font-weight: 700; }
+  @media (max-width: 760px) { .mentor { grid-template-columns: 1fr; } .mentor__stack { max-width: 20rem; } }
+
+  /* ============================================================ SIMULADOR */
+  .sim__head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 5vw, 5rem); align-items: end; }
+  @media (max-width: 860px) { .sim__head { grid-template-columns: 1fr; } }
+  .sim__controls { display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: end; margin: 2.6rem 0 1.4rem; padding: 1.2rem 1.4rem; border-radius: 14px;
+    background: rgb(10 33 72 / .35); box-shadow: var(--sc-edge), var(--sc-e1); backdrop-filter: blur(6px); }
+  .field { display: grid; gap: .45rem; }
+  .field label, .field .label { color: #fff; }
+  .field output { font-weight: 900; color: var(--nc-amarelo); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+  .field select { background: var(--nc-fundo); border: 1px solid rgb(255 255 255 / .28); border-radius: 8px; padding: .7rem .9rem; min-height: 48px; font-weight: 700; box-shadow: var(--sc-edge); }
+  input[type=range] { width: min(20rem, 70vw); accent-color: var(--nc-amarelo); height: 32px; }
+  .btn-lose { background: transparent; color: #fff; border: 2px solid var(--nc-amarelo); border-radius: 10px; padding: .8rem 1.3rem; font-weight: 800; min-height: 48px; cursor: pointer; transition: background-color 160ms ease-out, color 160ms ease-out, transform 120ms ease-out; }
+  .btn-lose:hover, .btn-lose[aria-pressed=true] { background: var(--nc-amarelo); color: var(--nc-azul); }
+  .btn-lose:active { transform: scale(.97); }
+  .sim__grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1.2rem; }
+  @media (max-width: 960px) { .sim__grid { grid-template-columns: 1fr; } }
+  .panel { position: relative; border-radius: 16px; padding: clamp(1.1rem, 2.5vw, 1.8rem); box-shadow: var(--sc-e3), var(--sc-edge); overflow: hidden; }
+  .panel::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(40rem 20rem at 0% 0%, rgb(255 255 255 / .07), transparent 60%); }
+  .panel--datas { background: linear-gradient(180deg, var(--nc-grafite-luz), var(--nc-grafite) 40%); }
+  .panel--ciclo { background: linear-gradient(180deg, #17429A, var(--nc-azul) 45%); }
+  .panel__top { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin-bottom: 1.1rem; flex-wrap: wrap; padding-bottom: .8rem; border-bottom: 1px solid rgb(255 255 255 / .1); }
+  .panel__verdict { font-weight: 800; font-size: 1.05rem; line-height: 1.35; margin: 1.1rem 0 0; min-height: 2.8em; }
+  .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .day { position: relative; display: grid; align-content: start; gap: 4px; min-width: 0; padding: 4px; border-radius: 8px; transition: background-color 220ms ease-out; }
+  .day.lost { background: repeating-linear-gradient(-45deg, rgb(226 75 74 / .16) 0 6px, transparent 6px 14px); }
+  .day__name { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgb(255 255 255 / .7); padding-bottom: 2px; }
+  .day.lost .day__name { color: #FF8A89; }
+  .chip { font-size: .68rem; line-height: 1.15; font-weight: 700; padding: .38rem .35rem; border-radius: 5px; background: rgb(255 255 255 / .1); color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-shadow: inset 0 1px 0 rgb(255 255 255 / .08); transition: background-color 220ms ease-out, transform 220ms var(--sc-ease-out); }
+  .day.lost .chip { background: var(--nc-alerta); color: #fff; transform: rotate(-2deg); }
+  .day.lost .chip:nth-child(odd) { transform: rotate(2deg) translateX(1px); }
+  .day--rest .chip { background: transparent; color: rgb(255 255 255 / .55); border: 1px dashed rgb(255 255 255 / .25); box-shadow: none; }
+  .bad { color: #FF8A89; }
+  .good { color: var(--nc-amarelo); }
+  .ciclo { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 1.2rem; align-items: center; }
+  .ciclo svg { width: 9.5rem; height: 9.5rem; filter: drop-shadow(0 10px 18px rgb(4 10 30 / .5)); }
+  .ciclo svg circle { transition: opacity 260ms ease-out, stroke 260ms ease-out; }
+  .ciclo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; font-size: .88rem; }
+  .ciclo li { display: flex; justify-content: space-between; gap: .6rem; color: rgb(255 255 255 / .9); padding: .1rem .4rem; border-radius: 5px; transition: background-color 220ms ease-out; }
+  .ciclo li b { font-variant-numeric: tabular-nums; color: #fff; white-space: nowrap; }
+  .ciclo li.next { color: var(--nc-amarelo); font-weight: 800; background: rgb(245 200 66 / .12); }
+  .ciclo li.next b { color: var(--nc-amarelo); }
+  @media (max-width: 520px) { .ciclo { grid-template-columns: 1fr; } .week { gap: 3px; } .chip { font-size: .56rem; padding: .3rem .18rem; } .day { padding: 2px; } }
+  .sim__note { margin-top: 1rem; font-size: .88rem; color: var(--sc-ink-soft); }
+
+  /* ============================================================ MÉTODO */
+  .method { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(2rem, 6vw, 6rem); }
+  @media (max-width: 860px) { .method { grid-template-columns: 1fr; } }
+  .method__intro { position: sticky; top: 3rem; align-self: start; }
+  @media (max-width: 860px) { .method__intro { position: static; } }
+  .steps { position: relative; list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  .steps::before { content: ""; position: absolute; left: 1.55rem; top: 1.6rem; bottom: 1.6rem; width: 2px; background: rgb(255 255 255 / .1); }
+  .steps__fill { position: absolute; left: 1.55rem; top: 1.6rem; bottom: 1.6rem; width: 2px; background: var(--nc-amarelo); transform-origin: top; transform: scaleY(1); }
+  @supports (animation-timeline: view()) {
+    .steps__fill { animation: fill linear both; animation-timeline: view(); animation-range: entry 30% cover 65%; }
+    @keyframes fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 1.2rem; padding: 1.7rem 0; }
+  .steps li + li { border-top: 1px solid rgb(255 255 255 / .08); }
+  .steps li::before { content: counter(s); position: relative; z-index: 1; display: grid; place-items: center; width: 3.2rem; height: 3.2rem; border-radius: 99px; font-size: 1.35rem; font-weight: 900; color: var(--nc-azul); background: var(--nc-amarelo); box-shadow: var(--sc-e2), inset 0 1px 0 rgb(255 255 255 / .5); }
+  .steps .p { margin-top: .5rem; }
+  .shot { margin: 2.4rem 0 0; border-radius: 14px; overflow: hidden; background: var(--nc-azul-medio); box-shadow: var(--sc-e3), var(--sc-edge); }
+  .shot img { width: 100%; height: auto; }
+  .shot figcaption { padding: .7rem 1rem; font-size: .85rem; color: var(--sc-ink-soft); }
+
+  /* ============================================================ PROVA */
+  .proof { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(1.5rem, 4vw, 4rem); margin-top: 3rem; }
+  @media (max-width: 860px) { .proof { grid-template-columns: 1fr; } }
+  .quote-big { position: relative; margin: 0; padding-top: 2.2rem; }
+  .quote-big::before { content: "\201C"; position: absolute; left: -.08em; top: -.35em; font-size: 9rem; line-height: 1; font-weight: 900; color: var(--nc-azul-luz); opacity: .35; pointer-events: none; }
+  .quote-big p { position: relative; font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.6rem); font-weight: 800; line-height: 1.18; letter-spacing: -.02em; margin: 0; text-wrap: pretty; }
+  .who { display: block; margin-top: 1.2rem; font-weight: 700; color: var(--nc-amarelo); font-style: normal; }
+  .who small { display: block; color: var(--sc-ink-soft); font-weight: 600; font-size: .92rem; }
+  .quotes { display: grid; gap: 1rem; align-content: start; }
+  .quotes figure { margin: 0; padding: 1.2rem 1.3rem; border-radius: 14px; background: rgb(10 33 72 / .55); box-shadow: var(--sc-e2), var(--sc-edge); }
+  .quotes blockquote { margin: 0; }
+  .quotes p { margin: 0; font-size: 1.02rem; line-height: 1.5; color: #fff; }
+  .quotes .who { margin-top: .8rem; font-size: .95rem; }
+
+  /* ============================================================ OFERTA */
+  .offer-wipe { background: var(--nc-gelo); }
+  .offer-head { text-align: center; max-width: 40rem; margin-inline: auto; }
+  .offer-head .p { margin-inline: auto; }
+  .plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 3rem; align-items: center; }
+  @media (max-width: 860px) { .plans { grid-template-columns: 1fr; } .plan--best { order: -1; } }
+  .plan { position: relative; background: #fff; border-radius: 16px; padding: 1.6rem; display: grid; gap: .5rem; align-content: start; color: var(--nc-azul); box-shadow: 0 1px 2px rgb(13 43 94 / .08), 0 10px 24px -10px rgb(13 43 94 / .2), inset 0 1px 0 #fff; }
+  .plan--best { background: linear-gradient(180deg, #123A7E, var(--nc-azul) 60%); color: #fff; padding: 2.2rem 1.8rem; box-shadow: 0 6px 12px rgb(13 43 94 / .2), 0 40px 70px -24px rgb(13 43 94 / .6), inset 0 1px 0 rgb(255 255 255 / .18); }
+  .plan--best::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(30rem 16rem at 100% 0%, rgb(76 139 255 / .35), transparent 60%); }
+  .plan > * { position: relative; }
+  .plan__tag { justify-self: start; background: var(--nc-amarelo); color: var(--nc-azul); padding: .3rem .6rem; border-radius: 5px; box-shadow: var(--sc-e1); }
+  .plan__name { font-size: 1.15rem; font-weight: 800; margin: 0; }
+  .plan__price { font-size: clamp(2.6rem, 2rem + 2vw, 3.6rem); font-weight: 900; line-height: 1; letter-spacing: -.04em; margin: .4rem 0 0; font-variant-numeric: tabular-nums; }
+  .plan--best .plan__price { font-size: clamp(3rem, 2.2rem + 2.6vw, 4.4rem); }
+  .plan__price small { font-size: 1.1rem; font-weight: 700; letter-spacing: 0; }
+  .plan__terms { margin: 0 0 1.1rem; font-weight: 600; color: #3B4A66; }
+  .plan--best .plan__terms { color: #C9D4EA; }
+  .plan .cta { justify-content: center; margin-top: auto; }
+  .plan:not(.plan--best) .cta { background: var(--nc-azul); color: #fff; box-shadow: var(--sc-e1); }
+  .plan:not(.plan--best) .cta:hover { background: var(--nc-azul-medio); }
+  .pay { margin-top: 1.4rem; font-size: .92rem; color: #3B4A66; text-align: center; }
+  .extras { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 4rem); margin-top: clamp(3rem, 6vw, 5rem); padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid rgb(13 43 94 / .15); }
+  @media (max-width: 760px) { .extras { grid-template-columns: 1fr; } }
+  .extras ul { margin: .9rem 0 0; padding-left: 1.1rem; color: #3B4A66; line-height: 1.6; }
+  .extras li::marker { color: var(--nc-azul-medio); }
+  .seal { display: inline-grid; place-items: center; width: 4.6rem; height: 4.6rem; border-radius: 99px; background: var(--nc-amarelo); color: var(--nc-texto-amarelo-claro); font-weight: 900; font-size: 1.5rem; line-height: 1; margin-bottom: 1rem; box-shadow: var(--nc-shadow-yellow), inset 0 1px 0 rgb(255 255 255 / .5); transform: rotate(-6deg); }
+  .seal small { display: block; font-size: .55rem; font-weight: 800; letter-spacing: .06em; }
+
+  /* ============================================================ FAQ */
+  .faq { max-width: 52rem; margin-top: 2.6rem; }
+  .faq details { border-top: 1px solid rgb(255 255 255 / .14); }
+  .faq details:last-child { border-bottom: 1px solid rgb(255 255 255 / .14); }
+  .faq summary { cursor: pointer; list-style: none; padding: 1.25rem 2.5rem 1.25rem 0; font-weight: 800; font-size: 1.12rem; position: relative; min-height: 48px; transition: color 140ms ease-out; }
+  .faq summary:hover { color: var(--nc-amarelo); }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; position: absolute; right: .2rem; top: 1rem; font-size: 1.6rem; font-weight: 700; color: var(--nc-amarelo); transition: transform 180ms var(--sc-ease-out); }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details .p { padding: 0 0 1.4rem; }
+
+  /* ============================================================ FECHO */
+  .close { position: relative; isolation: isolate; overflow: clip; min-height: 100svh; display: grid; align-content: center; padding-block: 6rem 2rem;
+    background:
+      radial-gradient(70rem 50rem at 50% 110%, rgb(46 107 214 / .5), transparent 60%),
+      radial-gradient(40rem 30rem at 0% 0%, rgb(26 74 156 / .4), transparent 60%),
+      var(--nc-fundo); }
+  .close .ring { width: min(110vh, 90vw); aspect-ratio: 1; left: 50%; top: 55%; translate: -50% -50%; opacity: .32; z-index: -1; animation: spin 90s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .close .sc-wrap { position: relative; }
+  .close .h2 { font-size: clamp(2.4rem, 1.4rem + 4vw, 5rem); max-width: 14ch; }
+  .close .cta { margin-top: 2rem; }
+  .foot { margin-top: clamp(4rem, 10vh, 7rem); padding-top: 1.4rem; border-top: 1px solid rgb(255 255 255 / .1); display: flex; flex-wrap: wrap; gap: .6rem 2rem; justify-content: space-between; font-size: .85rem; color: var(--sc-ink-soft); }
+  .foot a { color: #fff; }
+  @media (prefers-reduced-motion: reduce) { .close .ring { animation: none; } .steps__fill { animation: none; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ciclo-ring" viewBox="0 0 120 120">
+    <g fill="none" stroke-width="7" stroke-linecap="butt" transform="rotate(-90 60 60)">
+      <circle cx="60" cy="60" r="50" stroke="#F5C842" stroke-dasharray="52 262" stroke-dashoffset="0"/>
+      <circle cx="60" cy="60" r="50" stroke="#8FB0E8" stroke-dasharray="44 270" stroke-dashoffset="-56"/>
+      <circle cx="60" cy="60" r="50" stroke="#5C86D1" stroke-dasharray="40 274" stroke-dashoffset="-104"/>
+      <circle cx="60" cy="60" r="50" stroke="#C9D4EA" stroke-dasharray="34 280" stroke-dashoffset="-148"/>
+      <circle cx="60" cy="60" r="50" stroke="#3D6BC2" stroke-dasharray="30 284" stroke-dashoffset="-186"/>
+      <circle cx="60" cy="60" r="50" stroke="#A9BEE3" stroke-dasharray="26 288" stroke-dashoffset="-220"/>
+      <circle cx="60" cy="60" r="50" stroke="#7397DA" stroke-dasharray="22 292" stroke-dashoffset="-250"/>
+      <circle cx="60" cy="60" r="50" stroke="#E8EBF2" stroke-dasharray="38 276" stroke-dashoffset="-276"/>
+      <circle cx="60" cy="60" r="38" stroke="rgb(255 255 255 / .08)" stroke-width="1"/>
+      <circle cx="60" cy="60" r="62" stroke="rgb(255 255 255 / .06)" stroke-width="1"/>
+    </g>
+  </symbol>
+</svg>
+
+<main id="top">
+
+  <!-- 0 · HERO: o que é, para quem, quem guia, ação -->
+  <section class="hero" id="hero">
+    <header class="sc-wrap hero__bar">
+      <a class="brand" href="#top"><span class="brand__mark"><img src="assets/logo-er.png" alt="" width="36" height="36"></span>No Controle</a>
+      <span class="label hero__targets">Para <b>TCU</b> · TCE · TCM · CGU · CNU</span>
+    </header>
+
+    <div class="sc-wrap hero__grid">
+      <div class="hero__copy">
+        <p class="hero__kicker"><i aria-hidden="true"></i>Mentoria para concursos de controle</p>
+        <h1 class="hero__title">Chegue na prova pronto pra <span class="nw"><span class="hl">brigar pela vaga</span>.</span></h1>
+        <p class="hero__lede">Um <b>planejamento individual</b> guiado pelos seus dados: o ciclo de estudos que levou um Auditor do TCU ao 15º lugar, ajustado ao seu edital e à sua rotina.</p>
+        <div class="hero__actions">
+          <a class="cta" href="#planos" data-sc-magnet="0.22" data-sc-rise="0">Entrar na mentoria</a>
+          <a class="link-more" href="#split"><span>Ver o que muda no seu estudo</span></a>
+        </div>
+      </div>
+
+      <div class="hero__visual">
+        <div class="hero__halo" aria-hidden="true"></div>
+        <div class="orbit orbit--back" aria-hidden="true"><div class="orbit__turn"><div class="orbit__intro"><svg><use href="#ciclo-ring"/></svg></div></div></div>
+        <div class="hero__person">
+          <img src="assets/ellysson-retrato.webp" alt="Prof. Ellysson Rocha, Auditor do TCU, de braços cruzados" onerror="this.onerror=null;this.src='assets/professor-torso.png'">
+        </div>
+        <div class="orbit orbit--front" aria-hidden="true"><div class="orbit__turn"><div class="orbit__intro"><svg><use href="#ciclo-ring"/></svg></div></div></div>
+        <p class="hero__badge"><b>Prof. Ellysson Rocha</b><span>Auditor do <em>TCU</em> · 3º na ANAC</span></p>
+        <p class="hero__rank"><span><b>15º</b><small>no TCU</small></span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1 · SPLIT: pares, silêncio, pico (colapso). -->
+  <section class="split" id="split" data-sc-act="pin" data-sc-span="5.5">
+    <h2 class="sr-only">Estudo sem controle é esforço inútil. Estudo no controle é vaga de Auditor.</h2>
+    <div data-sc-stage class="split__stage" data-sc-spotlight>
+
+      <div class="side side--no">
+        <div class="ring" aria-hidden="true"><svg><use href="#ciclo-ring"/></svg></div>
+        <div class="side__inner">
+          <div class="stack-cues">
+            <p class="hero-line" data-w="0 0.12" aria-hidden="true">Estudo <span class="hl">no controle</span> é vaga de Auditor.</p>
+            <p class="pair" data-w="0.10 0.26">Estuda o que pesa na prova: <em>peso, extensão e dificuldade</em> de cada matéria.</p>
+            <p class="pair" data-w="0.24 0.40">O ciclo mostra a <em>hora de revisar</em> cada matéria.</p>
+            <p class="pair" data-w="0.38 0.54">Seus acertos por assunto <em>apontam o próximo passo</em>.</p>
+            <p class="pair" data-w="0.52 0.68">Perdeu uma semana? O ciclo <em>recalcula a rota</em> e segue.</p>
+            <div class="peak" data-sc-cue="0.69 1 0.09 0">
+              <h2 data-sc-kinetic="lines">Estudo <span class="hl">no controle</span><br> é vaga de Auditor.</h2>
+              <p class="hero-sub">Planejamento individual para concursos de controle. TCU, TCE, TCM, CGU e CNU.</p>
+              <a class="cta" href="#planos" tabindex="-1">Entrar na mentoria</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side side--sem">
+        <div class="mess" id="mess" aria-hidden="true"></div>
+        <div class="stack-cues">
+          <p class="hero-line" data-w="0 0.12" aria-hidden="true">Estudo sem controle é esforço inútil.</p>
+          <p class="pair" data-w="0.10 0.26">Estuda a matéria que deu vontade hoje.</p>
+          <p class="pair" data-w="0.24 0.40">Revisa quando lembra. E esquece o que já tinha visto.</p>
+          <p class="pair" data-w="0.38 0.54">Resolve questões e nunca olha o próprio resultado.</p>
+          <p class="pair" data-w="0.52 0.68">Perdeu uma semana? O cronograma inteiro desmorona.</p>
+          <p class="pair" data-w="0.66 0.84">Dedicação sem direção é esforço inútil.</p>
+        </div>
+      </div>
+
+      <div class="divider" aria-hidden="true">
+        <div class="divider__tags label">
+          <span class="t-sem">Sem controle</span>
+          <span class="t-no">No controle</span>
+        </div>
+        <div class="divider__steps">
+          <span class="divider__step label" id="stepLabel">Rotina</span>
+          <span class="divider__dots"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · MENTOR -->
+  <section class="sec sec--azul sec--after-pin" data-sc-act="flow" id="mentor" style="--lx:15%; --ly:20%; --l2x:100%; --l2y:90%">
+    <div class="sc-wrap mentor">
+      <div class="mentor__stack" data-sc-in>
+        <div class="mentor__grid" aria-hidden="true" data-sc-parallax="-0.5"></div>
+        <div class="mentor__back" aria-hidden="true" data-sc-parallax="0.6"></div>
+        <figure class="mentor__photo" data-sc-tilt="4">
+          <img src="assets/ellysson-retrato.webp" alt="Prof. Ellysson Rocha, de braços cruzados, camisa azul" onerror="this.onerror=null;this.src='assets/professor-torso.png'">
+          <figcaption class="label">@profellyssonrocha</figcaption>
+        </figure>
+      </div>
+      <div data-sc-in data-sc-stagger="70">
+        <h2 class="h2">Eu estudei muito antes de estudar <span class="hl">no controle</span>.</h2>
+        <p class="p" style="margin-top:1.4rem">Sou Ellysson Rocha, Auditor do TCU. Tomei reprovação, quase desisti e estudei até não aguentar mais. A virada veio quando parei de medir o estudo em horas e passei a medir em dados.</p>
+        <p class="p" style="margin-top:1rem">Juntei o que me levou até a aprovação num método de ciclo orientado por desempenho. É esse método que você vai usar, com o seu edital e a sua rotina.</p>
+        <ul class="facts">
+          <li><b>15º</b><span>lugar no TCU</span></li>
+          <li><b>3º</b><span>lugar na ANAC</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · SIMULADOR: movimento-assinatura -->
+  <section class="sec sec--medio" data-sc-act="flow" id="simulador" style="--lx:90%; --ly:0%; --l2x:0%; --l2y:100%">
+    <div class="sc-wrap">
+      <div class="sim__head" data-sc-in data-sc-stagger="70">
+        <h2 class="h2">Perca três dias. De propósito.</h2>
+        <p class="p">Monte uma semana de exemplo com as suas horas. Depois tire três dias dela e compare o cronograma por datas com o ciclo.</p>
+      </div>
+
+      <div class="sim__controls" data-sc-in>
+        <div class="field">
+          <label class="label" for="horas">Horas de estudo por semana</label>
+          <div style="display:flex;align-items:center;gap:1rem">
+            <input type="range" id="horas" min="10" max="40" step="1" value="24">
+            <output id="horasOut" for="horas">24 h</output>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="alvo">Concurso de exemplo</label>
+          <select id="alvo">
+            <option value="tcu">Auditor de Tribunal de Contas</option>
+            <option value="cgu">Auditor da CGU</option>
+          </select>
+        </div>
+        <button type="button" class="btn-lose" id="lose" aria-pressed="false">Perder quarta, quinta e sexta</button>
+      </div>
+
+      <div class="sim__grid" aria-live="polite" data-sc-in data-sc-stagger="90">
+        <div class="panel panel--datas">
+          <div class="panel__top">
+            <h3 class="h3">Cronograma por datas</h3>
+            <span class="label" style="color:rgb(255 255 255 / .7)">Cada matéria presa a um dia</span>
+          </div>
+          <div class="week" id="week"></div>
+          <p class="panel__verdict" id="verdictDatas"></p>
+        </div>
+        <div class="panel panel--ciclo">
+          <div class="panel__top">
+            <h3 class="h3">Ciclo No Controle</h3>
+            <span class="label good">Ordem, não data</span>
+          </div>
+          <div class="ciclo">
+            <svg viewBox="0 0 120 120" id="donut" role="img" aria-label="Distribuição das horas por matéria no ciclo"></svg>
+            <ul id="cicloList"></ul>
+          </div>
+          <p class="panel__verdict" id="verdictCiclo"></p>
+        </div>
+      </div>
+      <p class="sim__note">Exemplo ilustrativo, com blocos de 1 hora. Distribuição por peso da matéria (50%), extensão (25%) e dificuldade (25%). No programa, esses valores saem do seu edital e do seu desempenho.</p>
+    </div>
+  </section>
+
+  <!-- 4 · MÉTODO -->
+  <section class="sec sec--fundo" data-sc-act="flow" id="metodo" style="--lx:0%; --ly:0%; --l2x:100%; --l2y:100%">
+    <div class="sc-wrap method">
+      <div class="method__intro" data-sc-in data-sc-stagger="70">
+        <h2 class="h2">Como funciona, em cinco etapas.</h2>
+        <p class="p" style="margin-top:1.2rem">Um planejamento individual. Seu papel é sentar na cadeira e estudar.</p>
+        <a class="cta" href="#planos" style="margin-top:2rem">Entrar na mentoria</a>
+      </div>
+      <div>
+        <ol class="steps" data-sc-in data-sc-stagger="80">
+          <span class="steps__fill" aria-hidden="true"></span>
+          <li><div><h3 class="h3">Estudo com técnica</h3><p class="p">Você aprende as técnicas que usei no TCU e como usar a plataforma a seu favor, com videoaulas e exemplos práticos.</p></div></li>
+          <li><div><h3 class="h3">Autoconhecimento estatístico</h3><p class="p">Os dados das suas questões mostram seu nível em cada assunto. Pontos fortes e fracos deixam de ser impressão.</p></div></li>
+          <li><div><h3 class="h3">Metas personalizadas</h3><p class="p">O ciclo distribui conteúdo e tempo pela sua rotina real, com prioridade individual. Atrasou, ele recalcula.</p></div></li>
+          <li><div><h3 class="h3">Execução</h3><p class="p">Você estuda, faz questões e revisa. A plataforma avisa quando revisar cada matéria e quando partir para exercícios.</p></div></li>
+          <li><div><h3 class="h3">Diagnóstico recorrente</h3><p class="p">A cada ciclo, estatísticas do seu desempenho. Você vê o que te trava e o que te leva para frente.</p></div></li>
+        </ol>
+        <figure class="shot" data-sc-reveal="up" data-sc-reveal-at="0.12 0.5">
+          <img src="assets/plataforma-ciclo.webp" width="1600" height="1000" alt="Tela da plataforma No Controle mostrando o ciclo de estudos com blocos por matéria" onerror="this.closest('figure').remove()">
+          <figcaption>Tela real da plataforma: o ciclo de estudos do aluno.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · PROVA -->
+  <section class="sec sec--medio" data-sc-act="flow" id="aprovados" style="--lx:100%; --ly:100%; --l2x:0%; --l2y:0%">
+    <div class="sc-wrap">
+      <h2 class="h2" data-sc-in style="max-width:18ch; margin-left:auto; text-align:right">Quem estudou no controle chegou na prova competindo.</h2>
+      <div class="proof">
+        <figure class="quote-big" data-sc-in>
+          <blockquote><p>Depois de dois anos estudando, acumulando bagagem, sem passar nas provas, eu fiz a mentoria com o professor Ellysson. Fui aprovado em três concursos em três meses.</p></blockquote>
+          <figcaption class="who">Mateus<small>Servidor do TJDFT</small></figcaption>
+        </figure>
+        <div class="quotes" data-sc-in data-sc-stagger="80">
+          <figure data-sc-tilt="4"><blockquote><p>É uma técnica que eu falo que é um caminho sem volta. Depois que você aprende, você nunca mais é o mesmo estudando.</p></blockquote><figcaption class="who">Cadu<small>Oficial de Justiça do TJDFT e Auditor do TCDF</small></figcaption></figure>
+          <figure data-sc-tilt="4"><blockquote><p>Muito obrigado pela sua parceria, pelos ensinamentos, por me guiar, literalmente, nesse caminho.</p></blockquote><figcaption class="who">Aprovado<small>Auditor da CGU</small></figcaption></figure>
+          <figure data-sc-tilt="4"><blockquote><p>Com certeza esse resultado não seria possível sem a orientação do Ellysson.</p></blockquote><figcaption class="who">Aprovado<small>Auditor Fiscal, Sefaz-CE</small></figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · OFERTA -->
+  <section class="sec--fundo" data-sc-act="flow" id="planos" style="background:var(--nc-fundo)">
+    <div class="offer-wipe sec sec--gelo" data-sc-reveal="up" data-sc-reveal-at="0 0.22" style="--lx:50%; --ly:0%; --l2x:100%; --l2y:100%">
+      <div class="sc-wrap">
+        <div class="offer-head" data-sc-in data-sc-stagger="70">
+          <h2 class="h2">Escolha seu plano.</h2>
+          <p class="p" style="margin-top:1rem">Quanto maior o compromisso, menor o investimento. No anual, dá menos de R$ 2,70 por dia.</p>
+        </div>
+        <div class="plans" data-sc-in data-sc-stagger="80">
+          <article class="plan">
+            <h3 class="plan__name">Mensal</h3>
+            <p class="plan__price">R$ 170<small>/mês</small></p>
+            <p class="plan__terms">Renovação mensal</p>
+            <a class="cta" data-checkout="mensal" href="#planos">Entrar na mentoria</a>
+          </article>
+          <article class="plan plan--best">
+            <span class="plan__tag label">Menor investimento</span>
+            <h3 class="plan__name">Anual</h3>
+            <p class="plan__price">R$ 79<small>/mês</small></p>
+            <p class="plan__terms">12x de R$ 79 no cartão</p>
+            <a class="cta" data-checkout="anual" href="#planos" data-sc-magnet="0.22">Entrar na mentoria</a>
+          </article>
+          <article class="plan">
+            <h3 class="plan__name">Trimestral</h3>
+            <p class="plan__price">R$ 117<small>/mês</small></p>
+            <p class="plan__terms">3x de R$ 117</p>
+            <a class="cta" data-checkout="trimestral" href="#planos">Entrar na mentoria</a>
+          </article>
+        </div>
+        <p class="pay">Cartão de crédito em até 12x, PIX ou boleto. Acesso imediato à plataforma após a compra.</p>
+
+        <div class="extras">
+          <div data-sc-in>
+            <span class="label" style="color:var(--nc-azul-medio)">Bônus</span>
+            <h3 class="h3" style="margin-top:.5rem">Aulas ao vivo com o Prof. Ellysson</h3>
+            <ul>
+              <li>Aulas em grupo, guiadas pelas dúvidas dos alunos.</li>
+              <li>Canal exclusivo no Telegram com datas e links.</li>
+              <li>Gravações disponíveis se você não puder assistir ao vivo.</li>
+            </ul>
+          </div>
+          <div data-sc-in>
+            <div class="seal" aria-hidden="true"><span>15<small>DIAS</small></span></div>
+            <h3 class="h3">Garantia de 15 dias</h3>
+            <p class="p" style="margin-top:.7rem">Se em 15 dias você não gostar, ou simplesmente desistir, eu devolvo 100% do valor. Sem justificativa.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · DÚVIDAS -->
+  <section class="sec sec--azul" data-sc-act="flow" id="duvidas" style="--lx:100%; --ly:0%; --l2x:0%; --l2y:100%">
+    <div class="sc-wrap">
+      <h2 class="h2" data-sc-in>Dúvidas antes de entrar.</h2>
+      <div class="faq">
+        <details><summary>Em quanto tempo fico pronto para a prova?</summary><p class="p">A meta de trabalho é deixar você pronto para brigar pela vaga em até 2 anos. O ritmo depende das suas horas e do seu ponto de partida, e o ciclo se ajusta a isso. Ninguém sério promete aprovação com data marcada.</p></details>
+        <details><summary>Serve para quem está começando agora?</summary><p class="p">Serve. Quem começa no controle evita os erros que custam meses: estudar sem prioridade, não revisar e não medir o próprio desempenho.</p></details>
+        <details><summary>É só para o TCU?</summary><p class="p">O foco é a área de controle: Tribunais de Contas (TCU, TCE, TCM), CGU e CNU. O ciclo é montado sobre o edital que você escolher.</p></details>
+        <details><summary>Tenho pouco tempo. Funciona assim mesmo?</summary><p class="p">Você informa as horas reais da sua semana e o ciclo é calculado a partir delas. Se a semana apertar, você não perde o plano: continua de onde parou.</p></details>
+        <details><summary>Como funciona a garantia?</summary><p class="p">Você tem 15 dias. Se não gostar ou desistir nesse prazo, devolvo 100% do valor, sem precisar justificar.</p></details>
+        <details><summary>Quais as formas de pagamento?</summary><p class="p">Cartão de crédito em até 12x, PIX ou boleto. O acesso é liberado logo após a confirmação.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · FECHO: resolve e segura -->
+  <section class="close" id="fecho">
+    <div class="ring" aria-hidden="true"><svg><use href="#ciclo-ring"/></svg></div>
+    <div class="sc-wrap">
+      <div data-sc-in data-sc-stagger="80">
+        <h2 class="h2">Estude <span class="hl">no controle</span>.</h2>
+        <p class="p" style="margin-top:1.2rem;color:#fff">Não é sorte. É método, dado e rotina. Escolha o plano e comece hoje.</p>
+        <a class="cta" href="#planos" data-sc-magnet="0.22">Entrar na mentoria</a>
+      </div>
+      <footer class="foot">
+        <span>© 2026 Prof. Ellysson Rocha · No Controle</span>
+        <span><a href="mailto:contato@profellysson.com.br">contato@profellysson.com.br</a> · <a href="https://instagram.com/profellyssonrocha">@profellyssonrocha</a></span>
+      </footer>
+    </div>
+  </section>
+
+</main>
+
+<div class="sc-grain" aria-hidden="true"></div>
+
+<script src="scrollcraft.js"></script>
+<script>ScrollCraft.mount(document.body);</script>
+<script>
+/* ============ CONFIGURAÇÃO: cole aqui os links de checkout (Eduzz) ============ */
+const CHECKOUT = { mensal: "", trimestral: "", anual: "" };
+document.querySelectorAll('[data-checkout]').forEach(a => {
+  const url = CHECKOUT[a.dataset.checkout];
+  if (url) { a.href = url; a.rel = "noopener"; }
+});
+
+/* ============ Pilha de fichas do lado "sem controle" (posições fixas, não aleatórias) ============ */
+(() => {
+  const mess = document.getElementById('mess');
+  const CHIPS = [
+    ['Port', 4, 8, -8, .3, 1, 0], ['DAdm', 22, 14, 6, .5, 1, 1], ['Revisar?', 58, 6, -4, .8, 0, 1], ['Cont', 76, 18, 12, .4, 1, 0],
+    ['Audit', 10, 30, -14, .6, 0, 1], ['AFO', 40, 26, 3, .9, 1, 0], ['Semana 3', 66, 34, -6, .3, 0, 1], ['DConst', 86, 42, 9, .7, 0, 0],
+    ['Cont', 6, 58, 7, .5, 1, 1], ['Questões', 30, 66, -10, .8, 0, 0], ['DAdm', 52, 62, 4, .35, 1, 1], ['Audit', 72, 72, -3, .6, 0, 0],
+    ['Port', 14, 84, 11, .45, 0, 1], ['CExt', 44, 90, -7, .7, 1, 0], ['Sáb', 64, 86, 5, .3, 0, 1], ['Dados', 84, 92, -12, .55, 1, 0]
+  ];
+  mess.innerHTML = CHIPS.map(([t, x, y, r, d, late, m]) =>
+    `<span class="${late ? 'late' : ''}" data-m="${m}" style="--x:${x}%;--y:${y}%;--r:${r}deg;--d:${d}">${t}</span>`).join('');
+})();
+
+/* ============ Divisor: rótulo de etapa e estado para verificação ============ */
+(() => {
+  const act = document.getElementById('split');
+  const label = document.getElementById('stepLabel');
+  const dots = act.querySelectorAll('.divider__dots i');
+  const steps = [[0.10],[0.24],[0.38],[0.52],[0.70]];
+  const stepName = ['Rotina','Prioridade','Revisão','Desempenho','Imprevistos','Virada'];
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+  const ease = t => 1 - Math.pow(1 - t, 3);
+
+  // quebra cada frase em palavras, preservando o destaque amarelo e o <em>
+  const lines = [...act.querySelectorAll('[data-w]')].map(el => {
+    const words = [];
+    const wrap = node => {
+      [...node.childNodes].forEach(n => {
+        if (n.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach(part => {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+            const w = document.createElement('span'); w.className = 'w';
+            const wi = document.createElement('span'); wi.className = 'wi'; wi.textContent = part;
+            w.appendChild(wi); frag.appendChild(w); words.push(wi);
+          });
+          n.replaceWith(frag);
+        } else if (n.classList && n.classList.contains('hl')) {
+          const w = document.createElement('span'); w.className = 'w';
+          n.replaceWith(w); n.classList.add('wi'); w.appendChild(n); words.push(n);
+        } else if (n.nodeType === 1) wrap(n);
+      });
+    };
+    wrap(el);
+    const [a, b] = el.dataset.w.split(' ').map(Number);
+    return { el, words, a, b, messy: !!el.closest('.side--sem'), last: -1 };
+  });
+
+  function paintLine(L, p) {
+    const len = L.b - L.a, rin = len * .38, rout = len * .34;
+    const greet = L.a <= 0;
+    const visible = p >= L.a - .005 && p <= L.b + .005;
+    L.el.classList.toggle('on', visible);
+    if (!visible) return;
+    const e = greet ? 1 : clamp01((p - L.a) / rin);
+    const x = clamp01((p - (L.b - rout)) / rout);
+    const n = L.words.length;
+    L.words.forEach((wi, i) => {
+      const s = n > 1 ? i / (n - 1) : 0;
+      const wt = ease(clamp01((e - s * .55) / .45));
+      const wx = ease(clamp01((x - s * .45) / .55));
+      const op = wt * (1 - wx);
+      if (still.matches) { wi.style.opacity = op; wi.style.transform = 'none'; return; }
+      if (L.messy) {
+        const r = ((i * 37) % 11) - 5, jx = ((i * 53) % 9) - 4;
+        const ty = -(1 - wt) * 70 + wx * 140;
+        const tx = (1 - wt) * jx * 6 + wx * jx * 5;
+        const rot = (1 - wt) * r * 3 + wx * r * 5;
+        wi.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) rotate(${rot.toFixed(1)}deg)`;
+      } else {
+        const ty = (1 - wt) * 105 - wx * 105;
+        wi.style.transform = `translateY(${ty.toFixed(1)}%)`;
+      }
+      wi.style.opacity = op.toFixed(3);
+    });
+  }
+
+  let last = -1, lastState = '', lastP = -1;
+  function tick() {
+    const p = parseFloat(act.style.getPropertyValue('--sc-p')) || 0;
+    if (p !== lastP) { lines.forEach(L => paintLine(L, p)); lastP = p; }
+    let idx = 0;
+    for (let s = 0; s < steps.length; s++) if (p >= steps[s][0]) idx = s + 1;
+    idx = Math.min(idx, 5);
+    if (idx !== last) {
+      label.textContent = stepName[idx];
+      dots.forEach((d, n) => d.classList.toggle('on', n <= idx - 1));
+      last = idx;
+    }
+    const k = Math.min(Math.max((p - 0.70) / 0.16, 0), 1);
+    const state = idx + ':' + k.toFixed(2);
+    if (state !== lastState) { act.setAttribute('data-sc-verify-state', state); lastState = state; }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  const peakCta = act.querySelector('.peak .cta');
+  addEventListener('scroll', () => {
+    const p = parseFloat(act.style.getPropertyValue('--sc-p')) || 0;
+    peakCta.tabIndex = p > 0.76 ? 0 : -1;
+  }, { passive: true });
+})();
+
+/* ============ Hero: profundidade por scroll e ponteiro ============ */
+(() => {
+  const hero = document.getElementById('hero');
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  let mx = 0, my = 0, tx = 0, ty = 0, lastP = -1;
+  hero.addEventListener('pointermove', e => {
+    if (!fine.matches || still.matches) return;
+    const r = hero.getBoundingClientRect();
+    tx = (e.clientX - r.left) / r.width - .5;
+    ty = (e.clientY - r.top) / r.height - .5;
+  });
+  hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; });
+  function frame() {
+    const h = hero.offsetHeight;
+    if (scrollY < h * 1.2) {
+      const p = still.matches ? 0 : Math.min(Math.max(scrollY / h, 0), 1);
+      mx += (tx - mx) * .07; my += (ty - my) * .07;
+      if (p !== lastP || Math.abs(tx - mx) > .0005 || Math.abs(ty - my) > .0005) {
+        hero.style.setProperty('--hp', p.toFixed(4));
+        hero.style.setProperty('--mx', mx.toFixed(4));
+        hero.style.setProperty('--my', my.toFixed(4));
+        lastP = p;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ============ Simulador: ciclo ponderado x cronograma por datas ============ */
+(() => {
+  // Exemplo ilustrativo. Escala 1 a 3 para peso, extensão e dificuldade.
+  const PRESETS = {
+    tcu: [
+      ['Controle Externo', 3, 2, 2, 'CExt'], ['Auditoria Governamental', 3, 3, 3, 'Audit'], ['Direito Administrativo', 2, 3, 2, 'DAdm'],
+      ['Contabilidade Pública', 2, 2, 3, 'Cont'], ['AFO e Finanças', 2, 2, 2, 'AFO'], ['Direito Constitucional', 2, 2, 1, 'DConst'],
+      ['Língua Portuguesa', 1, 1, 1, 'Port'], ['Análise de Dados', 1, 2, 3, 'Dados']
+    ],
+    cgu: [
+      ['Auditoria Governamental', 3, 3, 3, 'Audit'], ['Controle Interno', 3, 2, 2, 'CInt'], ['Direito Administrativo', 2, 3, 2, 'DAdm'],
+      ['Contabilidade Pública', 2, 2, 3, 'Cont'], ['Correição e Integridade', 2, 1, 1, 'Correg'], ['Direito Constitucional', 2, 2, 1, 'DConst'],
+      ['Língua Portuguesa', 1, 1, 1, 'Port'], ['Estatística', 1, 2, 3, 'Estat']
+    ]
+  };
+  const DAYS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const LOST = [2, 3, 4];
+  const $ = id => document.getElementById(id);
+  const horas = $('horas'), out = $('horasOut'), alvo = $('alvo'), lose = $('lose');
+  const SHADES = ['#FFFFFF','#8FB0E8','#C9D4EA','#5C86D1','#A9BEE3','#3D6BC2','#E8EBF2','#7397DA'];
+
+  function build() {
+    const H = +horas.value, list = PRESETS[alvo.value];
+    const sum = i => list.reduce((a, m) => a + m[i], 0);
+    const sp = sum(1), se = sum(2), sd = sum(3);
+    let mats = list.map(m => ({ n: m[0], s: m[4], share: .5 * m[1] / sp + .25 * m[2] / se + .25 * m[3] / sd }));
+    mats.forEach(m => { m.raw = m.share * H; m.b = Math.max(1, Math.floor(m.raw)); });
+    let left = H - mats.reduce((a, m) => a + m.b, 0);
+    [...mats].sort((a, b) => (b.raw - b.b) - (a.raw - a.b)).forEach(m => { if (left > 0) { m.b++; left--; } });
+    while (left < 0) { const m = [...mats].filter(x => x.b > 1).sort((a, b) => b.b - a.b)[0]; if (!m) break; m.b--; left++; }
+    const seq = [], done = mats.map(() => 0), total = mats.reduce((a, m) => a + m.b, 0);
+    for (let t = 0; t < total; t++) {
+      let best = -1, bestScore = -1;
+      mats.forEach((m, i) => { if (done[i] < m.b) { const s = (m.b - done[i]) / m.b + (seq[seq.length - 1] === i ? -1 : 0); if (s > bestScore) { bestScore = s; best = i; } } });
+      seq.push(best); done[best]++;
+    }
+    return { mats, seq, total };
+  }
+
+  function render() {
+    out.textContent = horas.value + ' h';
+    const lost = lose.getAttribute('aria-pressed') === 'true';
+    const { mats, seq, total } = build();
+
+    const perDay = Array.from({ length: 6 }, () => []);
+    seq.forEach((mi, t) => perDay[Math.floor(t * 6 / total)].push(mi));
+    let late = 0; const lateMats = new Set();
+    const week = $('week'); week.innerHTML = '';
+    DAYS.forEach((d, di) => {
+      const col = document.createElement('div');
+      const isLost = lost && LOST.includes(di);
+      col.className = 'day' + (isLost ? ' lost' : '') + (di === 6 ? ' day--rest' : '');
+      col.innerHTML = '<span class="day__name">' + d + '</span>';
+      const items = di === 6 ? [-1] : perDay[di];
+      const shown = items.slice(0, 4);
+      shown.forEach(mi => {
+        const c = document.createElement('span'); c.className = 'chip';
+        c.textContent = mi === -1 ? 'Folga' : mats[mi].s;
+        c.title = mi === -1 ? 'Folga' : mats[mi].n; col.appendChild(c);
+      });
+      if (items.length > 4) { const c = document.createElement('span'); c.className = 'chip'; c.textContent = '+' + (items.length - 4) + ' h'; col.appendChild(c); }
+      if (isLost) { late += items.length; items.forEach(mi => lateMats.add(mats[mi].n)); }
+      week.appendChild(col);
+    });
+    $('verdictDatas').innerHTML = lost
+      ? '<span class="bad">' + late + ' h vencidas em ' + lateMats.size + ' matérias.</span> Elas empurram a semana que vem ou somem do plano.'
+      : 'Semana inteira no papel. Funciona enquanto nada der errado.';
+
+    const doneBlocks = lost ? total - late : 0;
+    const next = seq[doneBlocks % total];
+    const svg = $('donut'); const R = 46, C = 2 * Math.PI * R;
+    let acc = 0, html = '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="rgb(255 255 255 / .08)" stroke-width="18"/>';
+    mats.forEach((m, i) => {
+      const len = C * m.b / total;
+      html += '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="' + (lost && i === next ? '#F5C842' : SHADES[i % SHADES.length]) + '" stroke-width="18" stroke-dasharray="' + Math.max(len - 1.5, .5) + ' ' + (C - len + 1.5) + '" stroke-dashoffset="' + (-acc) + '" transform="rotate(-90 60 60)" opacity="' + (lost && i !== next ? .35 : 1) + '"/>';
+      acc += len;
+    });
+    html += '<text x="60" y="58" text-anchor="middle" fill="#fff" font-size="20" font-weight="900" font-family="Nunito, system-ui, sans-serif">' + total + ' h</text><text x="60" y="74" text-anchor="middle" fill="#C9D4EA" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">por volta</text>';
+    svg.innerHTML = html;
+    $('cicloList').innerHTML = mats.map((m, i) => '<li class="' + (lost && i === next ? 'next' : '') + '"><span>' + (lost && i === next ? 'Próximo: ' : '') + m.n + ' <small style="opacity:.6">' + m.s + '</small></span><b>' + m.b + ' h</b></li>').join('');
+    $('verdictCiclo').innerHTML = lost
+      ? '<span class="good">0 h vencidas.</span> Você fez ' + doneBlocks + ' de ' + total + ' blocos e retoma do bloco ' + (doneBlocks + 1) + '.'
+      : 'Uma volta completa tem ' + total + ' blocos. Terminou, começa outra.';
+    lose.textContent = lost ? 'Recuperar os três dias' : 'Perder quarta, quinta e sexta';
+  }
+  horas.addEventListener('input', render);
+  alvo.addEventListener('change', render);
+  lose.addEventListener('click', () => { lose.setAttribute('aria-pressed', lose.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); render(); });
+  render();
+})();
+</script>
+</body>
+</html>

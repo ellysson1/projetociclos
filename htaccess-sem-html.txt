@@ -1,0 +1,21 @@
+# ---- Endereços sem .html em todo o site ----
+RewriteEngine On
+
+# 1. /index.html e /index vão para a raiz (/)
+RewriteCond %{THE_REQUEST} \s/+(.*?/)?index(\.html)?[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# 2. /pagina.html vai para /pagina (mantém ?parâmetros e #tokens)
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# 3. /pagina/ (barra no fim, e não é pasta) vai para /pagina
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+# 4. /pagina mostra pagina.html, se o arquivo existir
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^(.+)$ $1.html [L]
+# ---- fim ----
