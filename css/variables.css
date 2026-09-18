@@ -1,10 +1,74 @@
+/* ============================================================
+   No Controle — sistema de tokens do app
+   Estende a paleta da landing (mentoria.html) com a rampa de
+   superficies que uma interface densa exige.
+   ============================================================ */
+
 :root {
-    --primary-color: #4A90E2;
-    --secondary-color: #F5F7FA;
-    --accent-color: #FF6B6B;
-    --text-color: #333333;
-    --border-color: #E1E4E8;
-    --success-color: #2E7D32;
+    /* --- Superficies: o navy da marca, clareando conforme sobe --- */
+    --nc-fundo:            #0A2148;
+    --nc-superficie:       #0D2B5E;
+    --nc-superficie-alta:  #123A7E;
+    --nc-superficie-topo:  #17458F;
+
+    /* --- Bordas --- */
+    --nc-borda:            #1E4489;
+    --nc-borda-forte:      #2E6BD6;
+
+    /* --- Amarelo: reservado para acao. Nunca decoracao. --- */
+    --nc-amarelo:          #F5C842;
+    --nc-amarelo-hover:    #E8B92F;
+    --nc-amarelo-ink:      #0D2B5E;
+
+    /* --- Texto --- */
+    --nc-gelo:             #E8EBF2;
+    --nc-gelo-fraco:       #A8BAD8;
+    --nc-gelo-tenue:       #879EC8;
+
+    /* --- Estados --- */
+    --nc-sucesso:          #3FD199;
+    --nc-sucesso-fundo:    rgba(29, 158, 117, .16);
+    --nc-sucesso-borda:    rgba(63, 209, 153, .38);
+    --nc-alerta:           #FF7B7A;
+    --nc-alerta-fundo:     rgba(226, 75, 74, .16);
+    --nc-alerta-borda:     rgba(255, 123, 122, .38);
+    --nc-atencao:          #FFC062;
+    --nc-atencao-fundo:    rgba(240, 167, 59, .15);
+    --nc-atencao-borda:    rgba(255, 192, 98, .34);
+    --nc-info:             #7FB0FF;
+    --nc-info-fundo:       rgba(76, 139, 255, .16);
+    --nc-info-borda:       rgba(127, 176, 255, .36);
+
+    /* --- Elevacao sem sombra cinza: luz na aresta de cima --- */
+    --nc-edge:             inset 0 1px 0 rgb(255 255 255 / .10);
+    --nc-edge-forte:       inset 0 1px 0 rgb(255 255 255 / .16);
+    --nc-sombra:           0 18px 40px -18px rgb(3 10 26 / .85);
+
+    /* --- Raio por papel, nao um raio unico para tudo --- */
+    --r-pill:   999px;
+    --r-campo:  8px;
+    --r-card:   10px;
+    --r-modulo: 16px;
+
+    /* --- Tipografia: titulo e Nunito, numero e Plex --- */
+    --fonte-titulo: "Nunito", system-ui, -apple-system, sans-serif;
+    --fonte-ui: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+
+    /* --- Ritmo --- */
+    --col-max: 1120px;
+
+    /* ============================================================
+       Aliases legados: o app antigo referencia estes nomes em
+       centenas de estilos inline. Reapontados para os tokens da
+       marca, todos migram de uma vez.
+       ============================================================ */
+    --primary-color:   var(--nc-amarelo);
+    --secondary-color: var(--nc-superficie-alta);
+    --accent-color:    var(--nc-amarelo-hover);
+    --text-color:      var(--nc-gelo);
+    --border-color:    var(--nc-borda);
+    --success-color:   var(--nc-sucesso);
+    --error-color:     var(--nc-alerta);
 }
 
 * {
@@ -13,9 +77,74 @@
     padding: 0;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: var(--fonte-ui);
+    font-size: 15px;
     line-height: 1.6;
-    color: var(--text-color);
-    background-color: var(--secondary-color);
+    color: var(--nc-gelo);
+    background-color: var(--nc-fundo);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Numero e sempre Plex tabular, para alinhar em coluna */
+input, select, textarea, button, table {
+    font-family: var(--fonte-ui);
+    font-variant-numeric: tabular-nums;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--fonte-titulo);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+    color: var(--nc-gelo);
+}
+
+a {
+    color: var(--nc-amarelo);
+}
+
+/* Foco visivel em tudo que recebe teclado */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--nc-amarelo);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+::selection {
+    background: var(--nc-amarelo);
+    color: var(--nc-amarelo-ink);
+}
+
+/* Barra de rolagem alinhada ao tema */
+* {
+    scrollbar-color: var(--nc-borda-forte) transparent;
+    scrollbar-width: thin;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+    background: var(--nc-borda);
+    border-radius: var(--r-pill);
+    border: 2px solid var(--nc-fundo);
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--nc-borda-forte); }
+
+/* Campos nativos no esquema escuro (date pickers, selects, etc.) */
+input, select, textarea { color-scheme: dark; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

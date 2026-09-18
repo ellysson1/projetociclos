@@ -1,171 +1,467 @@
+/* ============================================================
+   No Controle — casca do app: barra superior, abas, colunas
+   ============================================================ */
+
 .container {
-    max-width: 1200px;
+    max-width: var(--col-max);
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 24px 72px;
 }
 
-h1, h2, h3 {
-    color: var(--primary-color);
-    margin-bottom: 20px;
+h1 { font-size: clamp(26px, 1.4rem + 1.6vw, 34px); margin-bottom: 4px; }
+h2 { font-size: clamp(21px, 1.2rem + .8vw, 26px); margin-bottom: 14px; }
+h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+
+/* ── Barra superior ─────────────────────────────────────────── */
+
+.appbar {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    background: var(--nc-superficie);
+    border-bottom: 1px solid var(--nc-borda);
+    box-shadow: var(--nc-edge);
 }
 
-/* ── Main tabs ──────────────────────────────────────────────── */
+.appbar__inner {
+    max-width: var(--col-max);
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 60px;
+    flex-wrap: wrap;
+}
+
+.appbar__marca {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--nc-gelo);
+    font-family: var(--fonte-titulo);
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: -.02em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.appbar__marca img {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+/* Filete amarelo: a marca e o unico lugar decorativo do amarelo */
+.appbar__marca::before {
+    content: "";
+    width: 3px;
+    height: 22px;
+    border-radius: 2px;
+    background: var(--nc-amarelo);
+}
+
+.appbar__conta {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.appbar__usuario {
+    font-size: 13px;
+    color: var(--nc-gelo-fraco);
+    max-width: 30ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Abas principais ────────────────────────────────────────── */
 
 .tab-container {
     display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-    background-color: var(--primary-color);
-    border-radius: 5px;
-    overflow: hidden;
+    align-self: stretch;
+    align-items: stretch;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
 }
 
+.tab-container::-webkit-scrollbar { display: none; }
+
 .tab {
-    padding: 10px 20px;
-    background-color: var(--primary-color);
-    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    margin-bottom: -1px;
+    background: transparent;
+    color: var(--nc-gelo-fraco);
     border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    box-shadow: none;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color .15s ease, border-color .15s ease;
 }
 
 .tab:hover {
-    background-color: var(--accent-color);
+    background: transparent;
+    color: var(--nc-gelo);
 }
 
 .tab.active {
-    background-color: var(--accent-color);
-    font-weight: bold;
+    color: var(--nc-gelo);
+    font-weight: 600;
+    border-bottom-color: var(--nc-amarelo);
 }
 
 .tab-content {
     display: none;
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: transparent;
+    padding: 28px 0 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .tab-content.active {
     display: block;
 }
 
-/* ── Sub-tabs ───────────────────────────────────────────────── */
+/* ── Sub-abas ───────────────────────────────────────────────── */
 
 .subtab-container {
-    display: flex;
+    display: inline-flex;
     flex-wrap: wrap;
-    gap: 2px;
-    margin-bottom: 18px;
-    background-color: #e8ecf1;
-    border-radius: 6px;
-    padding: 3px;
+    gap: 3px;
+    margin-bottom: 22px;
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-pill);
+    padding: 4px;
 }
 
 .subtab {
-    padding: 8px 14px;
+    padding: 7px 16px;
     background: transparent;
-    color: var(--text-color);
+    color: var(--nc-gelo-fraco);
     border: none;
+    box-shadow: none;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--r-pill);
     font-size: 13px;
-    transition: background-color 0.2s;
+    font-weight: 500;
+    transition: background .15s ease, color .15s ease;
 }
 
 .subtab:hover {
-    background-color: #d0d7e2;
+    background: var(--nc-superficie-alta);
+    color: var(--nc-gelo);
 }
 
 .subtab.active {
-    background-color: white;
-    font-weight: bold;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--nc-superficie-topo);
+    color: var(--nc-gelo);
+    font-weight: 600;
+    box-shadow: var(--nc-edge);
 }
 
-.subtab-content {
-    display: none;
+.subtab-content { display: none; }
+.subtab-content.active { display: block; }
+
+/* ── Superficies reutilizaveis ──────────────────────────────── */
+
+.painel {
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-modulo);
+    box-shadow: var(--nc-edge);
+    padding: 22px;
 }
 
-.subtab-content.active {
-    display: block;
+.painel--linha {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    border-radius: var(--r-card);
+}
+
+/* Regua de secao: informa onde um grupo comeca, sem decorar */
+.regua {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 12px;
+    color: var(--nc-gelo-fraco);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.regua::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--nc-borda);
 }
 
 /* ── Desempenho ─────────────────────────────────────────────── */
 
 .desempenho-card {
-    background: #f8f9fb;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 18px 14px;
-    text-align: center;
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-card);
+    box-shadow: var(--nc-edge);
+    padding: 18px 16px;
+    text-align: left;
 }
 
 .desempenho-card__valor {
-    font-size: 28px;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 4px;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--nc-gelo);
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
 }
 
 .desempenho-card__label {
     font-size: 13px;
-    color: #666;
+    color: var(--nc-gelo-fraco);
 }
 
 .desempenho-materia {
-    padding: 12px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-card);
     margin-bottom: 8px;
-    background: white;
+    background: var(--nc-superficie);
 }
 
 .desempenho-materia__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
 .desempenho-materia__nome {
-    font-weight: bold;
+    font-weight: 600;
     font-size: 14px;
+    color: var(--nc-gelo);
 }
 
 .desempenho-materia__stats {
     font-size: 13px;
-    color: #666;
+    color: var(--nc-gelo-fraco);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .desempenho-barra-container {
-    height: 8px;
-    background: #e8ecf1;
-    border-radius: 4px;
+    height: 6px;
+    background: var(--nc-fundo);
+    border-radius: var(--r-pill);
     overflow: hidden;
 }
 
 .desempenho-barra {
     height: 100%;
-    background: var(--primary-color);
-    border-radius: 4px;
-    transition: width 0.3s;
+    background: var(--nc-info);
+    border-radius: var(--r-pill);
+    transition: width .3s ease;
 }
 
 .desempenho-barra--edital {
-    background: #26A69A;
+    background: var(--nc-sucesso);
 }
 
 .desempenho-ajuste-legenda {
     display: flex;
-    gap: 16px;
+    gap: 18px;
+    flex-wrap: wrap;
     font-size: 12px;
-    color: #888;
-    margin-bottom: 12px;
+    color: var(--nc-gelo-tenue);
+    margin-bottom: 14px;
 }
 
 .desempenho-ajuste-legenda span {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
 }
+
+/* ── Telefone ───────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+    .container { padding: 0 16px 64px; }
+    .appbar__inner { padding: 0 16px; gap: 10px; min-height: 54px; }
+    .appbar__marca span { display: none; }
+    .tab-container { order: 3; width: 100%; margin: 0 -16px; padding: 0 16px; }
+    .tab { padding: 10px; }
+    .appbar__usuario { display: none; }
+    .tab-content { padding-top: 22px; }
+    .painel { padding: 18px 16px; }
+}
+
+/* ── Pular para o conteudo ──────────────────────────────────── */
+
+.pular-para {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 1100;
+    background: var(--nc-amarelo);
+    color: var(--nc-amarelo-ink);
+    padding: 10px 18px;
+    border-radius: 0 0 var(--r-campo) 0;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.pular-para:focus {
+    left: 0;
+}
+
+/* ── Sino de notificacoes ───────────────────────────────────── */
+
+.sino {
+    position: relative;
+    background: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
+    color: var(--nc-gelo-fraco);
+    padding: 7px;
+    line-height: 0;
+    border-radius: var(--r-campo);
+}
+
+.sino:hover {
+    background: var(--nc-superficie-alta);
+    border-color: var(--nc-borda);
+    color: var(--nc-gelo);
+}
+
+.sino svg { width: 20px; height: 20px; }
+
+.sino__contagem {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    background: var(--nc-amarelo);
+    color: var(--nc-amarelo-ink);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 17px;
+    border-radius: var(--r-pill);
+    border: 2px solid var(--nc-superficie);
+    text-align: center;
+}
+
+/* ── Estado vazio: um convite para agir ─────────────────────── */
+
+.vazio {
+    max-width: 52ch;
+    padding: 56px 0 24px;
+}
+
+.vazio h2 {
+    font-size: clamp(26px, 1.5rem + 1.6vw, 36px);
+    font-weight: 900;
+    margin-bottom: 12px;
+}
+
+.vazio p {
+    color: var(--nc-gelo-fraco);
+    font-size: 16px;
+    margin-bottom: 26px;
+}
+
+.vazio .acao {
+    padding: 13px 26px;
+    font-size: 16px;
+}
+
+.vazio__manual {
+    margin-top: 34px;
+    padding-top: 22px;
+    border-top: 1px solid var(--nc-borda);
+}
+
+.vazio__manual label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--nc-gelo-tenue);
+}
+
+.vazio__campo {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.vazio__campo input[type="number"] {
+    width: 104px;
+    margin-bottom: 0;
+}
+
+/* ── Cronometro ─────────────────────────────────────────────── */
+
+.cronometro {
+    display: none;
+    margin-top: 10px;
+    padding: 20px 22px;
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-modulo);
+    box-shadow: var(--nc-edge);
+}
+
+.cronometro__leitura {
+    font-size: clamp(38px, 2rem + 3vw, 56px);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -.03em;
+    color: var(--nc-gelo);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 18px;
+}
+
+.cronometro__ctrl {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cronometro__ctrl select {
+    width: auto;
+    margin-bottom: 0;
+    min-width: 132px;
+}
+
+.cronometro__ctrl #timerConfig {
+    display: flex;
+    gap: 8px;
+}
+
+.cronometro__ctrl #timerConfig input[type="number"] {
+    width: 92px;
+    margin-bottom: 0;
+}
+
+/* Nada empurra a pagina para os lados */
+body { overflow-x: clip; }

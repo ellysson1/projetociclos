@@ -33,7 +33,7 @@ async function renderizarDesempenho() {
     const entries = Object.entries(porMateria).sort((a, b) => b[1].feitas - a[1].feitas);
 
     if (entries.length === 0) {
-        container.innerHTML = '<p style="color:#999;">Nenhuma questao registrada ainda. Complete blocos e registre questoes para ver seu desempenho.</p>';
+        container.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Nenhuma questão registrada ainda. Complete blocos e registre questões para ver seu desempenho.</p>';
     } else {
         let html = '';
         entries.forEach(([materia, dados]) => {
@@ -67,11 +67,11 @@ async function carregarQuestoesHistorico() {
 
     const { data, error } = await supabaseClient
         .from('questoes')
-        .select('materia, questoes_feitas, questoes_corretas')
+        .select('matéria, questoes_feitas, questoes_corretas')
         .eq('user_id', user.id);
 
     if (error) {
-        console.error('Erro ao carregar questoes:', error);
+        console.error('Erro ao carregar questões:', error);
         return [];
     }
     return data || [];
@@ -101,14 +101,14 @@ function renderizarDesempenhoAjuste(porMateriaHistorico) {
 
     const entries = Object.entries(fatores).sort((a, b) => b[1] - a[1]);
 
-    let html = `<p style="font-size:13px; color:#888; margin-bottom:12px;">Media geral: <strong>${mediaGlobal}%</strong> de acerto (minimo 5 questoes por materia para ativar)</p>`;
+    let html = `<p style="font-size:13px; color:var(--nc-gelo-tenue); margin-bottom:12px;">Média geral: <strong>${mediaGlobal}%</strong> de acerto (mínimo 5 questões por matéria para ativar)</p>`;
 
     entries.forEach(([legenda, fator]) => {
         const dados = porMateriaHistorico[legenda];
         const pctAcerto = dados && dados.feitas > 0 ? Math.round((dados.corretas / dados.feitas) * 100) : 0;
         const pctAjuste = Math.round((fator - 1) * 100);
         const sinal = pctAjuste >= 0 ? '+' : '';
-        const cor = pctAjuste > 0 ? '#e53935' : pctAjuste < 0 ? 'var(--success-color)' : '#666';
+        const cor = pctAjuste > 0 ? 'var(--nc-alerta)' : pctAjuste < 0 ? 'var(--success-color)' : 'var(--nc-gelo-fraco)';
         const icone = pctAjuste > 0 ? '&#9650;' : pctAjuste < 0 ? '&#9660;' : '&#9679;';
         const descricao = pctAjuste > 0
             ? 'Abaixo da media — ganha mais blocos'
@@ -124,7 +124,7 @@ function renderizarDesempenhoAjuste(porMateriaHistorico) {
                     <span class="desempenho-materia__nome">${nome}</span>
                     <span style="font-size:14px; font-weight:bold; color:${cor};">${icone} ${sinal}${pctAjuste}%</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; color:#888;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--nc-gelo-tenue);">
                     <span>Acerto: ${pctAcerto}%</span>
                     <span>${descricao}</span>
                 </div>
@@ -184,10 +184,10 @@ function renderizarDesempenhoEdital() {
     const pctGeral = totalItens > 0 ? Math.round((itensConcluidos / totalItens) * 100) : 0;
 
     let html = `
-        <div style="margin-bottom:16px; padding:14px; border:1px solid var(--border-color); border-radius:8px; background:#f0f7ff;">
+        <div style="margin-bottom:16px; padding:14px; border:1px solid var(--border-color); border-radius:8px; background:var(--nc-info-fundo);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
                 <strong>${planoAdotado.nome || 'Edital'}</strong>
-                <span style="font-size:13px; color:#666;">${itensConcluidos}/${totalItens} concluidos (${pctGeral}%)</span>
+                <span style="font-size:13px; color:var(--nc-gelo-fraco);">${itensConcluidos}/${totalItens} concluídos (${pctGeral}%)</span>
             </div>
             <div class="desempenho-barra-container">
                 <div class="desempenho-barra desempenho-barra--edital" style="width:${pctGeral}%;"></div>

@@ -1,136 +1,149 @@
+/* ── Modais ─────────────────────────────────────────────────── */
+
 .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgb(4 12 30 / .72);
+    backdrop-filter: blur(3px);
     z-index: 1000;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
-.modal-overlay.active {
-    display: flex;
-}
+.modal-overlay.active { display: flex; }
 
 .modal-card {
-    background: white;
-    border-radius: 12px;
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda-forte);
+    border-radius: var(--r-modulo);
     padding: 28px;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    animation: modalSlideIn 0.2s ease-out;
+    max-width: 460px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    color: var(--nc-gelo);
+    box-shadow: var(--nc-sombra), var(--nc-edge-forte);
+    animation: modalSlideIn .2s ease-out;
 }
 
 @keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .modal-card h3 {
     margin-bottom: 8px;
-    color: var(--primary-color);
-    font-size: 20px;
+    color: var(--nc-gelo);
+    font-size: 21px;
 }
 
 .modal-card p {
     margin-bottom: 12px;
-    color: #666;
+    color: var(--nc-gelo-fraco);
     font-size: 14px;
 }
 
 .modal-card label {
     display: block;
-    font-weight: bold;
-    margin: 12px 0 6px;
-    font-size: 14px;
+    font-weight: 600;
+    margin: 14px 0 6px;
+    font-size: 13px;
+    color: var(--nc-gelo-fraco);
 }
 
 .modal-card input[type="text"],
 .modal-card input[type="number"] {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    padding: 11px 13px;
+    background: var(--nc-fundo);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-campo);
+    color: var(--nc-gelo);
     font-size: 15px;
     margin-bottom: 4px;
 }
 
 .modal-card input:focus {
-    outline: 2px solid rgba(74, 144, 226, 0.2);
-    border-color: var(--primary-color);
+    outline: 2px solid var(--nc-amarelo);
+    outline-offset: 1px;
+    border-color: var(--nc-amarelo);
 }
 
 .modal-actions {
     display: flex;
     gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
+    justify-content: flex-end;
+    margin-top: 24px;
 }
 
+/* No modal, a confirmacao e a acao: amarela. O resto fica quieto. */
 .modal-actions button {
-    padding: 10px 24px;
-    border: none;
-    border-radius: 8px;
+    padding: 10px 22px;
+    border-radius: var(--r-campo);
     cursor: pointer;
     font-size: 14px;
-    font-weight: bold;
-    color: white;
-    background: #4CAF50;
-    transition: background 0.2s;
+    font-weight: 700;
+    color: var(--nc-amarelo-ink);
+    background: var(--nc-amarelo);
+    border: 1px solid var(--nc-amarelo);
+    box-shadow: var(--nc-edge);
+    transition: background .15s ease, border-color .15s ease;
     min-width: 100px;
 }
 
 .modal-actions button:hover {
-    background: #388E3C;
+    background: var(--nc-amarelo-hover);
+    border-color: var(--nc-amarelo-hover);
 }
 
-.modal-actions button[style*="background:#999"]:hover {
-    background: #777 !important;
+/* Cancelar: sem peso */
+.modal-actions button.secundario,
+.modal-actions button[data-variante="cancelar"] {
+    background: transparent;
+    color: var(--nc-gelo-fraco);
+    border-color: var(--nc-borda);
+    font-weight: 500;
 }
 
-/* Scrollable subject list in completion modal */
+.modal-actions button.secundario:hover,
+.modal-actions button[data-variante="cancelar"]:hover {
+    background: var(--nc-superficie-alta);
+    color: var(--nc-gelo);
+    border-color: var(--nc-borda-forte);
+}
+
+/* Lista de assuntos no fluxo de conclusao */
 .assunto-lista {
     max-height: 220px;
     overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-campo);
     margin-bottom: 10px;
+    background: var(--nc-fundo);
 }
 
-.assunto-lista:empty {
-    display: none;
-}
+.assunto-lista:empty { display: none; }
 
 .assunto-item {
-    padding: 10px 14px;
+    padding: 11px 14px;
     cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--nc-borda);
     font-size: 14px;
-    transition: background 0.15s;
+    color: var(--nc-gelo);
+    transition: background .12s ease;
 }
 
-.assunto-item:last-child {
-    border-bottom: none;
-}
+.assunto-item:last-child { border-bottom: none; }
 
-.assunto-item:hover {
-    background: #f0f7ff;
-}
+.assunto-item:hover { background: var(--nc-superficie-alta); }
 
 .assunto-item.selected {
-    background: #e3f0ff;
-    font-weight: bold;
-    color: var(--primary-color);
+    background: var(--nc-superficie-topo);
+    font-weight: 600;
+    color: var(--nc-gelo);
+    box-shadow: inset 3px 0 0 var(--nc-amarelo);
 }
 
-.assunto-item--outro {
-    color: #888;
-    font-style: italic;
-}
+.assunto-item--outro { color: var(--nc-gelo-tenue); }

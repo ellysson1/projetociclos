@@ -2,7 +2,7 @@ function setAuthStatus(msg, isError = false) {
     const el = document.getElementById('authStatus');
     if (!el) return;
     el.textContent = msg;
-    el.style.color = isError ? '#C62828' : '#2E7D32';
+    el.style.color = isError ? 'var(--nc-alerta)' : 'var(--nc-sucesso)';
 }
 
 async function getUsuarioLogado() {
@@ -37,7 +37,7 @@ async function atualizarUIAuth() {
     const bloqueioAuth = document.getElementById('bloqueioAuth');
 
     if (usuarioInfo) {
-        usuarioInfo.textContent = logado ? `Logado como ${user.email}` : 'Você não está logado.';
+        usuarioInfo.textContent = logado ? user.email : '';
     }
     if (btnIrLogin) btnIrLogin.style.display = logado ? 'none' : 'inline-block';
     if (btnLogoutTop) btnLogoutTop.style.display = logado ? 'inline-block' : 'none';

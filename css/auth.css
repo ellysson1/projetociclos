@@ -1,0 +1,190 @@
+/* ============================================================
+   No Controle — entrar, criar conta e recuperar senha.
+   As quatro telas compartilham esta folha.
+   ============================================================ */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    position: relative;
+    isolation: isolate;
+}
+
+/* Luz difusa vinda de cima, como nas secoes da pagina da mentoria */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(56rem 34rem at 50% -8%, rgb(46 107 214 / .34), transparent 64%),
+        radial-gradient(30rem 22rem at 8% 108%, rgb(26 74 156 / .28), transparent 62%);
+}
+
+.auth-wrapper {
+    width: 100%;
+    max-width: 424px;
+}
+
+/* ── Marca ──────────────────────────────────────────────────── */
+
+.brand {
+    text-align: left;
+    margin-bottom: 22px;
+}
+
+.brand h1 {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-family: var(--fonte-titulo);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: -.02em;
+    color: var(--nc-gelo);
+    margin-bottom: 8px;
+}
+
+.brand h1::before {
+    content: "";
+    width: 4px;
+    height: 24px;
+    border-radius: 2px;
+    background: var(--nc-amarelo);
+    flex-shrink: 0;
+}
+
+.brand p {
+    color: var(--nc-gelo-fraco);
+    font-size: 15px;
+    max-width: 36ch;
+}
+
+/* ── Cartao ─────────────────────────────────────────────────── */
+
+.card {
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-modulo);
+    box-shadow: var(--nc-edge), var(--nc-sombra);
+    padding: 28px;
+}
+
+.card h2 {
+    font-family: var(--fonte-titulo);
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--nc-gelo);
+    margin-bottom: 6px;
+}
+
+.sub {
+    color: var(--nc-gelo-fraco);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+label {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--nc-gelo-fraco);
+    margin: 16px 0 6px;
+}
+
+.card input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--nc-fundo);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-campo);
+    color: var(--nc-gelo);
+    font-family: var(--fonte-ui);
+    font-size: 15px;
+}
+
+.card input::placeholder { color: var(--nc-gelo-tenue); }
+
+.card input:hover { border-color: var(--nc-borda-forte); }
+
+.card input:focus {
+    outline: 2px solid var(--nc-amarelo);
+    outline-offset: 1px;
+    border-color: var(--nc-amarelo);
+}
+
+/* A acao da tela: uma so, amarela */
+.card button {
+    width: 100%;
+    background: var(--nc-amarelo);
+    color: var(--nc-amarelo-ink);
+    padding: 13px 16px;
+    border: 1px solid var(--nc-amarelo);
+    border-radius: var(--r-campo);
+    cursor: pointer;
+    font-family: var(--fonte-ui);
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 22px;
+    box-shadow: var(--nc-edge);
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+}
+
+.card button:hover {
+    background: var(--nc-amarelo-hover);
+    border-color: var(--nc-amarelo-hover);
+}
+
+.card button:active { transform: translateY(1px); }
+
+/* ── Navegacao e recados ────────────────────────────────────── */
+
+.links {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.links a,
+.back-link {
+    color: var(--nc-gelo-fraco);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.links a:hover,
+.back-link:hover {
+    color: var(--nc-amarelo);
+    text-decoration: underline;
+}
+
+.msg {
+    margin-top: 14px;
+    font-size: 14px;
+    min-height: 22px;
+}
+
+.msg.success { color: var(--nc-sucesso); }
+.msg.error   { color: var(--nc-alerta); }
+
+.small {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--nc-gelo-tenue);
+    line-height: 1.5;
+}
+
+.divider {
+    margin: 20px 0 16px;
+    border-top: 1px solid var(--nc-borda);
+}
+
+@media (max-width: 480px) {
+    .card { padding: 22px 18px; }
+}

@@ -105,32 +105,19 @@ function exibirCicloVisual(blocos) {
     const container = document.getElementById("blocosContainer");
     container.innerHTML = "";
 
+    if (typeof renderizarAnelCiclo === 'function') renderizarAnelCiclo(blocos);
+
     if (planoAdotado?.maxFase > 1) {
         const faseBanner = document.createElement('div');
-        faseBanner.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:14px; border-radius:8px; background:#E8EAF6; border:1px solid #C5CAE9; font-size:14px;';
+        faseBanner.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:14px; border-radius:8px; background:var(--nc-info-fundo); border:1px solid var(--nc-info-borda); font-size:14px;';
         const proximaFaseInfo = faseAtual < planoAdotado.maxFase
             ? ` — próximas matérias entram com 60% do edital concluído`
             : ' — todas as matérias incluídas';
-        faseBanner.innerHTML = `<strong style="color:#3F51B5;">Fase ${faseAtual}/${planoAdotado.maxFase}</strong><span style="color:#666;">${proximaFaseInfo}</span>`;
+        faseBanner.innerHTML = `<strong style="color:var(--nc-info);">Fase ${faseAtual}/${planoAdotado.maxFase}</strong><span style="color:var(--nc-gelo-fraco);">${proximaFaseInfo}</span>`;
         container.appendChild(faseBanner);
     }
 
-    if (blocos.length > 0 && blocos.every(b => b.concluido)) {
-        const doneBanner = document.createElement('div');
-        doneBanner.className = 'ciclo-completo-banner';
-        const texto = document.createElement('div');
-        texto.innerHTML = '<strong>Ciclo concluído!</strong><span>Todos os blocos foram estudados.</span>';
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'ciclo-completo-banner__btn';
-        btn.textContent = 'Iniciar Próximo Ciclo';
-        btn.addEventListener('click', () => {
-            if (typeof iniciarProximoCiclo === 'function') iniciarProximoCiclo();
-        });
-        doneBanner.appendChild(texto);
-        doneBanner.appendChild(btn);
-        container.appendChild(doneBanner);
-    }
+    // Ciclo concluido: o anel ja anuncia e oferece o proximo ciclo.
 
     const bps = configuracoes.blocosPorSessao;
     const sessoes = [];
@@ -149,6 +136,7 @@ function exibirCicloVisual(blocos) {
 
         const grid = document.createElement("div");
         grid.className = "blocos-grid";
+        grid.style.setProperty('--blocos-na-linha', Math.min(Math.max(sessao.length, 1), 6));
 
         sessao.forEach((bloco, blocoIdx) => {
             const globalIndex = sessaoIdx * bps + blocoIdx;
@@ -209,7 +197,7 @@ function criarCardBloco(bloco, index) {
             : '';
 
     card.innerHTML = `
-        <div class="bloco-card__header" style="background-color: ${bloco.cor}"></div>
+        <div class="bloco-card__header" style="background-color:${bloco.cor}"></div>
         <div class="bloco-card__sigla">${bloco.legenda}</div>
         <div class="bloco-card__nome">${bloco.nome}</div>
         <div class="bloco-card__duracao">${duracao} min</div>
@@ -217,7 +205,7 @@ function criarCardBloco(bloco, index) {
         <div class="bloco-card__footer">
             <label class="bloco-card__check">
                 <input type="checkbox" ${bloco.concluido ? 'checked' : ''}>
-                <span>Concluir</span>
+                <span>${bloco.concluido ? 'Concluído' : 'Concluir'}</span>
             </label>
             <button class="bloco-card__btn-timer" type="button">Cronômetro</button>
         </div>
@@ -325,7 +313,7 @@ function verificarConclusao() {
         const itensPendentes = contarItensRevisaoPendente();
         if (itensPendentes > 0) partes.push(`Há ${itensPendentes} itens do edital pendentes de revisão. Confira na aba Revisão.`);
 
-        partes.push('Quando estiver pronto, clique em "Iniciar Próximo Ciclo" no topo do seu ciclo.');
+        partes.push('Quando estiver pronto, clique em "Iniciar o próximo ciclo" no topo do seu ciclo.');
 
         alert(partes.join('\n\n'));
         salvarEstado();

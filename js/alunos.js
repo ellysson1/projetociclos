@@ -39,7 +39,7 @@ async function renderizarAbaAlunos() {
 
     const { data: atribuicoes, error } = await supabaseClient
         .from('plano_atribuicoes')
-        .select('aluno_id, plano_id, configuracoes, updated_at, created_at, planos(nome)')
+        .select('aluno_id, plano_id, configurações, updated_at, created_at, planos(nome)')
         .eq('professor_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -47,7 +47,7 @@ async function renderizarAbaAlunos() {
         console.error('Erro ao carregar alunos:', error);
         container.innerHTML = '';
         const err = document.createElement('p');
-        err.style.cssText = 'color:#C62828;';
+        err.style.cssText = 'color:var(--nc-alerta);';
         err.textContent = 'Não foi possível carregar os alunos. Verifique sua conexão e tente novamente.';
         container.appendChild(err);
         return;
@@ -56,7 +56,7 @@ async function renderizarAbaAlunos() {
     if (!atribuicoes || atribuicoes.length === 0) {
         container.innerHTML = '';
         const vazio = document.createElement('p');
-        vazio.style.cssText = 'color:#999;';
+        vazio.style.cssText = 'color:var(--nc-gelo-tenue);';
         vazio.textContent = 'Nenhum aluno com plano atribuído ainda. Vá em Planos → Atribuir para vincular um aluno.';
         container.appendChild(vazio);
         return;
@@ -97,7 +97,7 @@ function _criarCardAluno(atr, nomes, progressos) {
     const nivelAtual = cfg.nivel_conteudo || estado.nivelConteudo || 'avancado';
 
     const card = document.createElement('div');
-    card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:white;';
+    card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:var(--nc-superficie);';
 
     // Cabeçalho: nome + plano (textContent — nomes são editáveis por usuários)
     const header = document.createElement('div');
@@ -110,7 +110,7 @@ function _criarCardAluno(atr, nomes, progressos) {
     esquerda.appendChild(nomeEl);
 
     const planoEl = document.createElement('div');
-    planoEl.style.cssText = 'font-size:12px; color:#666; margin-top:2px;';
+    planoEl.style.cssText = 'font-size:12px; color:var(--nc-gelo-fraco); margin-top:2px;';
     planoEl.textContent = 'Plano: ' + (atr.planos?.nome || '(plano removido)');
     esquerda.appendChild(planoEl);
     header.appendChild(esquerda);
@@ -118,12 +118,12 @@ function _criarCardAluno(atr, nomes, progressos) {
     const direita = document.createElement('div');
     direita.style.cssText = 'text-align:right;';
     const badge = document.createElement('span');
-    badge.style.cssText = 'font-size:12px; color:white; background:#3F51B5; padding:2px 10px; border-radius:10px;';
+    badge.style.cssText = 'font-size:12px; color:var(--nc-gelo); background:var(--nc-superficie-alta); padding:2px 10px; border-radius:10px;';
     badge.textContent = _rotuloPerfil(perfilEfetivo);
     direita.appendChild(badge);
 
     const atividade = document.createElement('div');
-    atividade.style.cssText = 'font-size:12px; color:#999; margin-top:4px;';
+    atividade.style.cssText = 'font-size:12px; color:var(--nc-gelo-tenue); margin-top:4px;';
     atividade.textContent = 'Atividade: ' + (prog?.updated_at && typeof formatarTempoAtras === 'function'
         ? formatarTempoAtras(prog.updated_at)
         : 'Nunca');
@@ -134,7 +134,7 @@ function _criarCardAluno(atr, nomes, progressos) {
     // Aviso quando o aluno escolheu um perfil diferente do atribuído
     if (perfilAtribuido && perfilAluno && perfilAtribuido !== perfilAluno) {
         const aviso = document.createElement('div');
-        aviso.style.cssText = 'font-size:12px; color:#E65100; background:#FFF8E1; border:1px solid #FFE0B2; border-radius:6px; padding:6px 10px; margin-bottom:10px;';
+        aviso.style.cssText = 'font-size:12px; color:var(--nc-atencao); background:var(--nc-atencao-fundo); border:1px solid var(--nc-atencao-borda); border-radius:6px; padding:6px 10px; margin-bottom:10px;';
         aviso.textContent = `O aluno ainda está com o perfil "${_rotuloPerfil(perfilAluno)}". O novo perfil é aplicado no próximo acesso dele.`;
         card.appendChild(aviso);
     }
@@ -151,13 +151,13 @@ function _criarCardAluno(atr, nomes, progressos) {
     const btnSalvar = document.createElement('button');
     btnSalvar.type = 'button';
     btnSalvar.textContent = 'Salvar';
-    btnSalvar.style.cssText = 'font-size:13px; padding:7px 18px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;';
+    btnSalvar.style.cssText = 'font-size:13px; padding:7px 18px; background:var(--nc-sucesso); color:var(--nc-amarelo-ink); border:none; border-radius:6px; cursor:pointer;';
     controles.appendChild(btnSalvar);
     card.appendChild(controles);
 
     // Descrição do perfil selecionado
     const descPerfil = document.createElement('div');
-    descPerfil.style.cssText = 'font-size:12px; color:#888; margin-top:8px;';
+    descPerfil.style.cssText = 'font-size:12px; color:var(--nc-gelo-tenue); margin-top:8px;';
     const atualizarDesc = () => {
         descPerfil.textContent = PERFIS_ALUNO.find(p => p.valor === grupoPerfil.select.value)?.desc || '';
     };
@@ -186,12 +186,12 @@ function _criarCardAluno(atr, nomes, progressos) {
 function _criarGrupoSelect(rotulo, opcoes, valorAtual) {
     const wrapper = document.createElement('div');
     const label = document.createElement('label');
-    label.style.cssText = 'display:block; font-size:12px; color:#666; margin-bottom:4px;';
+    label.style.cssText = 'display:block; font-size:12px; color:var(--nc-gelo-fraco); margin-bottom:4px;';
     label.textContent = rotulo;
     wrapper.appendChild(label);
 
     const select = document.createElement('select');
-    select.style.cssText = 'font-size:13px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:white;';
+    select.style.cssText = 'font-size:13px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--nc-superficie);';
     opcoes.forEach(o => {
         const opt = document.createElement('option');
         opt.value = o.valor;

@@ -8,8 +8,8 @@ async function exportarDadosPessoais() {
     const statusEl = document.getElementById('lgpdStatus');
     if (statusEl) {
         statusEl.style.display = 'block';
-        statusEl.style.background = '#E3F2FD';
-        statusEl.style.color = '#1565C0';
+        statusEl.style.background = 'var(--nc-info-fundo)';
+        statusEl.style.color = 'var(--nc-info)';
         statusEl.textContent = 'Coletando seus dados...';
     }
 
@@ -65,8 +65,8 @@ async function exportarDadosPessoais() {
     URL.revokeObjectURL(url);
 
     if (statusEl) {
-        statusEl.style.background = '#E8F5E9';
-        statusEl.style.color = '#2E7D32';
+        statusEl.style.background = 'var(--nc-sucesso-fundo)';
+        statusEl.style.color = 'var(--nc-sucesso)';
         statusEl.textContent = 'Dados exportados com sucesso!';
     }
 }
@@ -100,8 +100,8 @@ async function excluirConta() {
     const statusEl = document.getElementById('lgpdStatus');
     if (statusEl) {
         statusEl.style.display = 'block';
-        statusEl.style.background = '#FFF8E1';
-        statusEl.style.color = '#E65100';
+        statusEl.style.background = 'var(--nc-atencao-fundo)';
+        statusEl.style.color = 'var(--nc-atencao)';
         statusEl.textContent = 'Excluindo seus dados...';
     }
 
@@ -147,8 +147,8 @@ async function excluirConta() {
 
     if (erros.length > 0) {
         if (statusEl) {
-            statusEl.style.background = '#FFEBEE';
-            statusEl.style.color = '#C62828';
+            statusEl.style.background = 'var(--nc-alerta-fundo)';
+            statusEl.style.color = 'var(--nc-alerta)';
             statusEl.textContent = 'Alguns dados não puderam ser excluídos: ' + erros.join('; ');
         }
         return;
@@ -158,8 +158,8 @@ async function excluirConta() {
     await supabaseClient.auth.signOut();
 
     if (statusEl) {
-        statusEl.style.background = '#E8F5E9';
-        statusEl.style.color = '#2E7D32';
+        statusEl.style.background = 'var(--nc-sucesso-fundo)';
+        statusEl.style.color = 'var(--nc-sucesso)';
         statusEl.textContent = 'Conta excluída com sucesso. Redirecionando...';
     }
 

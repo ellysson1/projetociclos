@@ -32,21 +32,21 @@ async function carregarNotificacoes() {
 
     const lista = document.getElementById('notificacaoLista');
     if (notificacoes.length === 0) {
-        lista.innerHTML = '<p style="text-align:center; color:#999; font-size:13px; padding:12px;">Nenhuma notificacao.</p>';
+        lista.innerHTML = '<p style="text-align:center; color:var(--nc-gelo-tenue); font-size:13px; padding:12px;">Nenhuma notificação.</p>';
         return;
     }
 
     lista.innerHTML = '';
     notificacoes.forEach(n => {
         const div = document.createElement('div');
-        div.style.cssText = `padding:8px 10px; border-radius:6px; margin-bottom:4px; font-size:13px; cursor:pointer; ${n.lido ? 'background:#f9f9f9; color:#888;' : 'background:#E8EAF6; color:#333; font-weight:500;'}`;
+        div.style.cssText = `padding:8px 10px; border-radius:6px; margin-bottom:4px; font-size:13px; cursor:pointer; ${n.lido ? 'background:var(--nc-superficie-alta); color:var(--nc-gelo-tenue);' : 'background:var(--nc-info-fundo); color:var(--nc-gelo); font-weight:500;'}`;
         const tempo = formatarTempoNotificacao(n.created_at);
-        div.innerHTML = `<div>${escapeHtml(n.mensagem)}</div><div style="font-size:11px; color:#999; margin-top:2px;">${escapeHtml(tempo)}</div>`;
+        div.innerHTML = `<div>${escapeHtml(n.mensagem)}</div><div style="font-size:11px; color:var(--nc-gelo-tenue); margin-top:2px;">${escapeHtml(tempo)}</div>`;
         if (!n.lido) {
             div.addEventListener('click', async () => {
                 await marcarNotificacaoLida(n.id);
-                div.style.background = '#f9f9f9';
-                div.style.color = '#888';
+                div.style.background = 'var(--nc-superficie-alta)';
+                div.style.color = 'var(--nc-gelo-tenue)';
                 div.style.fontWeight = 'normal';
                 n.lido = true;
                 const restantes = notificacoes.filter(nn => !nn.lido).length;

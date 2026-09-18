@@ -42,7 +42,7 @@ function abrirModalReconciliacao(itens) {
     corpo.innerHTML = '';
     itens.forEach((item, i) => {
         const div = document.createElement('div');
-        div.style.cssText = 'padding:12px; border:1px solid #E1E4E8; border-radius:8px; margin-bottom:10px; background:#FAFBFC;';
+        div.style.cssText = 'padding:12px; border:1px solid var(--nc-borda); border-radius:8px; margin-bottom:10px; background:var(--nc-superficie-alta);';
 
         let opcoesHTML = '<option value="">— Sem correspondência no edital —</option>';
         item.ranked.forEach(r => {
@@ -54,7 +54,7 @@ function abrirModalReconciliacao(itens) {
         div.innerHTML = `
             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                 <strong style="min-width:180px; font-size:14px;">${item.materia.nome} (${item.materia.legenda})</strong>
-                <span style="color:#999;">→</span>
+                <span style="color:var(--nc-gelo-tenue);">→</span>
                 <select data-legenda="${item.materia.legenda}" class="reconciliacao-select" style="flex:1; min-width:200px; padding:6px;">
                     ${opcoesHTML}
                 </select>
@@ -144,7 +144,7 @@ function abrirGerenciarVinculos() {
 
     materiasSelecionadas.forEach(m => {
         const div = document.createElement('div');
-        div.style.cssText = 'display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid #eee;';
+        div.style.cssText = 'display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--nc-borda);';
 
         let opcoesHTML = '<option value="">— Sem vínculo —</option>';
         planoAdotado.edital.forEach(e => {
@@ -258,7 +258,7 @@ function _renderizarMapeamento() {
         const ranked = rankCandidatas(materiaNovaObj.materia, candidatas);
 
         const div = document.createElement('div');
-        div.style.cssText = 'padding:12px; border:1px solid #E1E4E8; border-radius:8px; margin-bottom:10px; background:#FAFBFC;';
+        div.style.cssText = 'padding:12px; border:1px solid var(--nc-borda); border-radius:8px; margin-bottom:10px; background:var(--nc-superficie-alta);';
 
         let opcoesHTML = '<option value="__novo__">Nova (sem correspondência)</option>';
         ranked.forEach(r => {
@@ -271,9 +271,9 @@ function _renderizarMapeamento() {
 
         div.innerHTML = `
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <span style="font-size:12px; padding:2px 6px; border-radius:4px; background:#E8EAF6;">${statusTag}</span>
+                <span style="font-size:12px; padding:2px 6px; border-radius:4px; background:var(--nc-info-fundo);">${statusTag}</span>
                 <strong style="min-width:180px;">${materiaNovaObj.materia}</strong>
-                <span style="color:#999;">←</span>
+                <span style="color:var(--nc-gelo-tenue);">←</span>
                 <select data-novo-idx="${idx}" class="retificacao-select" style="flex:1; min-width:200px; padding:6px;">${opcoesHTML}</select>
             </div>
         `;
@@ -300,11 +300,11 @@ function _renderizarMapeamentoTopicos(container, materiaNova, materiaAntiga, mat
         let tag = '';
         if (melhor && melhor.score >= 0.85) {
             topicoNovo.id = melhor.candidata.id;
-            tag = '<span style="color:#4CAF50; font-size:11px;">mantido</span>';
+            tag = '<span style="color:var(--nc-sucesso); font-size:11px;">mantido</span>';
         } else if (melhor && melhor.score >= 0.4) {
-            tag = '<span style="color:#FF9800; font-size:11px;">renomeado?</span>';
+            tag = '<span style="color:var(--nc-atencao); font-size:11px;">renomeado?</span>';
         } else {
-            tag = '<span style="color:#2196F3; font-size:11px;">novo</span>';
+            tag = '<span style="color:var(--nc-info); font-size:11px;">novo</span>';
         }
 
         topicosDiv.innerHTML += `<div style="padding:2px 0;">${tag} ${topicoNovo.nome}</div>`;

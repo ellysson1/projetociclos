@@ -80,37 +80,37 @@ function mostrarPreviewImportacao(materias, callback) {
 
     let tableRows = materias.map((m, i) => `
         <tr>
-            <td style="padding:6px 8px; border:1px solid #eee;">${i + 1}</td>
-            <td style="padding:6px 8px; border:1px solid #eee;">${m.nome}</td>
-            <td style="padding:6px 8px; border:1px solid #eee;">${m.legenda}</td>
-            <td style="padding:6px 8px; border:1px solid #eee; text-align:center;">${m.peso}</td>
-            <td style="padding:6px 8px; border:1px solid #eee; text-align:center;">${m.extensao}</td>
-            <td style="padding:6px 8px; border:1px solid #eee; text-align:center;">${m.dificuldade}</td>
+            <td style="padding:6px 8px; border:1px solid var(--nc-borda);">${i + 1}</td>
+            <td style="padding:6px 8px; border:1px solid var(--nc-borda);">${m.nome}</td>
+            <td style="padding:6px 8px; border:1px solid var(--nc-borda);">${m.legenda}</td>
+            <td style="padding:6px 8px; border:1px solid var(--nc-borda); text-align:center;">${m.peso}</td>
+            <td style="padding:6px 8px; border:1px solid var(--nc-borda); text-align:center;">${m.extensao}</td>
+            <td style="padding:6px 8px; border:1px solid var(--nc-borda); text-align:center;">${m.dificuldade}</td>
         </tr>
     `).join('');
 
     modal.innerHTML = `
         <div class="modal-card" style="max-width:600px;">
-            <h3>Preview da Importação</h3>
+            <h3>Confira antes de importar</h3>
             <p>${materias.length} matéria(s) encontrada(s)</p>
             <div style="max-height:300px; overflow-y:auto; margin:12px 0;">
                 <table style="width:100%; border-collapse:collapse; font-size:13px;">
                     <thead>
-                        <tr style="background:#f5f5f5;">
-                            <th style="padding:6px 8px; border:1px solid #eee;">#</th>
-                            <th style="padding:6px 8px; border:1px solid #eee;">Nome</th>
-                            <th style="padding:6px 8px; border:1px solid #eee;">Sigla</th>
-                            <th style="padding:6px 8px; border:1px solid #eee;">Peso</th>
-                            <th style="padding:6px 8px; border:1px solid #eee;">Ext.</th>
-                            <th style="padding:6px 8px; border:1px solid #eee;">Dif.</th>
+                        <tr style="background:var(--nc-superficie-alta);">
+                            <th style="padding:6px 8px; border:1px solid var(--nc-borda);">#</th>
+                            <th style="padding:6px 8px; border:1px solid var(--nc-borda);">Nome</th>
+                            <th style="padding:6px 8px; border:1px solid var(--nc-borda);">Sigla</th>
+                            <th style="padding:6px 8px; border:1px solid var(--nc-borda);">Peso</th>
+                            <th style="padding:6px 8px; border:1px solid var(--nc-borda);">Ext.</th>
+                            <th style="padding:6px 8px; border:1px solid var(--nc-borda);">Dif.</th>
                         </tr>
                     </thead>
                     <tbody>${tableRows}</tbody>
                 </table>
             </div>
             <div class="modal-actions">
-                <button id="btnConfirmarImport" style="background:#4CAF50;">Confirmar Importação</button>
-                <button id="btnCancelarImport" style="background:#999;">Cancelar</button>
+                <button id="btnConfirmarImport" style="background:var(--nc-sucesso);">Confirmar Importação</button>
+                <button id="btnCancelarImport" style="background:var(--nc-superficie-alta);">Cancelar</button>
             </div>
         </div>
     `;

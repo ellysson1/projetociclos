@@ -4,17 +4,17 @@ function salvarConfiguracoes() {
     const novoBlocosPorSessao = parseInt(document.getElementById('blocosPorSessao').value);
 
     if (isNaN(novaDuracaoBloco) || novaDuracaoBloco < 1) {
-        alert('A duracao do bloco deve ser um numero positivo.');
+        alert('A duração do bloco deve ser um número positivo.');
         return;
     }
 
     if (isNaN(novoIntervaloEntreBlocos) || novoIntervaloEntreBlocos < 0) {
-        alert('O intervalo entre blocos deve ser um numero nao negativo.');
+        alert('O intervalo entre blocos deve ser um número não negativo.');
         return;
     }
 
     if (isNaN(novoBlocosPorSessao) || novoBlocosPorSessao < 1) {
-        alert('O numero de blocos por sessao deve ser um numero positivo.');
+        alert('O número de blocos por sessão deve ser um número positivo.');
         return;
     }
 
@@ -23,10 +23,10 @@ function salvarConfiguracoes() {
     configuracoes.blocosPorSessao = novoBlocosPorSessao;
 
     localStorage.setItem('cicloEstudosConfiguracoes', JSON.stringify(configuracoes));
-    alert('Configuracoes salvas com sucesso!');
+    alert('Configurações salvas com sucesso!');
 
     if (blocosAtivos.length > 0) {
-        if (confirm('Deseja recalcular os blocos com as novas configuracoes?')) {
+        if (confirm('Deseja recalcular os blocos com as novas configurações?')) {
             calcularBlocos();
         } else {
             exibirCicloVisual(blocosAtivos);

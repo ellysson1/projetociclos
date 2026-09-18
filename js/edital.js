@@ -189,7 +189,7 @@ function renderizarEdital() {
                     topicosHTML += `
                         <div class="edital-topico" draggable="true" data-materia-idx="${materiaIdx}" data-topico-idx="${topicoIdx}">
                             <div class="edital-topico__header" onclick="toggleEditalTopico(this)">
-                                <span class="edital-topico__drag" style="cursor:grab; color:#bbb; margin-right:4px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>
+                                <span class="edital-topico__drag" style="cursor:grab; color:var(--nc-gelo-tenue); margin-right:4px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>
                                 <span class="edital-topico__arrow">&#9654;</span>
                                 <span class="edital-topico__nome">${escapeHtml(nomeExibicaoEdital(topicoObj))}${topicoObj.curso_nome && topicoObj.curso_nome !== topicoObj.nome ? `<span class="edital-topico__oficial" title="Nome oficial no edital">Edital: ${escapeHtml(topicoObj.nome)}</span>` : ''}</span>
                                 <span class="edital-topico__progresso">${topicoProgresso.concluidos}/${topicoProgresso.total}</span>
@@ -333,7 +333,7 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
     // quebravam o JS gerado (e abriam vetor de injeção).
     let tecBtn = '';
     if (tecAssunto) {
-        tecBtn = `<button class="edital-item__tec-copy" data-tec="${escapeHtml(tecAssunto)}" title="Copiar nome do TEC para buscar questoes">TEC: ${escapeHtml(tecAssunto)}</button>`;
+        tecBtn = `<button class="edital-item__tec-copy" data-tec="${escapeHtml(tecAssunto)}" title="Copiar nome do TEC para buscar questões">TEC: ${escapeHtml(tecAssunto)}</button>`;
     }
 
     const dataAttrs = `data-materia="${escapeHtml(materia)}" data-topico="${escapeHtml(topico)}" data-subtopico="${escapeHtml(subtopico || '')}"`;
@@ -341,7 +341,7 @@ function criarItemEdital(materia, topico, subtopico, prog, topicoIdx, materiaIdx
         ? `draggable="true" data-materia-idx="${materiaIdx}" data-topico-idx="${topicoIdx}"`
         : '';
     const dragHandle = !subtopico && topicoIdx !== undefined
-        ? '<span style="cursor:grab; color:#bbb; margin-right:6px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>'
+        ? '<span style="cursor:grab; color:var(--nc-gelo-tenue); margin-right:6px; font-size:14px;" title="Arrastar para reordenar">&#9776;</span>'
         : '';
 
     return `
@@ -809,23 +809,23 @@ function atualizarEditorEditalUI() {
     if (!container) return;
 
     if (editalEditando.length === 0) {
-        container.innerHTML = '<p style="color:#999; font-size:13px;">Nenhuma matéria no edital. Clique em "+ Adicionar Matéria" ou importe via Excel/CSV.</p>';
+        container.innerHTML = '<p style="color:var(--nc-gelo-tenue); font-size:13px;">Nenhuma matéria no edital. Clique em "+ Adicionar Matéria" ou importe via Excel/CSV.</p>';
         return;
     }
 
     let html = '';
     editalEditando.forEach((materiaObj, mIdx) => {
         html += `
-            <div class="edital-editor-materia" style="border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:12px; background:#fafafa;">
+            <div class="edital-editor-materia" style="border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:12px; background:var(--nc-superficie-alta);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <input type="text" value="${materiaObj.materia || ''}" placeholder="Nome da Matéria"
                         onchange="editalEditando[${mIdx}].materia = this.value.trim()"
                         style="font-weight:bold; font-size:14px; border:1px solid var(--border-color); border-radius:4px; padding:6px 10px; flex:1; margin-right:8px;">
-                    <button onclick="removerMateriaEdital(${mIdx})" style="background:#FF6B6B; padding:4px 10px; font-size:12px;">&times;</button>
+                    <button onclick="removerMateriaEdital(${mIdx})" style="background:var(--nc-alerta-fundo); padding:4px 10px; font-size:12px;">&times;</button>
                 </div>
                 <div style="margin-left:16px;">
                     ${renderizarTopicosEditor(materiaObj.topicos || [], mIdx)}
-                    <button onclick="adicionarTopicoEdital(${mIdx})" style="font-size:12px; padding:4px 12px; background:#26A69A; margin-top:6px;">+ Tópico</button>
+                    <button onclick="adicionarTopicoEdital(${mIdx})" style="font-size:12px; padding:4px 12px; background:var(--nc-sucesso); margin-top:6px;">+ Tópico</button>
                 </div>
             </div>
         `;
@@ -838,24 +838,24 @@ function renderizarTopicosEditor(topicos, mIdx) {
     let html = '';
     topicos.forEach((topico, tIdx) => {
         html += `
-            <div style="margin-bottom:8px; padding:8px; background:white; border:1px solid #eee; border-radius:4px;">
+            <div style="margin-bottom:8px; padding:8px; background:var(--nc-superficie); border:1px solid var(--nc-borda); border-radius:4px;">
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
                     <input type="text" value="${topico.nome || ''}" placeholder="Nome no edital"
                         onchange="editalEditando[${mIdx}].topicos[${tIdx}].nome = this.value.trim()"
                         style="font-size:13px; border:1px solid var(--border-color); border-radius:4px; padding:4px 8px; flex:1;">
-                    <button onclick="removerTopicoEdital(${mIdx}, ${tIdx})" style="background:#FF6B6B; padding:2px 8px; font-size:11px;">&times;</button>
+                    <button onclick="removerTopicoEdital(${mIdx}, ${tIdx})" style="background:var(--nc-alerta-fundo); padding:2px 8px; font-size:11px;">&times;</button>
                 </div>
                 <div style="display:flex; gap:6px; margin-bottom:4px;">
                     <input type="text" value="${topico.curso_nome || ''}" placeholder="Nome no curso (opcional)"
                         onchange="editalEditando[${mIdx}].topicos[${tIdx}].curso_nome = this.value.trim() || null"
-                        style="font-size:12px; border:1px solid #E0D8FF; border-radius:4px; padding:3px 8px; flex:1; color:#7C4DFF;">
+                        style="font-size:12px; border:1px solid var(--nc-info-borda); border-radius:4px; padding:3px 8px; flex:1; color:var(--nc-info);">
                     <input type="text" value="${topico.tec_assunto || ''}" placeholder="Assunto no TEC (opcional)"
                         onchange="editalEditando[${mIdx}].topicos[${tIdx}].tec_assunto = this.value.trim() || null"
-                        style="font-size:12px; border:1px solid #C8E6C9; border-radius:4px; padding:3px 8px; flex:1; color:#2E7D32;">
+                        style="font-size:12px; border:1px solid var(--nc-sucesso-borda); border-radius:4px; padding:3px 8px; flex:1; color:var(--nc-sucesso);">
                 </div>
                 <div style="margin-left:20px;">
                     ${renderizarSubtopicosEditor(topico.subtopicos || [], mIdx, tIdx)}
-                    <button onclick="adicionarSubtopicoEdital(${mIdx}, ${tIdx})" style="font-size:11px; padding:2px 10px; background:#78909C; margin-top:4px;">+ Subtópico</button>
+                    <button onclick="adicionarSubtopicoEdital(${mIdx}, ${tIdx})" style="font-size:11px; padding:2px 10px; background:var(--nc-superficie-alta); margin-top:4px;">+ Subtópico</button>
                 </div>
             </div>
         `;
@@ -872,19 +872,19 @@ function renderizarSubtopicosEditor(subtopicos, mIdx, tIdx) {
         html += `
             <div style="margin-bottom:4px; padding:3px 0;">
                 <div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
-                    <span style="color:#999; font-size:11px;">&#8226;</span>
+                    <span style="color:var(--nc-gelo-tenue); font-size:11px;">&#8226;</span>
                     <input type="text" value="${nomeSub}" placeholder="Subtopico (edital)"
                         onchange="_atualizarSubtopicoEditor(${mIdx}, ${tIdx}, ${sIdx}, 'nome', this.value)"
-                        style="font-size:12px; border:1px solid #ddd; border-radius:3px; padding:3px 6px; flex:1;">
-                    <button onclick="removerSubtopicoEdital(${mIdx}, ${tIdx}, ${sIdx})" style="background:#FF6B6B; padding:1px 6px; font-size:10px;">&times;</button>
+                        style="font-size:12px; border:1px solid var(--nc-borda); border-radius:3px; padding:3px 6px; flex:1;">
+                    <button onclick="removerSubtopicoEdital(${mIdx}, ${tIdx}, ${sIdx})" style="background:var(--nc-alerta-fundo); padding:1px 6px; font-size:10px;">&times;</button>
                 </div>
                 <div style="display:flex; gap:4px; margin-left:16px;">
                     <input type="text" value="${cursoSub}" placeholder="Curso (opcional)"
                         onchange="_atualizarSubtopicoEditor(${mIdx}, ${tIdx}, ${sIdx}, 'curso_nome', this.value)"
-                        style="font-size:11px; border:1px solid #E0D8FF; border-radius:3px; padding:2px 6px; flex:1; color:#7C4DFF;">
+                        style="font-size:11px; border:1px solid var(--nc-info-borda); border-radius:3px; padding:2px 6px; flex:1; color:var(--nc-info);">
                     <input type="text" value="${tecSub}" placeholder="TEC (opcional)"
                         onchange="_atualizarSubtopicoEditor(${mIdx}, ${tIdx}, ${sIdx}, 'tec_assunto', this.value)"
-                        style="font-size:11px; border:1px solid #C8E6C9; border-radius:3px; padding:2px 6px; flex:1; color:#2E7D32;">
+                        style="font-size:11px; border:1px solid var(--nc-sucesso-borda); border-radius:3px; padding:2px 6px; flex:1; color:var(--nc-sucesso);">
                 </div>
             </div>
         `;
@@ -1006,7 +1006,7 @@ function processarArquivoEdital(file) {
 
             const editalImportado = converterLinhasParaEdital(rows);
             if (editalImportado.length === 0) {
-                alert('Nenhum dado válido encontrado. Verifique se o arquivo possui colunas "Materia", "Topico" e opcionalmente "Subtopico".');
+                alert('Nenhum dado válido encontrado. Verifique se o arquivo possui colunas "Matéria", "Topico" e opcionalmente "Subtopico".');
                 return;
             }
 
@@ -1093,7 +1093,7 @@ function mostrarPreviewEdital(editalImportado) {
             previewHTML += `<div style="margin-left:16px; font-size:13px;">&#8226; ${t.nome}`;
             (t.subtopicos || []).forEach(s => {
                 totalSubtopicos++;
-                previewHTML += `<div style="margin-left:32px; font-size:12px; color:#666;">&#8226; ${s}</div>`;
+                previewHTML += `<div style="margin-left:32px; font-size:12px; color:var(--nc-gelo-fraco);">&#8226; ${s}</div>`;
             });
             previewHTML += `</div>`;
         });
@@ -1102,14 +1102,14 @@ function mostrarPreviewEdital(editalImportado) {
 
     modal.innerHTML = `
         <div class="modal-card" style="max-width:600px;">
-            <h3>Preview do Edital</h3>
+            <h3>Confira o edital</h3>
             <p>${editalImportado.length} matéria(s), ${totalTopicos} tópico(s), ${totalSubtopicos} subtópico(s)</p>
-            <div style="max-height:350px; overflow-y:auto; margin:12px 0; padding:8px; background:#f9f9f9; border-radius:6px;">
+            <div style="max-height:350px; overflow-y:auto; margin:12px 0; padding:8px; background:var(--nc-superficie-alta); border-radius:6px;">
                 ${previewHTML}
             </div>
             <div class="modal-actions">
-                <button id="btnConfirmarEditalImport" style="background:#4CAF50;">Confirmar</button>
-                <button id="btnCancelarEditalImport" style="background:#999;">Cancelar</button>
+                <button id="btnConfirmarEditalImport" style="background:var(--nc-sucesso);">Confirmar</button>
+                <button id="btnCancelarEditalImport" style="background:var(--nc-superficie-alta);">Cancelar</button>
             </div>
         </div>
     `;
@@ -1140,7 +1140,7 @@ function baixarModeloEdital() {
         { Materia: 'CONTABILIDADE GERAL', Topico: 'Balanço Patrimonial', Subtopico: 'Patrimônio Líquido', Ordem: 1, Curso_Nome: '', TEC_Assunto: '' },
         { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Receitas', Ordem: 2, Curso_Nome: 'Aula 05 - DRE', TEC_Assunto: 'Demonstracao do Resultado' },
         { Materia: 'CONTABILIDADE GERAL', Topico: 'DRE', Subtopico: 'Despesas', Ordem: 2, Curso_Nome: '', TEC_Assunto: '' },
-        { Materia: 'AFO', Topico: 'Orçamento Público', Subtopico: '', Ordem: 1, Curso_Nome: 'Aula 01 - Orcamento', TEC_Assunto: 'Orcamento publico' },
+        { Materia: 'AFO', Topico: 'Orçamento Público', Subtopico: '', Ordem: 1, Curso_Nome: 'Aula 01 - Orcamento', TEC_Assunto: 'Orcamento público' },
         { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'PPA', Ordem: 2, Curso_Nome: 'Aula 02 - PPA', TEC_Assunto: 'Plano Plurianual' },
         { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LDO', Ordem: 2, Curso_Nome: '', TEC_Assunto: '' },
         { Materia: 'AFO', Topico: 'Ciclo Orçamentário', Subtopico: 'LOA', Ordem: 2, Curso_Nome: '', TEC_Assunto: '' }

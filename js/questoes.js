@@ -220,7 +220,7 @@ function preencherListaAssuntosEdital(materiaBloco) {
             status === 'concluido' ? ' (concluído)' :
             status === 'em_andamento' ? ' (em andamento)' : '';
 
-        div.innerHTML = `<span>${texto}</span>${statusLabel ? `<small style="color:#888; margin-left:6px;">${statusLabel}</small>` : ''}`;
+        div.innerHTML = `<span>${texto}</span>${statusLabel ? `<small style="color:var(--nc-gelo-tenue); margin-left:6px;">${statusLabel}</small>` : ''}`;
         div.addEventListener('click', () => {
             lista.querySelectorAll('.assunto-item').forEach(el => el.classList.remove('selected'));
             div.classList.add('selected');

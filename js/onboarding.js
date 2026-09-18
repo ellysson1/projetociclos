@@ -13,7 +13,7 @@ const TEMPLATES_AREA = {
             { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
             { nome: 'Direito Tributario', legenda: 'DT', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
             { nome: 'Contabilidade Geral', legenda: 'CGE', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
-            { nome: 'Contabilidade Publica', legenda: 'CPB', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Contabilidade Pública', legenda: 'CPB', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
             { nome: 'Legislacao Tributaria', legenda: 'LT', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
             { nome: 'Auditoria', legenda: 'AUD', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
             { nome: 'AFO', legenda: 'AFO', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
@@ -34,7 +34,7 @@ const TEMPLATES_AREA = {
             { nome: 'Direito Penal', legenda: 'DP', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
             { nome: 'Informatica', legenda: 'INF', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' },
             { nome: 'Legislacao Especifica', legenda: 'LE', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
-            { nome: 'Administracao Publica', legenda: 'AP', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' }
+            { nome: 'Administracao Pública', legenda: 'AP', importancia: 'pouco', extensao: 'pouco', dificuldade: 'pouco' }
         ]
     },
     policial: {
@@ -62,10 +62,10 @@ const TEMPLATES_AREA = {
             { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
             { nome: 'Controle Externo', legenda: 'CEX', importancia: 'muito', extensao: 'muito', dificuldade: 'muito' },
             { nome: 'AFO', legenda: 'AFO', importancia: 'muito', extensao: 'medio', dificuldade: 'medio' },
-            { nome: 'Contabilidade Publica', legenda: 'CPB', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
+            { nome: 'Contabilidade Pública', legenda: 'CPB', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
             { nome: 'Auditoria Governamental', legenda: 'AUG', importancia: 'muito', extensao: 'medio', dificuldade: 'muito' },
             { nome: 'Economia', legenda: 'ECO', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
-            { nome: 'Administracao Publica', legenda: 'AP', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
+            { nome: 'Administracao Pública', legenda: 'AP', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
             { nome: 'TI para Auditoria', legenda: 'TIA', importancia: 'pouco', extensao: 'medio', dificuldade: 'medio' }
         ]
     },
@@ -76,7 +76,7 @@ const TEMPLATES_AREA = {
             { nome: 'Portugues', legenda: 'POR', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
             { nome: 'Direito Constitucional', legenda: 'DC', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
             { nome: 'Direito Administrativo', legenda: 'DA', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
-            { nome: 'Administracao Publica', legenda: 'AP', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
+            { nome: 'Administracao Pública', legenda: 'AP', importancia: 'muito', extensao: 'muito', dificuldade: 'medio' },
             { nome: 'Politicas Publicas', legenda: 'PP', importancia: 'muito', extensao: 'medio', dificuldade: 'medio' },
             { nome: 'Economia', legenda: 'ECO', importancia: 'medio', extensao: 'medio', dificuldade: 'muito' },
             { nome: 'AFO', legenda: 'AFO', importancia: 'medio', extensao: 'medio', dificuldade: 'medio' },
@@ -167,16 +167,16 @@ function renderizarStepOnboarding() {
 function renderStepPerfil(container) {
     const perfil = _onboardingDados.tipoPerfil;
     container.innerHTML = `
-        <h2 style="font-size:24px; color:#3F51B5; margin-bottom:8px;">Bem-vindo ao Ciclo de Estudos!</h2>
-        <p style="color:#666; margin-bottom:24px;">Como voce estuda? Isso define o caminho mais rapido pra comecar.</p>
+        <h2 style="font-size:24px; color:var(--nc-gelo); margin-bottom:8px;">Bem-vindo ao No Controle</h2>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:24px;">Como você estuda? Isso define o caminho mais rápido pra começar.</p>
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-            ${_renderCardPerfil('autodidata', 'Estudo por conta propria', 'Configure seu ciclo do zero ou use um template. Controle total sobre materias e configuracoes.', '~3 min', perfil)}
-            ${_renderCardPerfil('curso', 'Tenho um curso preparatorio', 'Adote o plano do seu curso e escolha seu nivel. Comece a estudar em segundos.', '~1 min', perfil)}
-            ${_renderCardPerfil('mentoria', 'Tenho um professor/mentor', 'Seu professor ja configurou tudo. Voce so precisa estudar e reportar seu progresso.', 'Automatico', perfil)}
+            ${_renderCardPerfil('autodidata', 'Estudo por conta própria', 'Monte seu ciclo do zero ou parta de um modelo pronto. Controle total sobre matérias e configurações.', '~3 min', perfil)}
+            ${_renderCardPerfil('curso', 'Tenho um curso preparatório', 'Adote o plano do seu curso e escolha seu nível. Comece a estudar em segundos.', '~1 min', perfil)}
+            ${_renderCardPerfil('mentoria', 'Tenho um professor/mentor', 'Seu professor já configurou tudo. Você só precisa estudar e reportar seu progresso.', 'Automático', perfil)}
         </div>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="fecharOnboarding()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">Cancelar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
+            <button onclick="fecharOnboarding()" style="padding:11px 20px;">Cancelar</button>
+            <button onclick="onbAvancar()" class="acao" style="padding:11px 24px;">Próximo</button>
         </div>
     `;
 
@@ -195,14 +195,14 @@ function _renderCardPerfil(tipo, titulo, desc, tempo, perfilAtual) {
     return `
         <button class="onb-perfil-card" data-perfil="${tipo}" style="
             display:flex; align-items:flex-start; gap:14px; padding:16px 20px; border-radius:12px; text-align:left; cursor:pointer; transition:all 0.2s;
-            border:2px solid ${ativo ? '#3F51B5' : '#E1E4E8'};
-            background:${ativo ? '#E8EAF6' : 'white'};
+            border:2px solid ${ativo ? 'var(--nc-amarelo)' : 'var(--nc-borda)'};
+            background:${ativo ? 'var(--nc-superficie-topo)' : 'var(--nc-superficie)'};
         ">
             <span style="font-size:28px; line-height:1;">${icones[tipo]}</span>
             <div style="flex:1;">
-                <div style="font-weight:700; font-size:15px; color:${ativo ? '#3F51B5' : '#333'};">${titulo}</div>
-                <div style="font-size:13px; color:#888; margin-top:4px;">${desc}</div>
-                <div style="font-size:11px; color:#aaa; margin-top:6px;">${tempo}</div>
+                <div style="font-weight:700; font-size:15px; color:${ativo ? 'var(--nc-amarelo)' : 'var(--nc-gelo)'};">${titulo}</div>
+                <div style="font-size:13px; color:var(--nc-gelo-tenue); margin-top:4px;">${desc}</div>
+                <div style="font-size:11px; color:var(--nc-gelo-tenue); margin-top:6px;">${tempo}</div>
             </div>
         </button>
     `;
@@ -213,30 +213,30 @@ function _renderCardPerfil(tipo, titulo, desc, tempo, perfilAtual) {
 async function renderStep1Objetivo(container) {
     const perfil = _onboardingDados.tipoPerfil;
     const titulos = {
-        autodidata: 'Qual concurso ou objetivo voce esta estudando?',
+        autodidata: 'Qual concurso ou objetivo você esta estudando?',
         curso: 'Selecione o plano do seu curso',
         mentoria: 'Plano do seu professor'
     };
     const subtitulos = {
         autodidata: 'Vamos montar seu plano de estudos personalizado em poucos minutos.',
-        curso: 'Escolha o plano do seu curso preparatorio para comecar.',
+        curso: 'Escolha o plano do seu curso preparatório para começar.',
         mentoria: 'Conecte-se ao plano configurado pelo seu professor.'
     };
 
     const mostrarInput = perfil === 'autodidata';
 
     container.innerHTML = `
-        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">${titulos[perfil] || titulos.autodidata}</h2>
-        <p style="color:#666; margin-bottom:${mostrarInput ? '24' : '16'}px;">${subtitulos[perfil] || subtitulos.autodidata}</p>
+        <h2 style="font-size:22px; color:var(--nc-gelo); margin-bottom:8px;">${titulos[perfil] || titulos.autodidata}</h2>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:${mostrarInput ? '24' : '16'}px;">${subtitulos[perfil] || subtitulos.autodidata}</p>
         ${mostrarInput ? `
             <label style="font-weight:600; font-size:15px; display:block; margin-bottom:8px;">Qual concurso ou objetivo?</label>
             <input type="text" id="onbObjetivo" placeholder="Ex: TCU 2026, OAB, ENEM..." value="${_onboardingDados.objetivo}"
-                style="width:100%; padding:14px; font-size:16px; border:2px solid #E1E4E8; border-radius:10px; margin-bottom:20px;">
+                style="width:100%; padding:14px; font-size:16px; border:2px solid var(--nc-borda); border-radius:10px; margin-bottom:20px;">
         ` : `<input type="hidden" id="onbObjetivo" value="${_onboardingDados.objetivo}">`}
         <div id="onbPlanosDisponiveis" style="margin-bottom:20px;"></div>
         <div style="display:flex; justify-content:space-between; gap:10px;">
-            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
+            <button onclick="onbVoltar()" style="padding:11px 20px;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" class="acao" style="padding:11px 24px;">Próximo</button>
         </div>
     `;
 
@@ -265,18 +265,18 @@ async function renderStep1Objetivo(container) {
         });
 
         if (planos.length > 0) {
-            const label = perfil === 'autodidata' ? 'Ou escolha um plano pronto:' : 'Planos disponiveis:';
-            planosDiv.innerHTML = `<p style="font-size:14px; color:#555; margin-bottom:10px; font-weight:600;">${label}</p>`;
+            const label = perfil === 'autodidata' ? 'Ou escolha um plano pronto:' : 'Planos disponíveis:';
+            planosDiv.innerHTML = `<p style="font-size:14px; color:var(--nc-gelo-fraco); margin-bottom:10px; font-weight:600;">${label}</p>`;
             planos.forEach(p => {
                 const isAtribuido = atribuicao?.planos?.id === p.id;
                 const card = document.createElement('div');
-                card.style.cssText = `padding:12px 16px; border:2px solid ${_onboardingDados.planoBase?.id === p.id ? '#3F51B5' : (isAtribuido ? '#7C4DFF' : '#E1E4E8')}; border-radius:10px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; background:${_onboardingDados.planoBase?.id === p.id ? '#E8EAF6' : 'white'};`;
+                card.style.cssText = `padding:12px 16px; border:2px solid ${_onboardingDados.planoBase?.id === p.id ? 'var(--nc-amarelo)' : (isAtribuido ? 'var(--nc-info)' : 'var(--nc-borda)')}; border-radius:10px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; background:${_onboardingDados.planoBase?.id === p.id ? 'var(--nc-superficie-topo)' : 'var(--nc-superficie)'};`;
                 card.innerHTML = `
                     <div style="display:flex; align-items:center; gap:8px;">
-                        ${isAtribuido ? '<span style="background:#7C4DFF; color:white; font-size:10px; padding:2px 8px; border-radius:10px; font-weight:700;">ATRIBUIDO</span>' : ''}
+                        ${isAtribuido ? '<span style="background:var(--nc-superficie-alta); color:var(--nc-gelo); font-size:10px; padding:2px 8px; border-radius:10px; font-weight:700;">ATRIBUIDO</span>' : ''}
                         <strong style="font-size:15px;">${p.nome}</strong>
                     </div>
-                    <p style="font-size:13px; color:#888; margin-top:4px;">${(p.materias || []).length} materias${p.configuracoes?.horasSemanais ? ' | ' + p.configuracoes.horasSemanais + 'h/sem' : ''}</p>
+                    <p style="font-size:13px; color:var(--nc-gelo-tenue); margin-top:4px;">${(p.materias || []).length} matérias${p.configuracoes?.horasSemanais ? ' | ' + p.configuracoes.horasSemanais + 'h/sem' : ''}</p>
                 `;
                 card.addEventListener('click', () => {
                     _onboardingDados.planoBase = p;
@@ -298,7 +298,7 @@ async function renderStep1Objetivo(container) {
                 planosDiv.appendChild(card);
             });
         } else if (perfil !== 'autodidata') {
-            planosDiv.innerHTML = '<p style="color:#999; font-size:14px;">Nenhum plano disponivel. Peca o codigo ao seu professor ou curso.</p>';
+            planosDiv.innerHTML = '<p style="color:var(--nc-gelo-tenue); font-size:14px;">Nenhum plano disponível. Peca o código ao seu professor ou curso.</p>';
         }
     }
 }
@@ -308,27 +308,27 @@ async function renderStep1Objetivo(container) {
 function renderStep2Horas(container) {
     const opcoes = [5, 10, 15, 20, 25, 30, 40];
     container.innerHTML = `
-        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Quanto tempo voce tem por semana?</h2>
-        <p style="color:#666; margin-bottom:24px;">Escolha a opcao mais proxima da sua realidade. Voce pode ajustar depois.</p>
+        <h2 style="font-size:22px; color:var(--nc-gelo); margin-bottom:8px;">Quanto tempo você tem por semana?</h2>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:24px;">Escolha a opção mais próxima da sua realidade. Você pode ajustar depois.</p>
         <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:20px;">
             ${opcoes.map(h => `
                 <button class="onb-hora-btn" data-horas="${h}" style="
                     width:80px; height:80px; border-radius:12px; font-size:20px; font-weight:700;
-                    border:2px solid ${_onboardingDados.horasSemanais === h ? '#3F51B5' : '#E1E4E8'};
-                    background:${_onboardingDados.horasSemanais === h ? '#E8EAF6' : 'white'};
-                    color:${_onboardingDados.horasSemanais === h ? '#3F51B5' : '#333'};
+                    border:2px solid ${_onboardingDados.horasSemanais === h ? 'var(--nc-amarelo)' : 'var(--nc-borda)'};
+                    background:${_onboardingDados.horasSemanais === h ? 'var(--nc-superficie-topo)' : 'var(--nc-superficie)'};
+                    color:${_onboardingDados.horasSemanais === h ? 'var(--nc-amarelo)' : 'var(--nc-gelo)'};
                     cursor:pointer; transition:all 0.2s;
                 ">${h}h</button>
             `).join('')}
         </div>
         <div style="text-align:center; margin-bottom:20px;">
-            <label style="font-size:14px; color:#666;">Ou digite um valor:</label>
+            <label style="font-size:14px; color:var(--nc-gelo-fraco);">Ou digite um valor:</label>
             <input type="number" id="onbHorasCustom" value="${_onboardingDados.horasSemanais}" min="1" max="80"
-                style="width:80px; text-align:center; padding:8px; font-size:16px; border:2px solid #E1E4E8; border-radius:8px; margin-left:8px;">
+                style="width:80px; text-align:center; padding:8px; font-size:16px; border:2px solid var(--nc-borda); border-radius:8px; margin-left:8px;">
         </div>
         <div style="display:flex; justify-content:space-between; gap:10px;">
-            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
+            <button onclick="onbVoltar()" style="padding:11px 20px;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" class="acao" style="padding:11px 24px;">Próximo</button>
         </div>
     `;
 
@@ -354,42 +354,42 @@ function renderStep3Materias(container) {
         const t = TEMPLATES_AREA[key];
         return `<button class="onb-template-btn" data-template="${key}" style="
             flex:1; min-width:140px; padding:12px 10px; border-radius:10px; text-align:center; cursor:pointer; transition:all 0.2s;
-            border:2px solid #E1E4E8; background:white;
+            border:2px solid var(--nc-borda); background:var(--nc-superficie);
         ">
-            <div style="font-weight:700; font-size:14px; color:#3F51B5;">${t.nome}</div>
-            <div style="font-size:11px; color:#888; margin-top:2px;">${t.descricao}</div>
-            <div style="font-size:11px; color:#aaa; margin-top:4px;">${t.materias.length} materias</div>
+            <div style="font-weight:700; font-size:14px; color:var(--nc-info);">${t.nome}</div>
+            <div style="font-size:11px; color:var(--nc-gelo-tenue); margin-top:2px;">${t.descricao}</div>
+            <div style="font-size:11px; color:var(--nc-gelo-tenue); margin-top:4px;">${t.materias.length} matérias</div>
         </button>`;
     }).join('');
 
     container.innerHTML = `
-        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Quais materias voce vai estudar?</h2>
+        <h2 style="font-size:22px; color:var(--nc-gelo); margin-bottom:8px;">Quais matérias você vai estudar?</h2>
         ${!temMaterias ? `
-        <p style="color:#666; margin-bottom:12px;">Escolha um modelo pronto ou adicione manualmente.</p>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:12px;">Escolha um modelo pronto ou adicione manualmente.</p>
         <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">${templateCards}</div>
-        <div style="border-top:1px solid #E1E4E8; padding-top:12px; margin-bottom:12px;">
-            <p style="font-size:13px; color:#999; margin-bottom:8px;">Ou adicione uma por uma:</p>
+        <div style="border-top:1px solid var(--nc-borda); padding-top:12px; margin-bottom:12px;">
+            <p style="font-size:13px; color:var(--nc-gelo-tenue); margin-bottom:8px;">Ou adicione uma por uma:</p>
         </div>
         ` : `
-        <p style="color:#666; margin-bottom:12px;">Adicione ou remova como quiser. <button id="onbLimparMaterias" style="background:none; border:none; color:#FF6B6B; cursor:pointer; font-size:13px; text-decoration:underline;">Limpar e escolher outro modelo</button></p>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:12px;">Adicione ou remova como quiser. <button id="onbLimparMaterias" style="background:none; border:none; color:var(--nc-alerta); cursor:pointer; font-size:13px; text-decoration:underline;">Limpar e escolher outro modelo</button></p>
         `}
         <div id="onbMateriasLista" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div>
         <div style="display:flex; gap:8px; margin-bottom:20px;">
-            <input type="text" id="onbNovaMateriaNome" placeholder="Nome da materia" style="flex:2; padding:10px; border:2px solid #E1E4E8; border-radius:8px; font-size:14px;">
-            <input type="text" id="onbNovaMateriaSigla" placeholder="Sigla" maxlength="3" style="width:70px; padding:10px; border:2px solid #E1E4E8; border-radius:8px; font-size:14px; text-transform:uppercase;">
-            <button id="onbBtnAddMateria" style="background:#4CAF50; color:white; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; font-weight:600; white-space:nowrap;">+ Adicionar</button>
+            <input type="text" id="onbNovaMateriaNome" placeholder="Nome da matéria" style="flex:2; padding:10px; border:2px solid var(--nc-borda); border-radius:8px; font-size:14px;">
+            <input type="text" id="onbNovaMateriaSigla" placeholder="Sigla" maxlength="3" style="width:70px; padding:10px; border:2px solid var(--nc-borda); border-radius:8px; font-size:14px; text-transform:uppercase;">
+            <button id="onbBtnAddMateria" style="background:var(--nc-sucesso); color:var(--nc-gelo); border:none; border-radius:8px; padding:10px 16px; cursor:pointer; font-weight:600; white-space:nowrap;">+ Adicionar</button>
         </div>
         <div style="display:flex; justify-content:space-between; gap:10px;">
-            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
+            <button onclick="onbVoltar()" style="padding:11px 20px;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" class="acao" style="padding:11px 24px;">Próximo</button>
         </div>
     `;
 
     const lista = document.getElementById('onbMateriasLista');
     _onboardingDados.materias.forEach((m, idx) => {
         const chip = document.createElement('div');
-        chip.style.cssText = 'display:inline-flex; align-items:center; gap:6px; padding:8px 14px; background:#E8EAF6; border-radius:20px; font-size:14px; font-weight:500; color:#3F51B5;';
-        chip.innerHTML = `<span>${m.legenda} — ${m.nome}</span><span class="onb-remove-materia" data-idx="${idx}" style="cursor:pointer; font-size:16px; color:#FF6B6B; font-weight:700;">&times;</span>`;
+        chip.style.cssText = 'display:inline-flex; align-items:center; gap:6px; padding:8px 14px; background:var(--nc-info-fundo); border-radius:20px; font-size:14px; font-weight:500; color:var(--nc-info);';
+        chip.innerHTML = `<span>${m.legenda} — ${m.nome}</span><span class="onb-remove-materia" data-idx="${idx}" style="cursor:pointer; font-size:16px; color:var(--nc-alerta); font-weight:700;">&times;</span>`;
         lista.appendChild(chip);
     });
 
@@ -404,8 +404,8 @@ function renderStep3Materias(container) {
         const nome = document.getElementById('onbNovaMateriaNome').value.trim();
         const sigla = document.getElementById('onbNovaMateriaSigla').value.trim().toUpperCase();
         if (!nome || !sigla) { alert('Preencha nome e sigla.'); return; }
-        if (sigla.length > 3) { alert('Sigla deve ter no maximo 3 letras.'); return; }
-        if (_onboardingDados.materias.some(m => m.legenda === sigla)) { alert('Sigla ja existe.'); return; }
+        if (sigla.length > 3) { alert('Sigla deve ter no máximo 3 letras.'); return; }
+        if (_onboardingDados.materias.some(m => m.legenda === sigla)) { alert('Sigla já existe.'); return; }
         _onboardingDados.materias.push({
             nome, legenda: sigla, fase: 1,
             importancia: 'medio', extensao: 'medio', dificuldade: 'medio'
@@ -435,38 +435,38 @@ function renderStep3Materias(container) {
 
 function renderStep4Familiaridade(container) {
     container.innerHTML = `
-        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Como voce avalia cada materia?</h2>
-        <p style="color:#666; margin-bottom:20px;">Responda rapidamente — nao precisa ser perfeito, voce pode ajustar depois.</p>
+        <h2 style="font-size:22px; color:var(--nc-gelo); margin-bottom:8px;">Como você avalia cada matéria?</h2>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:20px;">Responda rapidamente — não precisa ser perfeito, você pode ajustar depois.</p>
         <div id="onbFamiliaridadeLista" style="max-height:400px; overflow-y:auto;"></div>
         <div style="display:flex; justify-content:space-between; gap:10px; margin-top:20px;">
-            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Proximo &rarr;</button>
+            <button onclick="onbVoltar()" style="padding:11px 20px;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" class="acao" style="padding:11px 24px;">Próximo</button>
         </div>
     `;
 
     const lista = document.getElementById('onbFamiliaridadeLista');
     _onboardingDados.materias.forEach((m, idx) => {
         const card = document.createElement('div');
-        card.style.cssText = 'border:1px solid #E1E4E8; border-radius:10px; padding:14px; margin-bottom:12px; background:white;';
+        card.style.cssText = 'border:1px solid var(--nc-borda); border-radius:10px; padding:14px; margin-bottom:12px; background:var(--nc-superficie);';
         card.innerHTML = `
-            <div style="font-weight:700; font-size:15px; color:#333; margin-bottom:10px;">${m.legenda} — ${m.nome}</div>
+            <div style="font-weight:700; font-size:15px; color:var(--nc-gelo); margin-bottom:10px;">${m.legenda} — ${m.nome}</div>
             <div style="display:grid; grid-template-columns:1fr; gap:8px;">
                 <div>
-                    <span style="font-size:13px; color:#555; font-weight:600;">Quanto cai na prova?</span>
+                    <span style="font-size:13px; color:var(--nc-gelo-fraco); font-weight:600;">Quanto cai na prova?</span>
                     <div style="display:flex; gap:6px; margin-top:4px;">
-                        ${renderBotoesNivel(idx, 'importancia', m.importancia, ['Pouco', 'Medio', 'Muito'])}
+                        ${renderBotoesNivel(idx, 'importancia', m.importancia, ['Pouco', 'Médio', 'Muito'])}
                     </div>
                 </div>
                 <div>
-                    <span style="font-size:13px; color:#555; font-weight:600;">Extensao do conteudo?</span>
+                    <span style="font-size:13px; color:var(--nc-gelo-fraco); font-weight:600;">Extensão do conteúdo?</span>
                     <div style="display:flex; gap:6px; margin-top:4px;">
-                        ${renderBotoesNivel(idx, 'extensao', m.extensao, ['Curto', 'Medio', 'Extenso'])}
+                        ${renderBotoesNivel(idx, 'extensao', m.extensao, ['Curto', 'Médio', 'Extenso'])}
                     </div>
                 </div>
                 <div>
-                    <span style="font-size:13px; color:#555; font-weight:600;">Sua dificuldade?</span>
+                    <span style="font-size:13px; color:var(--nc-gelo-fraco); font-weight:600;">Sua dificuldade?</span>
                     <div style="display:flex; gap:6px; margin-top:4px;">
-                        ${renderBotoesNivel(idx, 'dificuldade', m.dificuldade, ['Facil', 'OK', 'Dificil'])}
+                        ${renderBotoesNivel(idx, 'dificuldade', m.dificuldade, ['Fácil', 'OK', 'Difícil'])}
                     </div>
                 </div>
             </div>
@@ -492,10 +492,10 @@ function renderBotoesNivel(idx, campo, valorAtual, labels) {
     return labels.map((label, i) => {
         const val = valores[i];
         const ativo = valorAtual === val;
-        const cores = ['#4CAF50', '#FF9800', '#F44336'];
+        const cores = ['var(--nc-sucesso)', 'var(--nc-atencao)', 'var(--nc-alerta)'];
         return `<button class="onb-nivel-btn" data-idx="${idx}" data-campo="${campo}" data-valor="${val}" style="
-            flex:1; padding:6px 4px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:2px solid ${ativo ? cores[i] : '#E1E4E8'};
-            background:${ativo ? cores[i] + '22' : 'white'}; color:${ativo ? cores[i] : '#888'}; transition:all 0.15s;
+            flex:1; padding:6px 4px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:2px solid ${ativo ? cores[i] : 'var(--nc-borda)'};
+            background:${ativo ? cores[i] + '22' : 'var(--nc-superficie)'}; color:${ativo ? cores[i] : 'var(--nc-gelo-tenue)'}; transition:all 0.15s;
         ">${label}</button>`;
     }).join('');
 }
@@ -507,57 +507,57 @@ function renderStep5LimiteMaterias(container) {
     const limitarAtivo = _onboardingDados.limitarMaterias;
 
     container.innerHTML = `
-        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Quantas materias no primeiro ciclo?</h2>
-        <p style="color:#666; margin-bottom:24px;">Voce pode comecar com todas ou ir adicionando aos poucos conforme avanca.</p>
+        <h2 style="font-size:22px; color:var(--nc-gelo); margin-bottom:8px;">Quantas matérias no primeiro ciclo?</h2>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:24px;">Você pode começar com todas ou ir adicionando aos poucos conforme avanca.</p>
 
         <div style="display:flex; gap:12px; margin-bottom:20px;">
             <button class="onb-limite-opt" data-limitar="false" style="
                 flex:1; padding:16px; border-radius:12px; text-align:center; cursor:pointer; transition:all 0.2s;
-                border:2px solid ${!limitarAtivo ? '#3F51B5' : '#E1E4E8'};
-                background:${!limitarAtivo ? '#E8EAF6' : 'white'};
+                border:2px solid ${!limitarAtivo ? 'var(--nc-amarelo)' : 'var(--nc-borda)'};
+                background:${!limitarAtivo ? 'var(--nc-superficie-topo)' : 'var(--nc-superficie)'};
             ">
                 <div style="font-size:24px; margin-bottom:4px;">\u{1F4DA}</div>
-                <div style="font-weight:700; font-size:15px; color:${!limitarAtivo ? '#3F51B5' : '#333'};">Todas (${total})</div>
-                <div style="font-size:12px; color:#888; margin-top:2px;">Desde o primeiro ciclo</div>
+                <div style="font-weight:700; font-size:15px; color:${!limitarAtivo ? 'var(--nc-amarelo)' : 'var(--nc-gelo)'};">Todas (${total})</div>
+                <div style="font-size:12px; color:var(--nc-gelo-tenue); margin-top:2px;">Desde o primeiro ciclo</div>
             </button>
             <button class="onb-limite-opt" data-limitar="true" style="
                 flex:1; padding:16px; border-radius:12px; text-align:center; cursor:pointer; transition:all 0.2s;
-                border:2px solid ${limitarAtivo ? '#3F51B5' : '#E1E4E8'};
-                background:${limitarAtivo ? '#E8EAF6' : 'white'};
+                border:2px solid ${limitarAtivo ? 'var(--nc-amarelo)' : 'var(--nc-borda)'};
+                background:${limitarAtivo ? 'var(--nc-superficie-topo)' : 'var(--nc-superficie)'};
             ">
                 <div style="font-size:24px; margin-bottom:4px;">\u{1F3AF}</div>
-                <div style="font-weight:700; font-size:15px; color:${limitarAtivo ? '#3F51B5' : '#333'};">Gradual</div>
-                <div style="font-size:12px; color:#888; margin-top:2px;">Comecar com poucas, crescer aos poucos</div>
+                <div style="font-weight:700; font-size:15px; color:${limitarAtivo ? 'var(--nc-amarelo)' : 'var(--nc-gelo)'};">Gradual</div>
+                <div style="font-size:12px; color:var(--nc-gelo-tenue); margin-top:2px;">Começar com poucas, crescer aos poucos</div>
             </button>
         </div>
 
-        <div id="onbLimiteConfig" style="display:${limitarAtivo ? 'block' : 'none'}; background:#F5F7FA; border-radius:12px; padding:16px; margin-bottom:20px;">
+        <div id="onbLimiteConfig" style="display:${limitarAtivo ? 'block' : 'none'}; background:var(--nc-superficie-alta); border-radius:12px; padding:16px; margin-bottom:20px;">
             <div style="margin-bottom:16px;">
-                <label style="font-size:14px; font-weight:600; color:#555; display:block; margin-bottom:6px;">Materias no ciclo inicial:</label>
+                <label style="font-size:14px; font-weight:600; color:var(--nc-gelo-fraco); display:block; margin-bottom:6px;">Matérias no ciclo inicial:</label>
                 <div style="display:flex; align-items:center; gap:12px;">
                     <input type="range" id="onbMateriasIniciais" min="1" max="${total}" value="${_onboardingDados.materiasIniciais}" style="flex:1;">
-                    <span id="onbMateriasIniciaisLabel" style="font-size:20px; font-weight:700; color:#3F51B5; min-width:30px; text-align:center;">${Math.min(_onboardingDados.materiasIniciais, total)}</span>
+                    <span id="onbMateriasIniciaisLabel" style="font-size:20px; font-weight:700; color:var(--nc-info); min-width:30px; text-align:center;">${Math.min(_onboardingDados.materiasIniciais, total)}</span>
                 </div>
             </div>
             <div>
-                <label style="font-size:14px; font-weight:600; color:#555; display:block; margin-bottom:6px;">Novas materias a cada avanco:</label>
+                <label style="font-size:14px; font-weight:600; color:var(--nc-gelo-fraco); display:block; margin-bottom:6px;">Novas matérias a cada avanço:</label>
                 <div style="display:flex; gap:8px;">
                     ${[1, 2, 3, 4].map(n => `
                         <button class="onb-incremento-btn" data-val="${n}" style="
                             flex:1; padding:10px; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; transition:all 0.15s;
-                            border:2px solid ${_onboardingDados.materiasPorCiclo === n ? '#3F51B5' : '#E1E4E8'};
-                            background:${_onboardingDados.materiasPorCiclo === n ? '#E8EAF6' : 'white'};
-                            color:${_onboardingDados.materiasPorCiclo === n ? '#3F51B5' : '#888'};
+                            border:2px solid ${_onboardingDados.materiasPorCiclo === n ? 'var(--nc-amarelo)' : 'var(--nc-borda)'};
+                            background:${_onboardingDados.materiasPorCiclo === n ? 'var(--nc-superficie-topo)' : 'var(--nc-superficie)'};
+                            color:${_onboardingDados.materiasPorCiclo === n ? 'var(--nc-amarelo)' : 'var(--nc-gelo-tenue)'};
                         ">+${n}</button>
                     `).join('')}
                 </div>
             </div>
-            <p style="font-size:12px; color:#999; margin-top:12px;">As materias serao priorizadas pela importancia e dificuldade que voce definiu.</p>
+            <p style="font-size:12px; color:var(--nc-gelo-tenue); margin-top:12px;">As matérias serao priorizadas pela importancia e dificuldade que você definiu.</p>
         </div>
 
         <div style="display:flex; justify-content:space-between; gap:10px;">
-            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Ver Resumo &rarr;</button>
+            <button onclick="onbVoltar()" style="padding:11px 20px;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" style="background:var(--nc-superficie-alta); padding:10px 24px; border-radius:8px; color:var(--nc-gelo); border:none; cursor:pointer; font-weight:600;">Ver Resumo &rarr;</button>
         </div>
     `;
 
@@ -608,8 +608,8 @@ function renderStepNivel(container) {
     const niveisUnicos = niveis.filter((n, i) => i === 0 || n.qtd !== niveis[i - 1].qtd);
 
     container.innerHTML = `
-        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Qual seu nivel de estudo?</h2>
-        <p style="color:#666; margin-bottom:24px;">Escolha quantas materias voce quer estudar agora. As demais serao adicionadas conforme voce avanca.</p>
+        <h2 style="font-size:22px; color:var(--nc-gelo); margin-bottom:8px;">Qual seu nível de estudo?</h2>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:24px;">Escolha quantas matérias você quer estudar agora. As demais serao adicionadas conforme você avanca.</p>
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
             ${niveisUnicos.map(n => {
                 const ativo = nivel === n.id;
@@ -618,27 +618,27 @@ function renderStepNivel(container) {
                 return `
                     <button class="onb-nivel-card" data-nivel="${n.id}" style="
                         padding:16px 20px; border-radius:12px; text-align:left; cursor:pointer; transition:all 0.2s;
-                        border:2px solid ${ativo ? '#3F51B5' : '#E1E4E8'};
-                        background:${ativo ? '#E8EAF6' : 'white'};
+                        border:2px solid ${ativo ? 'var(--nc-amarelo)' : 'var(--nc-borda)'};
+                        background:${ativo ? 'var(--nc-superficie-topo)' : 'var(--nc-superficie)'};
                     ">
                         <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
                             <span style="font-size:24px;">${n.icone}</span>
                             <div>
-                                <div style="font-weight:700; font-size:15px; color:${ativo ? '#3F51B5' : '#333'};">${n.titulo}</div>
-                                <div style="font-size:12px; color:#888;">${n.qtd} materia${n.qtd !== 1 ? 's' : ''} — ${n.desc}</div>
+                                <div style="font-weight:700; font-size:15px; color:${ativo ? 'var(--nc-amarelo)' : 'var(--nc-gelo)'};">${n.titulo}</div>
+                                <div style="font-size:12px; color:var(--nc-gelo-tenue);">${n.qtd} matéria${n.qtd !== 1 ? 's' : ''} — ${n.desc}</div>
                             </div>
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:4px;">
-                            ${materiasDoNivel.map(m => `<span style="padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; background:${ativo ? '#C5CAE9' : '#E8EAF6'}; color:#3F51B5;">${m.legenda}</span>`).join('')}
-                            ${materiasRestantes.length > 0 ? `<span style="padding:2px 8px; border-radius:8px; font-size:11px; color:#999; background:#f5f5f5;">+${materiasRestantes.length} depois</span>` : ''}
+                            ${materiasDoNivel.map(m => `<span style="padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; background:${ativo ? 'var(--nc-borda)' : 'var(--nc-superficie-topo)'}; color:var(--nc-info);">${m.legenda}</span>`).join('')}
+                            ${materiasRestantes.length > 0 ? `<span style="padding:2px 8px; border-radius:8px; font-size:11px; color:var(--nc-gelo-tenue); background:var(--nc-superficie-alta);">+${materiasRestantes.length} depois</span>` : ''}
                         </div>
                     </button>
                 `;
             }).join('')}
         </div>
         <div style="display:flex; justify-content:space-between; gap:10px;">
-            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbAvancar()" style="background:#3F51B5; padding:10px 24px; border-radius:8px; color:white; border:none; cursor:pointer; font-weight:600;">Ver Resumo &rarr;</button>
+            <button onclick="onbVoltar()" style="padding:11px 20px;">&larr; Voltar</button>
+            <button onclick="onbAvancar()" style="background:var(--nc-superficie-alta); padding:10px 24px; border-radius:8px; color:var(--nc-gelo); border:none; cursor:pointer; font-weight:600;">Ver Resumo &rarr;</button>
         </div>
     `;
 
@@ -678,63 +678,63 @@ function renderStep6Resumo(container) {
     const nivelLabels = { basico: 'Basico', intermediario: 'Intermediario', avancado: 'Avancado' };
 
     container.innerHTML = `
-        <h2 style="font-size:22px; color:#3F51B5; margin-bottom:8px;">Tudo pronto!</h2>
-        <p style="color:#666; margin-bottom:20px;">Confira o resumo e gere seu ciclo de estudos.</p>
+        <h2 style="font-size:22px; color:var(--nc-gelo); margin-bottom:8px;">Tudo pronto!</h2>
+        <p style="color:var(--nc-gelo-fraco); margin-bottom:20px;">Confira o resumo e gere seu ciclo de estudos.</p>
 
-        <div style="background:#F5F7FA; border-radius:12px; padding:20px; margin-bottom:20px;">
+        <div style="background:var(--nc-superficie-alta); border-radius:12px; padding:20px; margin-bottom:20px;">
             <div style="display:flex; justify-content:space-around; text-align:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
                 <div>
-                    <div style="font-size:32px; font-weight:700; color:#3F51B5;">${horas}h</div>
-                    <div style="font-size:13px; color:#888;">por semana</div>
+                    <div style="font-size:32px; font-weight:700; color:var(--nc-info);">${horas}h</div>
+                    <div style="font-size:13px; color:var(--nc-gelo-tenue);">por semana</div>
                 </div>
                 <div>
-                    <div style="font-size:32px; font-weight:700; color:#3F51B5;">${materiasAtivas.length}</div>
-                    <div style="font-size:13px; color:#888;">materias${materiasProxFases.length > 0 ? ` (de ${materias.length})` : ''}</div>
+                    <div style="font-size:32px; font-weight:700; color:var(--nc-info);">${materiasAtivas.length}</div>
+                    <div style="font-size:13px; color:var(--nc-gelo-tenue);">matérias${materiasProxFases.length > 0 ? ` (de ${materias.length})` : ''}</div>
                 </div>
                 <div>
-                    <div style="font-size:32px; font-weight:700; color:#3F51B5;">${totalBlocos}</div>
-                    <div style="font-size:13px; color:#888;">blocos de ${duracaoBloco}min</div>
+                    <div style="font-size:32px; font-weight:700; color:var(--nc-info);">${totalBlocos}</div>
+                    <div style="font-size:13px; color:var(--nc-gelo-tenue);">blocos de ${duracaoBloco}min</div>
                 </div>
             </div>
 
             ${perfil ? `
                 <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-                    <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#E8EAF6; color:#3F51B5;">${perfilLabels[perfil] || perfil}</span>
-                    ${dados.nivelConteudo ? `<span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#E8F5E9; color:#2E7D32;">${nivelLabels[dados.nivelConteudo]}</span>` : ''}
-                    ${dados.planoBase ? `<span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#FFF3E0; color:#E65100;">${dados.planoBase.nome}</span>` : ''}
+                    <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:var(--nc-info-fundo); color:var(--nc-info);">${perfilLabels[perfil] || perfil}</span>
+                    ${dados.nivelConteudo ? `<span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:var(--nc-sucesso-fundo); color:var(--nc-sucesso);">${nivelLabels[dados.nivelConteudo]}</span>` : ''}
+                    ${dados.planoBase ? `<span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:var(--nc-atencao-fundo); color:var(--nc-atencao);">${dados.planoBase.nome}</span>` : ''}
                 </div>
             ` : ''}
 
             <div style="margin-bottom:12px;">
-                <div style="font-size:13px; font-weight:600; color:#555; margin-bottom:8px;">Distribuicao dos blocos:</div>
+                <div style="font-size:13px; font-weight:600; color:var(--nc-gelo-fraco); margin-bottom:8px;">Distribuição dos blocos:</div>
                 ${blocosPorMateria.map(b => {
-                    const cor = b.importancia === 'muito' ? '#F44336' : b.importancia === 'medio' ? '#FF9800' : '#4CAF50';
+                    const cor = b.importancia === 'muito' ? 'var(--nc-alerta)' : b.importancia === 'medio' ? 'var(--nc-atencao)' : 'var(--nc-sucesso)';
                     const pct = totalBlocos > 0 ? Math.round((b.qtd / totalBlocos) * 100) : 0;
                     return `
                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                             <span style="font-size:12px; font-weight:600; color:${cor}; min-width:36px;">${b.legenda}</span>
-                            <div style="flex:1; height:20px; background:#E1E4E8; border-radius:10px; overflow:hidden;">
+                            <div style="flex:1; height:20px; background:var(--nc-superficie-alta); border-radius:10px; overflow:hidden;">
                                 <div style="height:100%; width:${pct}%; background:${cor}; border-radius:10px; min-width:${b.qtd > 0 ? '8px' : '0'}; transition:width 0.3s;"></div>
                             </div>
-                            <span style="font-size:13px; font-weight:700; color:#333; min-width:44px; text-align:right;">${b.qtd} ${b.meioBloco ? '(½)' : ''}</span>
+                            <span style="font-size:13px; font-weight:700; color:var(--nc-gelo); min-width:44px; text-align:right;">${b.qtd} ${b.meioBloco ? '(½)' : ''}</span>
                         </div>
                     `;
                 }).join('')}
             </div>
 
             ${materiasProxFases.length > 0 ? `
-                <div style="border-top:1px solid #E1E4E8; padding-top:12px; margin-top:8px;">
-                    <div style="font-size:12px; color:#888; margin-bottom:6px;">Entram nas proximas fases (+${_onboardingDados.materiasPorCiclo} por avanco):</div>
+                <div style="border-top:1px solid var(--nc-borda); padding-top:12px; margin-top:8px;">
+                    <div style="font-size:12px; color:var(--nc-gelo-tenue); margin-bottom:6px;">Entram nas próximas fases (+${_onboardingDados.materiasPorCiclo} por avanço):</div>
                     <div style="display:flex; flex-wrap:wrap; gap:4px;">
-                        ${materiasProxFases.map(m => `<span style="padding:3px 8px; border-radius:8px; font-size:11px; font-weight:600; background:#E1E4E833; color:#999; border:1px solid #E1E4E8;">${m.legenda}</span>`).join('')}
+                        ${materiasProxFases.map(m => `<span style="padding:3px 8px; border-radius:8px; font-size:11px; font-weight:600; background:var(--nc-superficie-alta); color:var(--nc-gelo-tenue); border:1px solid var(--nc-borda);">${m.legenda}</span>`).join('')}
                     </div>
                 </div>
             ` : ''}
         </div>
 
         <div style="display:flex; justify-content:space-between; gap:10px;">
-            <button onclick="onbVoltar()" style="background:#999; padding:10px 20px; border-radius:8px; color:white; border:none; cursor:pointer;">&larr; Voltar</button>
-            <button onclick="onbFinalizar()" style="background:linear-gradient(135deg, #4CAF50, #2E7D32); padding:14px 32px; border-radius:10px; color:white; border:none; cursor:pointer; font-weight:700; font-size:16px; box-shadow:0 4px 12px rgba(76,175,80,.3);">Gerar Meu Ciclo!</button>
+            <button onclick="onbVoltar()" style="padding:11px 20px;">&larr; Voltar</button>
+            <button onclick="onbFinalizar()" style="background:linear-gradient(135deg, var(--nc-sucesso), var(--nc-sucesso)); padding:14px 32px; border-radius:10px; color:var(--nc-gelo); border:none; cursor:pointer; font-weight:700; font-size:16px; box-shadow:0 4px 12px rgba(76,175,80,.3);">Gerar Meu Ciclo!</button>
         </div>
     `;
 }
@@ -800,7 +800,7 @@ function onbAvancar() {
     const stepName = _onboardingSteps[_onboardingStepIdx];
 
     if (stepName === 'perfil') {
-        if (!_onboardingDados.tipoPerfil) { alert('Escolha como voce estuda.'); return; }
+        if (!_onboardingDados.tipoPerfil) { alert('Escolha como você estuda.'); return; }
         _onboardingSteps = _definirStepsParaPerfil(_onboardingDados.tipoPerfil);
     }
     if (stepName === 'objetivo') {
@@ -814,7 +814,7 @@ function onbAvancar() {
         _onboardingDados.horasSemanais = parseInt(document.getElementById('onbHorasCustom')?.value) || 10;
     }
     if (stepName === 'materias' && _onboardingDados.materias.length === 0) {
-        alert('Adicione pelo menos uma materia.');
+        alert('Adicione pelo menos uma matéria.');
         return;
     }
     if (stepName === 'limite') {
@@ -823,7 +823,7 @@ function onbAvancar() {
         }
     }
     if (stepName === 'nivel') {
-        if (!_onboardingDados.nivelConteudo) { alert('Escolha um nivel.'); return; }
+        if (!_onboardingDados.nivelConteudo) { alert('Escolha um nível.'); return; }
     }
 
     // For Curso: skip nivel step if plan has <= 6 materias

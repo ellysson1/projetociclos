@@ -1,49 +1,206 @@
-/* Card minimalista de bloco */
+/* ============================================================
+   No Controle — o ciclo: anel, blocos, edital e revisao
+   ============================================================ */
+
+/* ── O anel do ciclo ────────────────────────────────────────────
+   Objeto da marca, herdado da landing. Cada segmento e um bloco
+   real, colorido pela materia. O centro responde a pergunta do
+   usuario: o que eu estudo agora.
+   ───────────────────────────────────────────────────────────── */
+
+.anel-modulo {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 34px;
+    padding: 26px 30px;
+    margin-bottom: 30px;
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-modulo);
+    box-shadow: var(--nc-edge);
+}
+
+.anel-modulo__anel {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+}
+
+.anel-modulo__anel svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    overflow: visible;
+}
+
+.anel-seg {
+    fill: none;
+    stroke-linecap: butt;
+    opacity: .26;
+    transition: opacity .45s ease, stroke-width .3s ease;
+}
+
+.anel-seg--feito { opacity: 1; }
+
+.anel-seg--proximo {
+    opacity: .9;
+    stroke-width: 18;
+}
+
+.anel-modulo__centro {
+    position: absolute;
+    inset: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 3px;
+}
+
+.anel-modulo__rotulo {
+    font-size: 11px;
+    color: var(--nc-gelo-tenue);
+    line-height: 1.2;
+}
+
+.anel-modulo__proximo {
+    font-family: var(--fonte-titulo);
+    font-weight: 800;
+    font-size: 16px;
+    line-height: 1.12;
+    color: var(--nc-gelo);
+    letter-spacing: -.02em;
+    text-wrap: balance;
+}
+
+.anel-modulo__meta {
+    font-size: 12px;
+    color: var(--nc-gelo-fraco);
+    font-variant-numeric: tabular-nums;
+}
+
+.anel-modulo__dados { min-width: 0; }
+
+.anel-modulo__contagem {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--nc-gelo);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.02em;
+}
+
+.anel-modulo__contagem span {
+    font-size: 22px;
+    color: var(--nc-gelo-tenue);
+    font-weight: 500;
+}
+
+.anel-modulo__legenda-contagem {
+    font-size: 14px;
+    color: var(--nc-gelo-fraco);
+    margin: 6px 0 18px;
+}
+
+.anel-modulo__materias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px 16px;
+    margin-bottom: 0;
+}
+
+.anel-modulo__materia {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--nc-gelo-fraco);
+    font-variant-numeric: tabular-nums;
+}
+
+.anel-modulo__ponto {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--r-pill);
+    flex-shrink: 0;
+}
+
+.anel-modulo__acoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-self: center;
+}
+
+.anel-modulo__acoes .acao {
+    padding: 12px 22px;
+    font-size: 15px;
+}
+
+/* Bloco alvo quando o usuario chega pelo anel */
+.bloco-card.alvo {
+    border-color: var(--nc-amarelo);
+    box-shadow: var(--nc-edge), 0 0 0 3px rgb(245 200 66 / .22);
+}
+
+/* ── Card de bloco ──────────────────────────────────────────── */
+
 .bloco-card {
     position: relative;
-    background: white;
-    border: 1px solid var(--border-color);
-    border-left: 4px solid #26A69A;
-    border-radius: 8px;
-    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    background: var(--nc-superficie);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-card);
+    padding: 0 14px 14px;
     cursor: move;
-    transition: all 0.3s ease;
+    overflow: hidden;
+    transition: border-color .15s ease, background .15s ease;
     user-select: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--nc-edge);
 }
 
 .bloco-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    transform: translateY(-1px);
+    border-color: var(--nc-borda-forte);
+    background: var(--nc-superficie-alta);
 }
 
+/* Faixa da materia: a unica cor livre do app */
 .bloco-card .bloco-card__header {
-    height: 6px;
-    border-radius: 4px;
-    margin-bottom: 12px;
+    height: 4px;
+    border-radius: 0;
+    margin: 0 -14px 14px;
 }
 
 .bloco-card .bloco-card__sigla {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--text-color);
-    letter-spacing: 1px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--nc-gelo);
+    letter-spacing: .04em;
+    line-height: 1.2;
 }
 
 .bloco-card .bloco-card__nome {
-    font-size: 13px;
-    color: #666;
-    margin-top: 2px;
+    font-size: 12px;
+    color: var(--nc-gelo-fraco);
+    margin-top: 3px;
     margin-bottom: 4px;
+    line-height: 1.35;
 }
 
 .bloco-card .bloco-card__duracao {
     font-size: 12px;
-    color: #999;
-    margin-bottom: 12px;
+    color: var(--nc-gelo-tenue);
+    margin-bottom: 0;
+    font-variant-numeric: tabular-nums;
 }
 
 .bloco-card .bloco-card__footer {
+    margin-top: auto;
+    padding-top: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -53,170 +210,171 @@
 .bloco-card .bloco-card__check {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     font-size: 13px;
-    color: #555;
+    color: var(--nc-gelo-fraco);
     cursor: pointer;
 }
 
 .bloco-card .bloco-card__check input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
     cursor: pointer;
-    accent-color: #4CAF50;
 }
 
 .bloco-card .bloco-card__btn-timer {
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--primary-color);
+    background: transparent;
+    border: 1px solid var(--nc-borda);
+    color: var(--nc-gelo-fraco);
     padding: 4px 10px;
     font-size: 12px;
-    border-radius: 4px;
+    font-weight: 500;
+    border-radius: var(--r-campo);
+    box-shadow: none;
     cursor: pointer;
 }
 
 .bloco-card .bloco-card__btn-timer:hover {
-    background: var(--secondary-color);
+    background: var(--nc-superficie-topo);
+    border-color: var(--nc-borda-forte);
+    color: var(--nc-gelo);
 }
 
 /* Estado concluido */
 .bloco-card.concluido {
-    background: #E8F5E9;
-    border-left-color: #4CAF50;
+    background: var(--nc-sucesso-fundo);
+    border-color: var(--nc-sucesso-borda);
 }
 
 .bloco-card.concluido .bloco-card__header {
-    background: #4CAF50 !important;
+    background: var(--nc-sucesso) !important;
 }
 
 .bloco-card.concluido .bloco-card__sigla {
-    color: #2E7D32;
+    color: var(--nc-sucesso);
 }
 
 .bloco-card .bloco-card__info-concluido {
     display: none;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #C8E6C9;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--nc-sucesso-borda);
     font-size: 12px;
-    color: #2E7D32;
+    color: var(--nc-sucesso);
+    font-variant-numeric: tabular-nums;
 }
 
-.bloco-card.concluido .bloco-card__info-concluido {
-    display: block;
-}
+.bloco-card.concluido .bloco-card__info-concluido { display: block; }
 
 .bloco-card__sugestao {
-    margin-top: 6px;
+    margin-top: 8px;
     font-size: 11px;
-    font-style: italic;
-    color: #7C4DFF;
+    color: var(--nc-info);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.bloco-card.concluido .bloco-card__sugestao {
-    display: none;
-}
+.bloco-card.concluido .bloco-card__sugestao { display: none; }
 
 /* Grid de blocos */
 .blocos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(var(--blocos-na-linha, 4), minmax(0, 1fr));
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 
-/* Sessao group */
-.sessao-group {
-    margin-bottom: 24px;
-}
+/* Sessao: e uma sequencia de verdade, entao numerar informa */
+.sessao-group { margin-bottom: 26px; }
 
 .sessao-group__header {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--nc-gelo-fraco);
+    margin-bottom: 12px;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
-/* Badges de modo (só questões / só revisão) */
+.sessao-group__header::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--nc-borda);
+}
+
+/* Modo da materia */
 .bloco-modo {
     display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin: 6px 0 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    padding: 2px 9px;
+    border-radius: var(--r-pill);
+    margin: 10px 0 0;
+    border: 1px solid transparent;
 }
 
 .bloco-modo--questoes {
-    background: #FFF3E0;
-    color: #E65100;
-    border: 1px solid #FFCC80;
+    background: var(--nc-atencao-fundo);
+    color: var(--nc-atencao);
+    border-color: var(--nc-atencao-borda);
 }
 
 .bloco-modo--revisao {
-    background: #E3F2FD;
-    color: #1565C0;
-    border: 1px solid #90CAF9;
+    background: var(--nc-info-fundo);
+    color: var(--nc-info);
+    border-color: var(--nc-info-borda);
 }
 
-/* Separador de intervalo entre sessoes */
+/* Intervalo entre sessoes */
 .sessao-intervalo {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 16px 0;
-    color: #999;
-    font-size: 13px;
+    margin: 18px 0;
+    color: var(--nc-gelo-tenue);
+    font-size: 12px;
 }
 
 .sessao-intervalo::before,
 .sessao-intervalo::after {
-    content: '';
+    content: "";
     flex: 1;
     height: 1px;
-    background: var(--border-color);
+    background: var(--nc-borda);
 }
 
-/* Drag feedback */
-.bloco-card.dragging {
-    opacity: 0.5;
-    transform: rotate(2deg);
-}
+/* Arrastar */
+.bloco-card.dragging { opacity: .45; }
 
-.bloco-card.drag-over {
-    border: 2px dashed var(--primary-color);
-}
+.bloco-card.drag-over { border: 1px dashed var(--nc-amarelo); }
 
-/* Legacy block styles (kept for export compatibility) */
+/* ── Legado (mantido para o PDF/Excel exportado) ────────────── */
+
 .bloco {
     display: inline-flex;
     flex-direction: column;
     width: 100px;
     height: 60px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--nc-borda);
     margin: 5px;
     text-align: center;
     align-items: center;
     justify-content: center;
     cursor: move;
     border-radius: 5px;
-    transition: all 0.3s ease;
     position: relative;
     font-size: 12px;
     user-select: none;
 }
 
 .bloco.concluido {
-    background-color: #4CAF50 !important;
-    color: white;
+    background-color: var(--nc-sucesso) !important;
+    color: var(--nc-fundo);
 }
 
 .intervalo {
@@ -224,12 +382,12 @@
     flex-direction: column;
     width: 100px;
     height: 60px;
-    border: 1px dashed var(--border-color);
+    border: 1px dashed var(--nc-borda);
     margin: 5px;
     text-align: center;
     align-items: center;
     justify-content: center;
-    background-color: var(--secondary-color);
+    background-color: var(--nc-superficie-alta);
     font-size: 12px;
 }
 
@@ -237,9 +395,9 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    background: var(--nc-superficie-alta);
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-campo);
     padding: 5px;
     z-index: 10;
 }
@@ -252,242 +410,216 @@
     text-align: left;
 }
 
-/* ── Edital: Accordion Tree ─────────────────────────────────────────────── */
+/* ── Edital: arvore ─────────────────────────────────────────── */
 
 .edital-barra-container {
-    height: 8px;
-    background: #E0E0E0;
-    border-radius: 4px;
+    height: 6px;
+    background: var(--nc-fundo);
+    border-radius: var(--r-pill);
     overflow: hidden;
     flex-shrink: 0;
 }
 
 .edital-barra-container--sm {
-    height: 6px;
+    height: 5px;
     width: 80px;
 }
 
 .edital-barra {
     height: 100%;
-    background: linear-gradient(90deg, #26A69A, #4CAF50);
-    border-radius: 4px;
-    transition: width 0.4s ease;
+    background: var(--nc-sucesso);
+    border-radius: var(--r-pill);
+    transition: width .4s ease;
 }
 
-/* Matéria (nível 1) */
 .edital-materia {
     margin-bottom: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-card);
     overflow: hidden;
+    background: var(--nc-superficie);
 }
 
 .edital-materia__header {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px;
-    background: #f5f5f5;
+    padding: 13px 15px;
+    background: var(--nc-superficie-alta);
     cursor: pointer;
     user-select: none;
-    transition: background 0.2s;
+    transition: background .15s ease;
 }
 
-.edital-materia__header:hover {
-    background: #eeeeee;
-}
+.edital-materia__header:hover { background: var(--nc-superficie-topo); }
 
 .edital-materia__arrow {
     font-size: 10px;
-    color: #999;
-    transition: transform 0.2s;
+    color: var(--nc-gelo-tenue);
+    transition: transform .2s ease;
     flex-shrink: 0;
 }
 
 .edital-materia__nome {
     flex: 1;
     font-size: 14px;
+    font-weight: 600;
+    color: var(--nc-gelo);
 }
 
 .edital-materia__progresso {
     font-size: 12px;
-    color: #666;
+    color: var(--nc-gelo-fraco);
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
-.edital-materia__conteudo {
-    padding: 0 14px 12px;
-}
+.edital-materia__conteudo { padding: 4px 15px 14px; }
 
-/* Tópico (nível 2) */
-.edital-topico {
-    margin-top: 8px;
-}
+.edital-topico { margin-top: 8px; }
 
 .edital-topico__header {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 10px;
-    background: #fafafa;
-    border-radius: 4px;
+    padding: 9px 11px;
+    background: var(--nc-superficie-alta);
+    border-radius: var(--r-campo);
     cursor: pointer;
     user-select: none;
-    transition: background 0.2s;
+    transition: background .15s ease;
 }
 
-.edital-topico__header:hover {
-    background: #f0f0f0;
-}
+.edital-topico__header:hover { background: var(--nc-superficie-topo); }
 
 .edital-topico__arrow {
     font-size: 9px;
-    color: #bbb;
-    transition: transform 0.2s;
+    color: var(--nc-gelo-tenue);
+    transition: transform .2s ease;
     flex-shrink: 0;
 }
 
 .edital-topico__nome {
     flex: 1;
     font-size: 13px;
-    color: #444;
+    color: var(--nc-gelo);
 }
 
 .edital-topico__progresso {
     font-size: 11px;
-    color: #888;
+    color: var(--nc-gelo-fraco);
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .edital-topico__subtopicos {
     padding-left: 18px;
     margin-top: 4px;
+    border-left: 1px solid var(--nc-borda);
 }
 
-/* Item individual (tópico sem sub ou subtópico) */
 .edital-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    padding: 8px 12px;
+    padding: 9px 13px;
     margin-top: 4px;
-    border-radius: 6px;
-    border-left: 3px solid #E0E0E0;
-    background: white;
-    transition: all 0.2s;
+    border-radius: var(--r-campo);
+    border-left: 3px solid var(--nc-borda);
+    background: var(--nc-fundo);
+    transition: background .15s ease;
 }
 
-.edital-item:hover {
-    background: #fafafa;
-}
+.edital-item:hover { background: var(--nc-superficie-alta); }
 
-.edital-item__info {
-    flex: 1;
-    min-width: 0;
-}
+.edital-item__info { flex: 1; min-width: 0; }
 
 .edital-item__label {
     font-size: 13px;
-    color: #333;
+    color: var(--nc-gelo);
     display: block;
 }
 
 .edital-item__questoes {
     font-size: 11px;
-    color: #888;
+    color: var(--nc-gelo-tenue);
     display: block;
     margin-top: 2px;
+    font-variant-numeric: tabular-nums;
 }
 
 .edital-item__nome-oficial {
     font-size: 11px;
-    color: #999;
+    color: var(--nc-gelo-tenue);
     display: block;
     margin-top: 1px;
-    font-style: italic;
 }
 
 .edital-item__tec-copy {
     display: inline-block;
     font-size: 11px;
-    color: #7C4DFF;
-    background: #F3F0FF;
-    border: 1px solid #E0D8FF;
-    border-radius: 4px;
+    color: var(--nc-info);
+    background: var(--nc-info-fundo);
+    border: 1px solid var(--nc-info-borda);
+    border-radius: var(--r-campo);
     padding: 1px 8px;
-    margin-top: 3px;
+    margin-top: 4px;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background .15s ease;
 }
 
-.edital-item__tec-copy:hover {
-    background: #E0D8FF;
-}
+.edital-item__tec-copy:hover { background: rgba(76, 139, 255, .3); }
 
-.edital-item__actions {
-    flex-shrink: 0;
-}
+.edital-item__actions { flex-shrink: 0; }
 
 .edital-item__select {
-    padding: 4px 8px;
+    padding: 5px 8px;
     font-size: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: white;
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-campo);
+    background: var(--nc-superficie-alta);
+    color: var(--nc-gelo);
     cursor: pointer;
+    margin-bottom: 0;
+    width: auto;
 }
 
-/* Status colors */
-.edital-status--pendente {
-    border-left-color: #E0E0E0;
-}
-
-.edital-status--visto {
-    border-left-color: #42A5F5;
-    background: #E3F2FD;
-}
-
-.edital-status--em_andamento {
-    border-left-color: #FFA726;
-    background: #FFF8E1;
-}
-
-.edital-status--concluido {
-    border-left-color: #4CAF50;
-    background: #E8F5E9;
-}
+/* Estados do edital */
+.edital-status--pendente     { border-left-color: var(--nc-borda); }
+.edital-status--visto        { border-left-color: var(--nc-info);    background: var(--nc-info-fundo); }
+.edital-status--em_andamento { border-left-color: var(--nc-atencao); background: var(--nc-atencao-fundo); }
+.edital-status--concluido    { border-left-color: var(--nc-sucesso); background: var(--nc-sucesso-fundo); }
 
 .edital-status--concluido .edital-item__label {
     text-decoration: line-through;
-    color: #666;
+    color: var(--nc-gelo-fraco);
 }
 
-/* Drag and drop edital */
-.edital-dragging {
-    opacity: 0.4;
-}
+.edital-dragging { opacity: .4; }
 
 .edital-drag-over {
-    border: 2px dashed var(--primary-color) !important;
-    background: #f0f7ff !important;
+    border: 1px dashed var(--nc-amarelo) !important;
+    background: var(--nc-superficie-topo) !important;
 }
 
-/* Revisão tab */
+/* ── Revisao ────────────────────────────────────────────────── */
+
 .revisao-grupo {
     margin-bottom: 16px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-card);
     overflow: hidden;
+    background: var(--nc-superficie);
 }
 
 .revisao-grupo__header {
-    background: #f5f5f5;
-    padding: 10px 14px;
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--primary-color);
-    border-bottom: 1px solid var(--border-color);
+    background: var(--nc-superficie-alta);
+    padding: 11px 15px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--nc-gelo);
+    border-bottom: 1px solid var(--nc-borda);
 }
 
 .revisao-item {
@@ -495,45 +627,30 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 11px 15px;
+    border-bottom: 1px solid var(--nc-borda);
     font-size: 13px;
 }
 
-.revisao-item:last-child {
-    border-bottom: none;
-}
+.revisao-item:last-child { border-bottom: none; }
 
-.revisao-item__info {
-    flex: 1;
-    min-width: 0;
-}
+.revisao-item__info { flex: 1; min-width: 0; }
 
 .revisao-item__status {
     font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
+    padding: 2px 9px;
+    border-radius: var(--r-pill);
     font-weight: 600;
+    border: 1px solid transparent;
 }
 
-.revisao-item__status--visto {
-    background: #E3F2FD;
-    color: #1565C0;
-}
-
-.revisao-item__status--concluido {
-    background: #E8F5E9;
-    color: #2E7D32;
-}
-
-.revisao-item__status--em_andamento {
-    background: #FFF8E1;
-    color: #E65100;
-}
+.revisao-item__status--visto        { background: var(--nc-info-fundo);    color: var(--nc-info);    border-color: var(--nc-info-borda); }
+.revisao-item__status--concluido    { background: var(--nc-sucesso-fundo); color: var(--nc-sucesso); border-color: var(--nc-sucesso-borda); }
+.revisao-item__status--em_andamento { background: var(--nc-atencao-fundo); color: var(--nc-atencao); border-color: var(--nc-atencao-borda); }
 
 .revisao-item--pendente {
-    border-left: 3px solid #FF6B6B;
-    background: #FFF5F5;
+    border-left: 3px solid var(--nc-alerta);
+    background: var(--nc-alerta-fundo);
 }
 
 .revisao-item__revisoes {
@@ -542,118 +659,111 @@
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: #666;
+    color: var(--nc-gelo-fraco);
 }
 
 .revisao-item__revisoes select {
-    padding: 4px 8px;
+    padding: 5px 8px;
     font-size: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: white;
+    border: 1px solid var(--nc-borda);
+    border-radius: var(--r-campo);
+    background: var(--nc-superficie-alta);
+    color: var(--nc-gelo);
     cursor: pointer;
+    margin-bottom: 0;
+    width: auto;
 }
 
-/* Assunto list status indicators */
-.assunto-item--done {
-    color: #388E3C;
-}
+.assunto-item--done     { color: var(--nc-sucesso); }
+.assunto-item--progress { color: var(--nc-atencao); }
 
-.assunto-item--progress {
-    color: #E65100;
-}
-
-/* Nome oficial do edital ao lado do nome da aula (cabeçalho de tópico) */
 .edital-topico__oficial {
     display: block;
     font-size: 11px;
-    color: #999;
-    font-style: italic;
-    font-weight: normal;
+    color: var(--nc-gelo-tenue);
+    font-weight: 400;
 }
 
-/* Modal de detalhe do bloco: aula do curso ↔ edital ↔ TEC */
+/* ── Modal de detalhe do bloco ──────────────────────────────── */
+
 .detalhe-bloco__destaque {
-    margin: 12px 0;
-    padding: 12px 14px;
-    border-radius: 8px;
-    background: #E8F5E9;
-    border: 1px solid #A5D6A7;
+    margin: 14px 0;
+    padding: 14px 16px;
+    border-radius: var(--r-card);
+    background: var(--nc-sucesso-fundo);
+    border: 1px solid var(--nc-sucesso-borda);
 }
 
 .detalhe-bloco__rotulo {
     display: block;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #388E3C;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--nc-gelo-fraco);
 }
 
 .detalhe-bloco__aula {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2E7D32;
+    font-family: var(--fonte-titulo);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--nc-sucesso);
     margin-top: 4px;
 }
 
-.detalhe-bloco__linha {
-    margin-top: 12px;
-}
-
-.detalhe-bloco__linha .detalhe-bloco__rotulo {
-    color: #667085;
-}
+.detalhe-bloco__linha { margin-top: 14px; }
 
 .detalhe-bloco__valor {
     display: block;
     font-size: 13px;
-    color: #333;
-    margin-top: 2px;
+    color: var(--nc-gelo);
+    margin-top: 3px;
 }
 
 .detalhe-bloco__concluido {
     font-weight: 600;
-    color: #2E7D32;
+    color: var(--nc-sucesso);
     margin: 10px 0 4px;
 }
 
 .detalhe-bloco__vazio {
-    color: #888;
+    color: var(--nc-gelo-tenue);
     font-size: 13px;
-    margin: 12px 0;
+    margin: 14px 0;
 }
 
-/* Banner de ciclo concluído + botão para iniciar o próximo */
+/* ── Ciclo concluido ────────────────────────────────────────── */
+
 .ciclo-completo-banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    border-radius: 8px;
-    background: #E8F5E9;
-    border: 1px solid #A5D6A7;
+    gap: 14px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    border-radius: var(--r-card);
+    background: var(--nc-sucesso-fundo);
+    border: 1px solid var(--nc-sucesso-borda);
 }
 
 .ciclo-completo-banner strong {
-    color: #2E7D32;
-    font-size: 15px;
+    font-family: var(--fonte-titulo);
+    color: var(--nc-sucesso);
+    font-size: 16px;
     margin-right: 8px;
 }
 
 .ciclo-completo-banner span {
-    color: #388E3C;
+    color: var(--nc-gelo-fraco);
     font-size: 13px;
 }
 
 .ciclo-completo-banner__btn {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
+    background: var(--nc-amarelo);
+    color: var(--nc-amarelo-ink);
+    border: 1px solid var(--nc-amarelo);
+    border-radius: var(--r-campo);
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 700;
@@ -662,5 +772,21 @@
 }
 
 .ciclo-completo-banner__btn:hover {
-    background: #388E3C;
+    background: var(--nc-amarelo-hover);
+    border-color: var(--nc-amarelo-hover);
+}
+
+/* ── Telefone ───────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+    .anel-modulo {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        gap: 22px;
+        padding: 22px 18px;
+    }
+    .anel-modulo__materias { justify-content: center; }
+    .anel-modulo__acoes { justify-content: center; }
+    .blocos-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
 }

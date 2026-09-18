@@ -29,11 +29,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         const sigla = document.getElementById('novaMateriaSigla').value.trim().toUpperCase();
         if (nome && sigla) {
             if (sigla.length > 3) {
-                alert('A sigla deve ter no maximo 3 letras.');
+                alert('A sigla deve ter no máximo 3 letras.');
                 return;
             }
             if (materiasList.some(m => m.legenda === sigla)) {
-                alert('Ja existe uma materia com essa sigla. Por favor, escolha outra.');
+                alert('Já existe uma matéria com essa sigla. Por favor, escolha outra.');
                 return;
             }
             const novaMateria = {nome: nome, legenda: sigla};
@@ -41,9 +41,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             adicionarMateriaAoDOM(novaMateria);
             document.getElementById('novaMateriaNome').value = '';
             document.getElementById('novaMateriaSigla').value = '';
-            alert('Materia adicionada com sucesso!');
+            alert('Matéria adicionada com sucesso!');
         } else {
-            alert('Para adicionar uma nova materia, preencha tanto o nome quanto a sigla.');
+            alert('Para adicionar uma nova matéria, preencha tanto o nome quanto a sigla.');
         }
     });
 
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('btnSalvarPlano').addEventListener('click', async () => {
         const dados = coletarDadosPlano();
         if (!dados.nome) { alert('Informe o nome do plano.'); return; }
-        if (dados.materias.length === 0) { alert('Adicione pelo menos uma materia.'); return; }
+        if (dados.materias.length === 0) { alert('Adicione pelo menos uma matéria.'); return; }
 
         if (dados.edital && dados.edital.length > 0 && typeof validarMateriasContraEdital === 'function') {
             const semMatch = validarMateriasContraEdital(dados.materias, dados.edital);

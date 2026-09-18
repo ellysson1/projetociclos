@@ -79,7 +79,7 @@ async function adicionarVideo() {
         return;
     }
     if (!extrairVimeoId(url)) {
-        alert('URL do Vimeo invalida. Use o formato: https://vimeo.com/123456789');
+        alert('URL do Vimeo inválida. Use o formato: https://vimeo.com/123456789');
         return;
     }
 
@@ -233,7 +233,7 @@ async function renderizarVideosProfessor() {
     if (!container) return;
 
     if (!videos || videos.length === 0) {
-        container.innerHTML = '<p style="color:#999;">Nenhum video adicionado ainda.</p>';
+        container.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Nenhum video adicionado ainda.</p>';
         return;
     }
 
@@ -242,11 +242,11 @@ async function renderizarVideosProfessor() {
 
     Object.entries(cursos).forEach(([cursoNome, assuntos]) => {
         html += `<div style="margin-bottom:16px; border:1px solid var(--border-color); border-radius:8px; padding:12px;">
-            <h4 style="color:var(--primary-color); margin-bottom:8px;">${escapeHtml(cursoNome)}</h4>`;
+            <h4 style="color:var(--nc-gelo); margin-bottom:8px;">${escapeHtml(cursoNome)}</h4>`;
 
         Object.entries(assuntos).forEach(([assuntoNome, aulas]) => {
             html += `<div style="margin-left:12px; margin-bottom:8px;">
-                <strong style="font-size:13px; color:#555;">${escapeHtml(assuntoNome)}</strong>`;
+                <strong style="font-size:13px; color:var(--nc-gelo-fraco);">${escapeHtml(assuntoNome)}</strong>`;
 
             aulas.forEach(aula => {
                 // rel="noopener noreferrer" evita reverse tabnabbing; a URL só
@@ -272,7 +272,7 @@ async function renderizarVideosProfessor() {
 // ── Player ─────────────────────────────────────────────────────────────────
 
 function abrirPlayer(embedUrl, titulo) {
-    if (!embedUrl) { alert('URL do Vimeo invalida.'); return; }
+    if (!embedUrl) { alert('URL do Vimeo inválida.'); return; }
     const player = document.getElementById('videosPlayer');
     document.getElementById('vimeoEmbed').src = embedUrl;
     document.getElementById('videoPlayerTitulo').textContent = titulo;

@@ -93,32 +93,32 @@ async function excluirPlano(planoId) {
 async function renderizarListaPlanosProfessor() {
     const container = document.getElementById('planosLista');
     if (!container) return;
-    container.innerHTML = '<p style="color:#999;">Carregando planos...</p>';
+    container.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Carregando planos...</p>';
 
     const planos = await carregarPlanosProfessor();
 
     if (planos.length === 0) {
-        container.innerHTML = '<p style="color:#999;">Nenhum plano criado ainda.</p>';
+        container.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Nenhum plano criado ainda.</p>';
         return;
     }
 
     container.innerHTML = '';
     planos.forEach(plano => {
         const card = document.createElement('div');
-        card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:12px; background:white;';
+        card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:12px; background:var(--nc-superficie);';
         const materiasCount = (plano.materias || []).length;
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:start; gap:12px;">
                 <div>
                     <strong style="font-size:16px;">${escapeHtml(plano.nome)}</strong>
-                    <p style="font-size:13px; color:#666; margin-top:4px;">${escapeHtml(plano.descricao || 'Sem descrição')}</p>
-                    <p style="font-size:12px; color:#999; margin-top:4px;">${materiasCount} matéria(s) | ${plano.publico ? 'Público' : 'Privado'}</p>
+                    <p style="font-size:13px; color:var(--nc-gelo-fraco); margin-top:4px;">${escapeHtml(plano.descricao || 'Sem descrição')}</p>
+                    <p style="font-size:12px; color:var(--nc-gelo-tenue); margin-top:4px;">${materiasCount} matéria(s) | ${plano.publico ? 'Público' : 'Privado'}</p>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
-                    <button class="btn-painel-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:#3F51B5; color:white; border:none; border-radius:6px; cursor:pointer;">Painel</button>
-                    <button class="btn-atribuir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Atribuir</button>
+                    <button class="btn-painel-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:var(--nc-superficie-alta); color:var(--nc-gelo); border:none; border-radius:6px; cursor:pointer;">Painel</button>
+                    <button class="btn-atribuir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:var(--nc-superficie-alta); color:var(--nc-gelo); border:none; border-radius:6px; cursor:pointer;">Atribuir</button>
                     <button class="btn-editar-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px;">Editar</button>
-                    <button class="btn-excluir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:#FF6B6B;">Excluir</button>
+                    <button class="btn-excluir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:var(--nc-alerta-fundo);">Excluir</button>
                 </div>
             </div>
         `;
@@ -211,11 +211,11 @@ function atribuirPassoNext() {
     const container = document.getElementById('atribuirModosMateria');
     const materias = _atribuirPlano.materias || [];
     if (materias.length === 0) {
-        container.innerHTML = '<p style="color:#999; font-size:13px; padding:8px;">Este plano não tem matérias definidas.</p>';
+        container.innerHTML = '<p style="color:var(--nc-gelo-tenue); font-size:13px; padding:8px;">Este plano não tem matérias definidas.</p>';
     } else {
         container.innerHTML = materias.map(m => `
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid #f0f0f0;">
-                <span style="font-size:14px; font-weight:600;">${escapeHtml(m.legenda)} <span style="color:#888; font-weight:400;">– ${escapeHtml(m.nome)}</span></span>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid var(--nc-borda);">
+                <span style="font-size:14px; font-weight:600;">${escapeHtml(m.legenda)} <span style="color:var(--nc-gelo-tenue); font-weight:400;">– ${escapeHtml(m.nome)}</span></span>
                 <select class="atribuir-modo-select" data-legenda="${escapeHtml(m.legenda)}" style="font-size:13px; padding:4px 8px; border:1px solid var(--border-color); border-radius:6px;">
                     <option value="">Normal</option>
                     <option value="questoes">Só Questões</option>
@@ -316,11 +316,11 @@ function atribuirPassoNext2() {
     tbody.innerHTML = '';
     blocos.forEach(b => {
         const nomeTd = document.createElement('td');
-        nomeTd.style.cssText = 'padding:8px 4px; border-bottom:1px solid #f0f0f0; font-size:14px;';
+        nomeTd.style.cssText = 'padding:8px 4px; border-bottom:1px solid var(--nc-borda); font-size:14px;';
         nomeTd.textContent = b.nome;
         if (b.meioBloco) {
             const tag = document.createElement('span');
-            tag.style.cssText = 'color:#7C4DFF; font-size:11px; margin-left:6px;';
+            tag.style.cssText = 'color:var(--nc-info); font-size:11px; margin-left:6px;';
             tag.textContent = '(½ bloco)';
             nomeTd.appendChild(tag);
         }
@@ -334,7 +334,7 @@ function atribuirPassoNext2() {
         input.style.cssText = 'width:70px; text-align:center;';
 
         const numTd = document.createElement('td');
-        numTd.style.cssText = 'padding:8px 4px; border-bottom:1px solid #f0f0f0; text-align:center;';
+        numTd.style.cssText = 'padding:8px 4px; border-bottom:1px solid var(--nc-borda); text-align:center;';
         numTd.appendChild(input);
 
         const tr = document.createElement('tr');
@@ -473,7 +473,7 @@ function renderizarMateriasPlano(materias) {
             <td><input type="number" value="${m.peso || 5}" data-field="peso" data-idx="${idx}" class="plano-materia-input" min="1" max="10" style="width:60px;"></td>
             <td><input type="number" value="${m.extensao || 5}" data-field="extensao" data-idx="${idx}" class="plano-materia-input" min="1" max="10" style="width:60px;"></td>
             <td><input type="number" value="${m.dificuldade || 5}" data-field="dificuldade" data-idx="${idx}" class="plano-materia-input" min="1" max="10" style="width:60px;"></td>
-            <td><button class="btn-remover-materia-plano" data-idx="${idx}" style="background:#FF6B6B; padding:4px 8px; font-size:12px;">&times;</button></td>
+            <td><button class="btn-remover-materia-plano" data-idx="${idx}" style="background:var(--nc-alerta-fundo); padding:4px 8px; font-size:12px;">&times;</button></td>
         `;
         tbody.appendChild(row);
     });
@@ -494,23 +494,23 @@ function renderizarRegrasEvolucao(regras) {
     regras.forEach((regra, idx) => {
         const div = document.createElement('div');
         div.className = 'regra-evolucao-item';
-        div.style.cssText = 'border:1px solid #ddd; border-radius:8px; padding:12px; margin-bottom:10px; background:#f9f9f9;';
+        div.style.cssText = 'border:1px solid var(--nc-borda); border-radius:8px; padding:12px; margin-bottom:10px; background:var(--nc-superficie-alta);';
         div.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <strong style="color:var(--primary-color);">Fase ${regra.fase || idx + 1} → ${(regra.fase || idx + 1) + 1}</strong>
-                <button class="btn-remover-regra" data-idx="${idx}" style="background:#FF6B6B; padding:4px 8px; font-size:12px; border:none; color:white; border-radius:4px; cursor:pointer;">&times;</button>
+                <strong style="color:var(--nc-gelo);">Fase ${regra.fase || idx + 1} → ${(regra.fase || idx + 1) + 1}</strong>
+                <button class="btn-remover-regra" data-idx="${idx}" style="background:var(--nc-alerta-fundo); padding:4px 8px; font-size:12px; border:none; color:var(--nc-alerta); border-radius:4px; cursor:pointer;">&times;</button>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
                 <div>
-                    <label style="font-size:12px;">% minimo edital visto:</label>
+                    <label style="font-size:12px;">% mínimo edital visto:</label>
                     <input type="number" class="regra-input" data-idx="${idx}" data-field="pct_edital" value="${regra.pct_edital ?? 60}" min="0" max="100" style="width:100%;">
                 </div>
                 <div>
-                    <label style="font-size:12px;">Questoes minimas feitas:</label>
+                    <label style="font-size:12px;">Questões minimas feitas:</label>
                     <input type="number" class="regra-input" data-idx="${idx}" data-field="questoes_minimas" value="${regra.questoes_minimas ?? ''}" min="0" style="width:100%;">
                 </div>
                 <div>
-                    <label style="font-size:12px;">% minimo acerto questoes:</label>
+                    <label style="font-size:12px;">% mínimo acerto questões:</label>
                     <input type="number" class="regra-input" data-idx="${idx}" data-field="pct_acerto_minimo" value="${regra.pct_acerto_minimo ?? ''}" min="0" max="100" style="width:100%;">
                 </div>
             </div>
@@ -614,7 +614,7 @@ function adicionarMateriaAoPlano() {
 async function renderizarPlanosDisponiveis() {
     const container = document.getElementById('planosDisponiveis');
     if (!container) return;
-    container.innerHTML = '<p style="color:#999;">Carregando...</p>';
+    container.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Carregando...</p>';
 
     const user = await getUsuarioLogado();
     const [planos, atribuicoesResp] = await Promise.all([
@@ -627,7 +627,7 @@ async function renderizarPlanosDisponiveis() {
     const atribuicoes = atribuicoesResp.data || [];
 
     if (planos.length === 0 && atribuicoes.length === 0) {
-        container.innerHTML = '<p style="color:#999;">Nenhum plano disponível no momento.</p>';
+        container.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Nenhum plano disponível no momento.</p>';
         return;
     }
 
@@ -638,9 +638,9 @@ async function renderizarPlanosDisponiveis() {
         const plano = atr.planos;
         if (!plano) return;
         const card = document.createElement('div');
-        card.style.cssText = 'border:2px solid #7C4DFF; border-radius:8px; padding:14px; margin-bottom:10px; background:#F3E5FF; cursor:pointer; transition: box-shadow 0.2s;';
+        card.style.cssText = 'border:2px solid var(--nc-info-borda); border-radius:8px; padding:14px; margin-bottom:10px; background:var(--nc-info-fundo); cursor:pointer; transition: box-shadow 0.2s;';
         card.onmouseenter = () => card.style.boxShadow = '0 2px 8px rgba(124,77,255,0.2)';
-        card.onmouseleave = () => card.style.boxShadow = 'none';
+        card.onmouseleave = () => card.style.borderColor = 'var(--nc-borda)';
 
         const materiasCount = (plano.materias || []).length;
         const cfg = atr.configuracoes || {};
@@ -651,13 +651,13 @@ async function renderizarPlanosDisponiveis() {
 
         card.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span style="background:#7C4DFF; color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:uppercase;">Atribuído pelo Professor</span>
+                <span style="background:var(--nc-superficie-alta); color:var(--nc-gelo); font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:uppercase;">Atribuído pelo Professor</span>
             </div>
-            <strong style="font-size:15px; color:#5E35B1;">${escapeHtml(plano.nome)}</strong>
-            <p style="font-size:13px; color:#666; margin:4px 0;">${escapeHtml(plano.descricao || '')}</p>
-            <p style="font-size:12px; color:#888;">${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}${cfg.duracaoBloco ? ' | ' + cfg.duracaoBloco + 'min/bloco' : ''}</p>
-            ${modosTexto ? `<p style="font-size:12px; color:#7C4DFF; margin-top:4px;">${modosTexto}</p>` : ''}
-            <button class="btn-adotar-atribuido" data-atr-id="${escapeHtml(atr.id)}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
+            <strong style="font-size:15px; color:var(--nc-info);">${escapeHtml(plano.nome)}</strong>
+            <p style="font-size:13px; color:var(--nc-gelo-fraco); margin:4px 0;">${escapeHtml(plano.descricao || '')}</p>
+            <p style="font-size:12px; color:var(--nc-gelo-tenue);">${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}${cfg.duracaoBloco ? ' | ' + cfg.duracaoBloco + 'min/bloco' : ''}</p>
+            ${modosTexto ? `<p style="font-size:12px; color:var(--nc-info); margin-top:4px;">${modosTexto}</p>` : ''}
+            <button class="btn-adotar-atribuido" data-atr-id="${escapeHtml(atr.id)}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:var(--nc-superficie-alta); color:var(--nc-gelo); border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
         `;
         container.appendChild(card);
     });
@@ -666,19 +666,19 @@ async function renderizarPlanosDisponiveis() {
     const idsAtribuidos = new Set(atribuicoes.map(a => a.plano_id));
     planos.forEach(plano => {
         const card = document.createElement('div');
-        card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:white; cursor:pointer; transition: box-shadow 0.2s;';
-        card.onmouseenter = () => card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-        card.onmouseleave = () => card.style.boxShadow = 'none';
+        card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:var(--nc-superficie); cursor:pointer; transition: box-shadow 0.2s;';
+        card.onmouseenter = () => card.style.borderColor = 'var(--nc-borda-forte)';
+        card.onmouseleave = () => card.style.borderColor = 'var(--nc-borda)';
 
         const materiasCount = (plano.materias || []).length;
         const profNome = plano.profiles?.nome || 'Professor';
         const cfg = plano.configuracoes || {};
 
         card.innerHTML = `
-            <strong style="font-size:15px; color:var(--primary-color);">${escapeHtml(plano.nome)}</strong>
-            <p style="font-size:13px; color:#666; margin:4px 0;">${escapeHtml(plano.descricao || '')}</p>
-            <p style="font-size:12px; color:#999;">Por: ${escapeHtml(profNome)} | ${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}</p>
-            <button class="btn-adotar-plano" data-id="${escapeHtml(plano.id)}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
+            <strong style="font-size:15px; color:var(--nc-gelo);">${escapeHtml(plano.nome)}</strong>
+            <p style="font-size:13px; color:var(--nc-gelo-fraco); margin:4px 0;">${escapeHtml(plano.descricao || '')}</p>
+            <p style="font-size:12px; color:var(--nc-gelo-tenue);">Por: ${escapeHtml(profNome)} | ${materiasCount} matéria(s)${cfg.horasSemanais ? ' | ' + cfg.horasSemanais + 'h/sem' : ''}</p>
+            <button class="btn-adotar-plano" data-id="${escapeHtml(plano.id)}" style="margin-top:8px; font-size:13px; padding:6px 16px; background:var(--nc-sucesso); color:var(--nc-amarelo-ink); border:none; border-radius:6px; cursor:pointer;">Adotar Este Plano</button>
         `;
         container.appendChild(card);
     });
@@ -966,21 +966,21 @@ async function adotarPlano(planoId, atribuicao = null) {
     }
 }
 
-// ── Painel de Alunos (Professor Dashboard) ──────────────────────────────────
+// ── Painel de alunos (Professor Dashboard) ──────────────────────────────────
 
 async function abrirPainelAlunos(plano) {
     const painel = document.getElementById('painelAlunos');
     const conteudo = document.getElementById('painelAlunosConteudo');
     painel.style.display = 'block';
-    conteudo.innerHTML = '<p style="color:#999;">Carregando dados dos alunos...</p>';
+    conteudo.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Carregando dados dos alunos...</p>';
 
     const { data: atribuicoes, error } = await supabaseClient
         .from('plano_atribuicoes')
-        .select('aluno_id, configuracoes, modos_materia, created_at')
+        .select('aluno_id, configurações, modos_materia, created_at')
         .eq('plano_id', plano.id);
 
     if (error || !atribuicoes?.length) {
-        conteudo.innerHTML = '<p style="color:#999;">Nenhum aluno atribuído a este plano.</p>';
+        conteudo.innerHTML = '<p style="color:var(--nc-gelo-tenue);">Nenhum aluno atribuído a este plano.</p>';
         return;
     }
 
@@ -989,7 +989,7 @@ async function abrirPainelAlunos(plano) {
     const [profilesResp, progressoResp, editalResp] = await Promise.all([
         supabaseClient.from('profiles').select('user_id, nome').in('user_id', alunoIds),
         supabaseClient.from('progresso').select('user_id, estado, updated_at').in('user_id', alunoIds),
-        supabaseClient.from('edital_progresso').select('user_id, materia, topico, subtopico, status').eq('plano_id', plano.id).in('user_id', alunoIds)
+        supabaseClient.from('edital_progresso').select('user_id, matéria, topico, subtopico, status').eq('plano_id', plano.id).in('user_id', alunoIds)
     ]);
 
     if (progressoResp.error) console.warn('Painel: erro ao ler progresso dos alunos (provável RLS):', progressoResp.error);
@@ -1040,7 +1040,7 @@ async function abrirPainelAlunos(plano) {
         });
 
         const materiasResumo = Object.entries(blocosPorMateria).map(([leg, d]) =>
-            `<span style="font-size:12px; padding:2px 6px; border-radius:4px; background:${d.feitos === d.total ? '#E8F5E9' : '#FFF3E0'}; margin:2px;">${leg}: ${d.feitos}/${d.total}</span>`
+            `<span style="font-size:12px; padding:2px 6px; border-radius:4px; background:${d.feitos === d.total ? 'var(--nc-sucesso-fundo)' : 'var(--nc-atencao-fundo)'}; margin:2px;">${leg}: ${d.feitos}/${d.total}</span>`
         ).join(' ');
 
         // Next phase subjects
@@ -1048,32 +1048,32 @@ async function abrirPainelAlunos(plano) {
         if (fase < maxFase) {
             const proximas = materiasPlano.filter(m => (m.fase || 1) === fase + 1);
             if (proximas.length > 0) {
-                proximaFaseHtml = `<div style="font-size:12px; color:#7C4DFF; margin-top:6px;">Fase ${fase + 1}: ${proximas.map(m => m.nome).join(', ')}</div>`;
+                proximaFaseHtml = `<div style="font-size:12px; color:var(--nc-info); margin-top:6px;">Fase ${fase + 1}: ${proximas.map(m => m.nome).join(', ')}</div>`;
             }
         }
 
         const card = document.createElement('div');
-        card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:white; cursor:pointer;';
+        card.style.cssText = 'border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:10px; background:var(--nc-superficie); cursor:pointer;';
 
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <div>
                     <strong style="font-size:15px;">${escapeHtml(nome)}</strong>
-                    <span style="font-size:12px; color:white; background:#3F51B5; padding:1px 8px; border-radius:10px; margin-left:8px;">Fase ${fase}/${maxFase}</span>
+                    <span style="font-size:12px; color:var(--nc-gelo); background:var(--nc-superficie-alta); padding:1px 8px; border-radius:10px; margin-left:8px;">Fase ${fase}/${maxFase}</span>
                 </div>
-                <div style="font-size:12px; color:#999;">Atividade: ${ultimaAtividade}</div>
+                <div style="font-size:12px; color:var(--nc-gelo-tenue);">Atividade: ${ultimaAtividade}</div>
             </div>
-            <div style="display:flex; gap:16px; margin-top:8px; font-size:13px; color:#555; flex-wrap:wrap;">
+            <div style="display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--nc-gelo-fraco); flex-wrap:wrap;">
                 <span>Blocos: <strong>${blocosConcluidos}/${blocosTotal}</strong></span>
                 <span>Edital: <strong>${pctEdital}%</strong> (${editalConcluidos}/${editalTotal})</span>
             </div>
-            <div class="painel-detalhe" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #f0f0f0;">
-                <div style="margin-bottom:6px; font-size:13px; font-weight:600; color:#333;">Blocos por matéria:</div>
-                <div style="display:flex; flex-wrap:wrap; gap:4px;">${materiasResumo || '<span style="font-size:12px; color:#999;">Nenhum bloco</span>'}</div>
+            <div class="painel-detalhe" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--nc-borda);">
+                <div style="margin-bottom:6px; font-size:13px; font-weight:600; color:var(--nc-gelo);">Blocos por matéria:</div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px;">${materiasResumo || '<span style="font-size:12px; color:var(--nc-gelo-tenue);">Nenhum bloco</span>'}</div>
                 ${proximaFaseHtml}
                 <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="btn-visualizar-aluno" data-uid="${escapeHtml(uid)}" data-nome="${escapeHtml(nome)}" style="font-size:12px; padding:4px 12px; background:#FF6B6B; color:white; border:none; border-radius:6px; cursor:pointer;">Visualizar como aluno</button>
-                    <button class="btn-reatribuir" data-uid="${escapeHtml(uid)}" style="font-size:12px; padding:4px 12px; background:#7C4DFF; color:white; border:none; border-radius:6px; cursor:pointer;">Reatribuir Plano</button>
+                    <button class="btn-visualizar-aluno" data-uid="${escapeHtml(uid)}" data-nome="${escapeHtml(nome)}" style="font-size:12px; padding:4px 12px; background:var(--nc-alerta-fundo); color:var(--nc-alerta); border:none; border-radius:6px; cursor:pointer;">Visualizar como aluno</button>
+                    <button class="btn-reatribuir" data-uid="${escapeHtml(uid)}" style="font-size:12px; padding:4px 12px; background:var(--nc-superficie-alta); color:var(--nc-alerta); border:none; border-radius:6px; cursor:pointer;">Reatribuir Plano</button>
                 </div>
             </div>
         `;
@@ -1117,13 +1117,13 @@ async function entrarModoVisualizacao(alunoId, alunoNome, planoId) {
     const [progressoResp, editalResp, questoesResp, planoResp] = await Promise.all([
         supabaseClient.from('progresso').select('estado').eq('user_id', alunoId).maybeSingle(),
         supabaseClient.from('edital_progresso').select('*').eq('user_id', alunoId).eq('plano_id', planoId),
-        supabaseClient.from('questoes').select('materia, questoes_feitas, questoes_corretas').eq('user_id', alunoId),
+        supabaseClient.from('questoes').select('matéria, questoes_feitas, questoes_corretas').eq('user_id', alunoId),
         supabaseClient.from('planos').select('*').eq('id', planoId).maybeSingle()
     ]);
 
     const estadoAluno = progressoResp.data?.estado;
     if (!estadoAluno) {
-        alert('Este aluno ainda nao tem dados de progresso.');
+        alert('Este aluno ainda não tem dados de progresso.');
         _estadoProfessorBackup = null;
         return;
     }

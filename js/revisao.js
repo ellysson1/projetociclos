@@ -80,7 +80,7 @@ function renderizarRevisao() {
         const opcoesAtuais = Array.from(filtroSelect.options).map(o => o.value).filter(v => v !== 'todas');
         const allMaterias = [...new Set(edital.map(m => m.materia))];
         if (JSON.stringify(opcoesAtuais) !== JSON.stringify(allMaterias)) {
-            filtroSelect.innerHTML = '<option value="todas">Todas as materias</option>';
+            filtroSelect.innerHTML = '<option value="todas">Todas as matérias</option>';
             allMaterias.forEach(m => {
                 const opt = document.createElement('option');
                 opt.value = m;
@@ -109,14 +109,14 @@ function renderizarRevisao() {
             let questoesHTML = '';
             if (item.questoes_feitas > 0) {
                 const pct = Math.round((item.questoes_corretas / item.questoes_feitas) * 100);
-                questoesHTML = `<span style="font-size:11px; color:#888;">| ${item.questoes_corretas}/${item.questoes_feitas} questões (${pct}%)</span>`;
+                questoesHTML = `<span style="font-size:11px; color:var(--nc-gelo-tenue);">| ${item.questoes_corretas}/${item.questoes_feitas} questões (${pct}%)</span>`;
             }
 
             let cicloHTML = '';
             if (item.distanciaCiclo >= 2) {
-                cicloHTML = `<span style="font-size:11px; font-weight:600; color:#FF6B6B; margin-left:6px;">⟳ revisar (${item.distanciaCiclo} ciclos)</span>`;
+                cicloHTML = `<span style="font-size:11px; font-weight:600; color:var(--nc-alerta); margin-left:6px;">⟳ revisar (${item.distanciaCiclo} ciclos)</span>`;
             } else if (item.distanciaCiclo === 1) {
-                cicloHTML = `<span style="font-size:11px; color:#FF9800; margin-left:6px;">1 ciclo atrás</span>`;
+                cicloHTML = `<span style="font-size:11px; color:var(--nc-atencao); margin-left:6px;">1 ciclo atrás</span>`;
             }
 
             let opcoesRev = '';

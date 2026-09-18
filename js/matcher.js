@@ -5,18 +5,18 @@
 const ABREVIACOES = {
     'dir': 'direito', 'adm': 'administrativo', 'admin': 'administrativo',
     'const': 'constitucional', 'trib': 'tributario', 'proc': 'processual',
-    'afo': 'administracao financeira orcamentaria',
+    'afo': 'administracao financeira orçamentária',
     'rlm': 'raciocinio logico matematico',
     'ctb': 'contabilidade', 'cf': 'constituicao federal',
-    'ti': 'tecnologia informacao', 'info': 'informacao',
+    'ti': 'tecnologia informação', 'info': 'informacao',
     'leg': 'legislacao', 'pen': 'penal', 'civ': 'civil',
     'emp': 'empresarial', 'amb': 'ambiental', 'prev': 'previdenciario',
     'trab': 'trabalho', 'eleit': 'eleitoral', 'int': 'internacional',
     'port': 'portugues', 'mat': 'matematica', 'rac': 'raciocinio',
     'econ': 'economia', 'cont': 'contabilidade', 'aud': 'auditoria',
-    'cext': 'controle externo', 'cpub': 'contabilidade publica',
-    'org': 'organizacao', 'admpub': 'administracao publica',
-    'gp': 'gestao pessoas', 'gpp': 'gestao publica',
+    'cext': 'controle externo', 'cpub': 'contabilidade pública',
+    'org': 'organizacao', 'admpub': 'administracao pública',
+    'gp': 'gestao pessoas', 'gpp': 'gestao pública',
     'gest': 'gestao', 'fin': 'financeiro', 'orc': 'orcamentario'
 };
 
