@@ -1,0 +1,27 @@
+name: Testes
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rodar todas as suites
+        run: |
+          falhas=0
+          for f in tests/*.test.js; do
+            echo "::group::$f"
+            node "$f" || falhas=$((falhas + 1))
+            echo "::endgroup::"
+          done
+          if [ "$falhas" -gt 0 ]; then
+            echo "$falhas suite(s) falharam"
+            exit 1
+          fi

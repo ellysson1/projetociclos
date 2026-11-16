@@ -46,6 +46,47 @@ function _calcularRedistribuicaoPorDesempenho(totais, fatoresDesemp) {
     return novo;
 }
 
+// Ajusta a quantidade de blocos PENDENTES por matéria para um alvo definido
+// pelo professor, sem tocar em nenhum bloco concluído (invariante do
+// produto). Matérias fora do alvo ficam exatamente como estão. Função pura.
+//   alvo:      { legenda: total de blocos desejado (concluídos + pendentes) }
+//   templates: { legenda: { nome, legenda, cor } } para criar blocos novos
+function _rebalancearPendentes(blocos, alvo, templates) {
+    const concluidos = {};
+    (blocos || []).forEach(b => {
+        if (b.concluido) concluidos[b.legenda] = (concluidos[b.legenda] || 0) + 1;
+    });
+
+    const pendentesMantidos = {};
+    const resultado = [];
+    (blocos || []).forEach(b => {
+        if (b.concluido || !(b.legenda in alvo)) { resultado.push(b); return; }
+        const permitido = Math.max(0, alvo[b.legenda] - (concluidos[b.legenda] || 0));
+        const mantidos = pendentesMantidos[b.legenda] || 0;
+        if (mantidos < permitido) {
+            resultado.push(b);
+            pendentesMantidos[b.legenda] = mantidos + 1;
+        }
+    });
+
+    Object.keys(alvo).forEach(leg => {
+        const faltam = alvo[leg] - (concluidos[leg] || 0) - (pendentesMantidos[leg] || 0);
+        if (faltam <= 0) return;
+        const modelo = (blocos || []).find(b => b.legenda === leg) || (templates && templates[leg]);
+        if (!modelo) return;
+        for (let i = 0; i < faltam; i++) {
+            const novo = { ...modelo };
+            delete novo.id;
+            novo.concluido = false;
+            novo.assunto = null;
+            novo.questoes = null;
+            resultado.push(novo);
+        }
+    });
+
+    return resultado;
+}
+
 // T8: Distribuição round-robin ponderada por déficit acumulado.
 // Correta por construção: a cada posição escolhe a matéria com maior
 // diferença entre a alocação ideal e a já posicionada, respeitando a

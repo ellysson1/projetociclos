@@ -3,6 +3,7 @@
 --
 -- Execute este script no SQL Editor do Supabase.
 -- Idempotente: pode ser executado mais de uma vez sem efeito colateral.
+-- S1, S2 e S3 já aplicados em produção em 2026-11-16 (migração fase6_seguranca).
 -- Nenhum comando é destrutivo para dados de alunos.
 --
 -- Contexto: o app é 100% client-side (HTML/JS estático + Supabase). A anon key
@@ -30,9 +31,12 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  claims text := nullif(current_setting('request.jwt.claims', true), '');
 BEGIN
-  -- service_role (backend/painel) tem passe livre
-  IF current_setting('request.jwt.claims', true)::jsonb ->> 'role' = 'service_role' THEN
+  -- Sem JWT (SQL Editor / conexão direta ao banco) ou service_role: passe livre.
+  -- Requisições do navegador sempre chegam com JWT de anon/authenticated.
+  IF claims IS NULL OR claims::jsonb ->> 'role' = 'service_role' THEN
     RETURN NEW;
   END IF;
 
@@ -77,122 +81,49 @@ BEGIN
 END $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- S3 — RLS das tabelas que faltavam no repositório
+-- S3 — Ajustes de RLS
 --
--- O script da Fase 2 só versionou policies de 4 tabelas. As abaixo são usadas
--- pelo client e precisam de policy explícita.
+-- Estado encontrado no banco em 2026-11-16 (policies criadas fora do repo):
+--   profiles          : leitura por qualquer autenticado; insert/update do próprio
+--   planos            : professor gerencia os seus; aluno lê os públicos
+--   plano_atribuicoes : professors_manage (ALL), students_read (SELECT)
+--   notificacoes      : leitura/update do destinatário; insert por autenticado
+--   videos            : professor gerencia os seus; leitura livre
+--   videos_assistidos : cada um gerencia os seus
+-- Só o que estava errado é alterado aqui; o restante fica como está.
 -- ────────────────────────────────────────────────────────────────────────────
-
--- profiles ------------------------------------------------------------------
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS profiles_self_rw ON public.profiles;
-CREATE POLICY profiles_self_rw ON public.profiles
-  FOR ALL
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
-
--- Professor lê o perfil (nome) dos alunos atribuídos a ele — necessário para
--- o painel e a aba Alunos. Não expõe a base inteira de alunos.
-DROP POLICY IF EXISTS profiles_professor_atribuidos ON public.profiles;
-CREATE POLICY profiles_professor_atribuidos ON public.profiles
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.plano_atribuicoes pa
-      WHERE pa.aluno_id = profiles.user_id
-        AND pa.professor_id = auth.uid()
-    )
-  );
 
 -- plano_atribuicoes ---------------------------------------------------------
 -- Tabela-pivô de TODA a autorização do professor: as policies de progresso,
--- edital_progresso, questoes e eventos_estudo fazem EXISTS contra ela. Se um
--- usuário pudesse inserir linhas aqui, forjaria vínculo e leria dados de
--- qualquer aluno.
-ALTER TABLE public.plano_atribuicoes ENABLE ROW LEVEL SECURITY;
-
+-- edital_progresso, questoes e eventos_estudo fazem EXISTS contra ela.
+-- A policy antiga (professors_manage) só exigia professor_id = auth.uid():
+-- qualquer aluno podia criar uma atribuição apontando para outro aluno e,
+-- com isso, ler o progresso dele. A nova exige role = 'professor'.
+DROP POLICY IF EXISTS professors_manage ON public.plano_atribuicoes;
 DROP POLICY IF EXISTS atribuicoes_professor_dono ON public.plano_atribuicoes;
 CREATE POLICY atribuicoes_professor_dono ON public.plano_atribuicoes
   FOR ALL
-  USING (professor_id = auth.uid())
+  USING (professor_id = (SELECT auth.uid()))
   WITH CHECK (
-    professor_id = auth.uid()
+    professor_id = (SELECT auth.uid())
     AND EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.user_id = auth.uid() AND p.role = 'professor'
+      WHERE p.user_id = (SELECT auth.uid()) AND p.role = 'professor'
     )
   );
 
--- Aluno lê (somente) as atribuições destinadas a ele
-DROP POLICY IF EXISTS atribuicoes_aluno_leitura ON public.plano_atribuicoes;
-CREATE POLICY atribuicoes_aluno_leitura ON public.plano_atribuicoes
-  FOR SELECT
-  USING (aluno_id = auth.uid());
-
 -- planos --------------------------------------------------------------------
-ALTER TABLE public.planos ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS planos_professor_dono ON public.planos;
-CREATE POLICY planos_professor_dono ON public.planos
-  FOR ALL
-  USING (professor_id = auth.uid())
-  WITH CHECK (professor_id = auth.uid());
-
--- Aluno lê planos públicos ou planos atribuídos a ele
+-- Aluno só lia planos públicos: um plano PRIVADO atribuído a ele vinha vazio
+-- e a atribuição era ignorada em silêncio.
 DROP POLICY IF EXISTS planos_leitura_aluno ON public.planos;
 CREATE POLICY planos_leitura_aluno ON public.planos
   FOR SELECT
   USING (
-    publico = true
-    OR EXISTS (
-      SELECT 1 FROM public.plano_atribuicoes pa
-      WHERE pa.plano_id = planos.id AND pa.aluno_id = auth.uid()
-    )
-  );
-
--- notificacoes --------------------------------------------------------------
-ALTER TABLE public.notificacoes ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS notificacoes_destinatario ON public.notificacoes;
-CREATE POLICY notificacoes_destinatario ON public.notificacoes
-  FOR ALL
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
-
--- Professor cria notificação para aluno atribuído a ele
-DROP POLICY IF EXISTS notificacoes_professor_insere ON public.notificacoes;
-CREATE POLICY notificacoes_professor_insere ON public.notificacoes
-  FOR INSERT
-  WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.plano_atribuicoes pa
-      WHERE pa.aluno_id = notificacoes.user_id
-        AND pa.professor_id = auth.uid()
+      WHERE pa.plano_id = planos.id AND pa.aluno_id = (SELECT auth.uid())
     )
   );
-
--- videos / videos_assistidos ------------------------------------------------
-ALTER TABLE public.videos ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS videos_professor_dono ON public.videos;
-CREATE POLICY videos_professor_dono ON public.videos
-  FOR ALL
-  USING (professor_id = auth.uid())
-  WITH CHECK (professor_id = auth.uid());
-
-DROP POLICY IF EXISTS videos_leitura_autenticado ON public.videos;
-CREATE POLICY videos_leitura_autenticado ON public.videos
-  FOR SELECT
-  USING (auth.uid() IS NOT NULL);
-
-ALTER TABLE public.videos_assistidos ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS videos_assistidos_self ON public.videos_assistidos;
-CREATE POLICY videos_assistidos_self ON public.videos_assistidos
-  FOR ALL
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- S4 — Limpeza de tabelas mortas

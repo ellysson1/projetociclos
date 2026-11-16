@@ -200,6 +200,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             await ensureProfile();
             atualizarUIRole();
             await carregarEstadoNuvem();
+            if (typeof sincronizarPlanoAdotado === 'function') await sincronizarPlanoAdotado();
             await verificarEAplicarPlanoAtribuido();
             atualizarVisibilidadeEdital();
             if (planoAdotado?.edital) {
@@ -219,6 +220,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 await ensureProfile();
                 atualizarUIRole();
                 await carregarEstadoNuvem();
+                if (typeof sincronizarPlanoAdotado === 'function') await sincronizarPlanoAdotado();
                 await verificarEAplicarPlanoAtribuido();
                 atualizarVisibilidadeEdital();
                 if (planoAdotado?.edital) {

@@ -396,7 +396,8 @@ async function confirmarAtribuicao() {
             professor_id: user.id,
             aluno_id: alunoId,
             configuracoes: cfg,
-            modos_materia
+            modos_materia,
+            updated_at: new Date().toISOString()
         }, { onConflict: 'plano_id,aluno_id' });
 
     if (error) {
@@ -700,6 +701,103 @@ async function renderizarPlanosDisponiveis() {
     });
 }
 
+// ── Plano por referência ────────────────────────────────────────────────────
+// O aluno guarda uma cópia do plano dentro do próprio estado. Sem
+// sincronização, qualquer edição do professor (nomes de aula do curso,
+// assuntos TEC, tópicos novos) nunca chegava a quem já tinha o plano.
+// Estas funções atualizam SÓ o conteúdo do plano — ciclo, blocos, fase e
+// progresso do aluno não são tocados.
+
+// Atualiza os vínculos matéria→edital quando os ids do edital mudam (planos
+// antigos não tinham id e cada aluno gerava os seus). Casa por nome exato
+// da matéria; vínculo que não existe mais é removido para a reconciliação
+// perguntar de novo, em vez de apontar para o nada.
+function _remapearVinculosEdital(editalAntigo, editalNovo, listas) {
+    const idsNovos = new Set((editalNovo || []).map(m => m.id).filter(Boolean));
+    const novoPorNome = {};
+    (editalNovo || []).forEach(m => { if (m.id) novoPorNome[m.materia] = m.id; });
+    const mapa = {};
+    (editalAntigo || []).forEach(m => {
+        if (m.id && novoPorNome[m.materia]) mapa[m.id] = novoPorNome[m.materia];
+    });
+    (listas || []).forEach(lista => {
+        (lista || []).forEach(m => {
+            if (!m || !m.materia_edital_id) return;
+            if (idsNovos.has(m.materia_edital_id)) return;
+            if (mapa[m.materia_edital_id]) m.materia_edital_id = mapa[m.materia_edital_id];
+            else delete m.materia_edital_id;
+        });
+    });
+    return mapa;
+}
+
+// Matérias do plano × cópia do aluno: atualiza nome/pesos das existentes
+// (a fase e o vínculo com o edital do aluno são preservados), acrescenta as
+// novas e nunca remove (pode haver blocos concluídos delas).
+function _mesclarMateriasDoPlano(atuais, doPlano) {
+    const planoPorLegenda = {};
+    (doPlano || []).forEach(m => { planoPorLegenda[m.legenda] = m; });
+    const vistas = new Set();
+    const resultado = (atuais || []).map(m => {
+        vistas.add(m.legenda);
+        const p = planoPorLegenda[m.legenda];
+        if (!p) return m;
+        return { ...m, nome: p.nome, peso: p.peso, extensao: p.extensao, dificuldade: p.dificuldade };
+    });
+    (doPlano || []).forEach(p => {
+        if (!vistas.has(p.legenda)) resultado.push({ ...p, fase: p.fase || 1 });
+    });
+    return resultado;
+}
+
+function _aplicarConteudoDoPlano(plano) {
+    const editalNovo = plano.edital || null;
+    if (editalNovo && typeof garantirIdsEdital === 'function') garantirIdsEdital(editalNovo);
+    _remapearVinculosEdital(planoAdotado.edital, editalNovo, [materiasSelecionadas, planoAdotado.materias]);
+
+    planoAdotado.nome = plano.nome;
+    planoAdotado.edital = editalNovo;
+    planoAdotado.materias = _mesclarMateriasDoPlano(planoAdotado.materias, plano.materias);
+    planoAdotado.maxFase = Math.max(1, ...planoAdotado.materias.map(m => m.fase || 1));
+    planoAdotado.regras_evolucao = plano.regras_evolucao || [];
+    planoAdotado.planoAtualizadoEm = plano.updated_at || null;
+}
+
+// Chamada no login, depois de carregar o estado. Devolve true se atualizou.
+async function sincronizarPlanoAdotado() {
+    if (!supabaseConfigurado() || !planoAdotado?.id) return false;
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return false;
+
+    const { data: plano, error } = await supabaseClient
+        .from('planos')
+        .select('id, nome, edital, materias, regras_evolucao, updated_at')
+        .eq('id', planoAdotado.id)
+        .maybeSingle();
+
+    // Plano apagado, privado ou sem rede: o aluno segue com a cópia que tem.
+    if (error || !plano) return false;
+    if (planoAdotado.planoAtualizadoEm && planoAdotado.planoAtualizadoEm === plano.updated_at) return false;
+
+    _aplicarConteudoDoPlano(plano);
+    salvarEstado();
+    return true;
+}
+
+// Cópia de segurança do estado antes de uma troca de plano.
+async function _salvarSnapshotEstado(motivo) {
+    if (!supabaseConfigurado()) return false;
+    const user = await getUsuarioLogado();
+    if (!user) return false;
+    const { error } = await supabaseClient.from('progresso_snapshots').insert({
+        user_id: user.id,
+        motivo,
+        plano_id: planoAdotado?.id || null,
+        estado: montarEstadoLocal()
+    });
+    if (error) console.error('Erro ao salvar snapshot do estado:', error);
+    return !error;
+}
+
 async function verificarEAplicarPlanoAtribuido() {
     if (!supabaseConfigurado()) return;
     const user = await getUsuarioLogado();
@@ -709,7 +807,7 @@ async function verificarEAplicarPlanoAtribuido() {
         .from('plano_atribuicoes')
         .select('*, planos(*)')
         .eq('aluno_id', user.id)
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
         .limit(1);
 
     if (error || !atribuicoes?.length) return;
@@ -723,6 +821,32 @@ async function verificarEAplicarPlanoAtribuido() {
     // silenciosamente qualquer reatribuição do mesmo plano.
     const atrCarimbo = atr.updated_at || atr.created_at || null;
     if (planoAdotado?.id === plano.id && planoAdotado?.atribuicaoEm === atrCarimbo) return;
+
+    const mesmoPlano = planoAdotado?.id === plano.id;
+    const tinhaCarimbo = !!planoAdotado?.atribuicaoEm;
+    const editalAnterior = planoAdotado?.edital || null;
+    const materiasAnteriores = mesmoPlano ? (planoAdotado.materias || []) : [];
+
+    // Troca para OUTRO plano com ciclo em andamento: o ciclo atual não serve
+    // para o plano novo. Nada é descartado sem o aluno confirmar, e o estado
+    // atual vai para um snapshot antes.
+    if (!mesmoPlano && planoAdotado?.id && blocosAtivos && blocosAtivos.length > 0) {
+        const feitos = blocosAtivos.filter(b => b.concluido).length;
+        const ok = confirm(
+            `Seu professor atribuiu um novo plano: "${plano.nome}".\n\n` +
+            `Seu ciclo atual (${feitos} de ${blocosAtivos.length} blocos concluídos) será arquivado e um novo ciclo será montado. ` +
+            `O progresso no edital do plano anterior continua guardado.\n\nAplicar o novo plano agora?`
+        );
+        if (!ok) return;
+        const salvou = await _salvarSnapshotEstado('troca_de_plano');
+        if (!salvou) {
+            alert('Não foi possível guardar uma cópia do seu ciclo atual, então o novo plano não foi aplicado. Verifique sua conexão e recarregue a página.');
+            return;
+        }
+        blocosAtivos = [];
+        materiasSelecionadas = [];
+        faseAtual = 1;
+    }
 
     // Merge configs (plan defaults < atribuicao overrides)
     const cfg = { ...(plano.configuracoes || {}), ...(atr.configuracoes || {}) };
@@ -763,7 +887,18 @@ async function verificarEAplicarPlanoAtribuido() {
     }
 
     const maxFase = Math.max(1, ...todasMaterias.map(m => m.fase || 1));
-    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase, regras_evolucao: plano.regras_evolucao || [], atribuicaoEm: atrCarimbo };
+    if (plano.edital && typeof garantirIdsEdital === 'function') garantirIdsEdital(plano.edital);
+    // Reaplicar o mesmo plano não pode apagar o vínculo matéria→edital que o
+    // aluno já reconciliou.
+    const vinculoPorLegenda = {};
+    materiasAnteriores.forEach(m => { if (m.materia_edital_id) vinculoPorLegenda[m.legenda] = m.materia_edital_id; });
+    todasMaterias = todasMaterias.map(m => (
+        vinculoPorLegenda[m.legenda] && !m.materia_edital_id
+            ? { ...m, materia_edital_id: vinculoPorLegenda[m.legenda] }
+            : m
+    ));
+    planoAdotado = { id: plano.id, nome: plano.nome, edital: plano.edital || null, materias: todasMaterias, maxFase, regras_evolucao: plano.regras_evolucao || [], atribuicaoEm: atrCarimbo, planoAtualizadoEm: plano.updated_at || null };
+    if (mesmoPlano) _remapearVinculosEdital(editalAnterior, planoAdotado.edital, [materiasSelecionadas, planoAdotado.materias]);
 
     // Only include current-phase matérias in active lists
     const materiasDoPlano = todasMaterias.filter(m => (m.fase || 1) <= faseAtual);
@@ -784,6 +919,28 @@ async function verificarEAplicarPlanoAtribuido() {
         if (typeof renderizarEdital === 'function') renderizarEdital();
     } else {
         if (typeof renderizarEdital === 'function') renderizarEdital();
+    }
+
+    // Mesmo plano, professor mudou a quantidade de blocos: ajusta só os
+    // PENDENTES das matérias que ele definiu. Concluídos ficam intactos.
+    // Só vale quando já havia um carimbo anterior (mudança real, não a
+    // primeira sincronização de um aluno antigo).
+    if (mesmoPlano && tinhaCarimbo && cfg.blocos_por_materia && blocosAtivos && blocosAtivos.length > 0
+        && typeof _rebalancearPendentes === 'function') {
+        const legendasAtivas = new Set(materiasDoPlano.map(m => m.legenda));
+        const alvo = {};
+        Object.keys(cfg.blocos_por_materia).forEach(leg => {
+            const qtd = cfg.blocos_por_materia[leg];
+            if (legendasAtivas.has(leg) && Number.isFinite(qtd)) alvo[leg] = qtd;
+        });
+        const templates = {};
+        materiasDoPlano.forEach(m => {
+            const sel = (materiasSelecionadas || []).find(x => x.legenda === m.legenda);
+            templates[m.legenda] = { nome: m.nome, legenda: m.legenda, cor: sel?.cor || gerarCorUnica() };
+            if (!sel && alvo[m.legenda] > 0) materiasSelecionadas.push({ ...m, cor: templates[m.legenda].cor });
+        });
+        blocosAtivos = _rebalancearPendentes(blocosAtivos, alvo, templates);
+        exibirCicloVisual(blocosAtivos);
     }
 
     // If no active cycle, generate from professor-defined quantities or auto-calculate

@@ -20,15 +20,62 @@ async function carregarEditalProgresso() {
         return;
     }
 
+    // Progresso é localizado primeiro pelo id estável do item (sobrevive a
+    // renomeações no edital) e só depois pelos nomes gravados na linha.
+    const porId = _indiceItensEditalPorId();
     editalProgresso = {};
     (data || []).forEach(row => {
-        const key = gerarChaveEdital(row.materia, row.topico, row.subtopico);
-        editalProgresso[key] = {
+        const atual = row.item_id ? porId[row.item_id] : null;
+        const key = atual
+            ? gerarChaveEdital(atual.materia, atual.topico, atual.subtopico)
+            : gerarChaveEdital(row.materia, row.topico, row.subtopico);
+        const novo = {
             status: row.status || 'pendente',
             questoes_feitas: row.questoes_feitas || 0,
             questoes_corretas: row.questoes_corretas || 0
         };
+        // Duas linhas para o mesmo item (nome antigo + nome novo): fica a mais avançada.
+        const existente = editalProgresso[key];
+        if (existente) {
+            const rank = typeof RANK_STATUS_EDITAL !== 'undefined'
+                ? RANK_STATUS_EDITAL
+                : { pendente: 0, em_andamento: 1, visto: 2, concluido: 3 };
+            if ((rank[existente.status] || 0) > (rank[novo.status] || 0)) novo.status = existente.status;
+            novo.questoes_feitas = Math.max(novo.questoes_feitas, existente.questoes_feitas);
+            novo.questoes_corretas = Math.max(novo.questoes_corretas, existente.questoes_corretas);
+        }
+        editalProgresso[key] = novo;
     });
+}
+
+// { item_id: { materia, topico, subtopico } } com os nomes ATUAIS do edital.
+function _indiceItensEditalPorId() {
+    const idx = {};
+    (planoAdotado?.edital || []).forEach(materiaObj => {
+        (materiaObj.topicos || []).forEach(topicoObj => {
+            const subs = topicoObj.subtopicos || [];
+            if (subs.length > 0) {
+                subs.forEach(sub => {
+                    if (sub && typeof sub === 'object' && sub.id) {
+                        idx[sub.id] = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: sub.nome };
+                    }
+                });
+            } else if (topicoObj.id) {
+                idx[topicoObj.id] = { materia: materiaObj.materia, topico: topicoObj.nome, subtopico: null };
+            }
+        });
+    });
+    return idx;
+}
+
+// Id estável do item do edital a partir dos nomes atuais (null se não houver).
+function _idItemEdital(materia, topico, subtopico) {
+    const materiaObj = (planoAdotado?.edital || []).find(m => m.materia === materia);
+    const topicoObj = (materiaObj?.topicos || []).find(t => t.nome === topico);
+    if (!topicoObj) return null;
+    if (!subtopico) return topicoObj.id || null;
+    const sub = (topicoObj.subtopicos || []).find(x => x && typeof x === 'object' && x.nome === subtopico);
+    return sub?.id || null;
 }
 
 async function salvarEditalProgressoItem(materia, topico, subtopico, dados) {
@@ -51,15 +98,34 @@ async function salvarEditalProgressoItem(materia, topico, subtopico, dados) {
 
     // Proteção multi-dispositivo: um dispositivo com estado antigo nunca
     // rebaixa o status nem reduz a contagem de questões já gravada.
-    let query = supabaseClient
-        .from('edital_progresso')
-        .select('status, questoes_feitas, questoes_corretas')
-        .eq('user_id', user.id)
-        .eq('plano_id', planoAdotado.id)
-        .eq('materia', materia)
-        .eq('topico', topico);
-    query = subtopico ? query.eq('subtopico', subtopico) : query.is('subtopico', null);
-    const { data: atual } = await query.maybeSingle();
+    const itemId = _idItemEdital(materia, topico, subtopico);
+    if (itemId) registro.item_id = itemId;
+
+    // Linha existente: pelo id do item (pode estar gravada com o nome antigo)
+    // e, na falta, pelos nomes.
+    let atual = null;
+    if (itemId) {
+        const { data: porItem } = await supabaseClient
+            .from('edital_progresso')
+            .select('id, status, questoes_feitas, questoes_corretas')
+            .eq('user_id', user.id)
+            .eq('plano_id', planoAdotado.id)
+            .eq('item_id', itemId)
+            .limit(1);
+        atual = porItem?.[0] || null;
+    }
+    if (!atual) {
+        let query = supabaseClient
+            .from('edital_progresso')
+            .select('id, status, questoes_feitas, questoes_corretas')
+            .eq('user_id', user.id)
+            .eq('plano_id', planoAdotado.id)
+            .eq('materia', materia)
+            .eq('topico', topico);
+        query = subtopico ? query.eq('subtopico', subtopico) : query.is('subtopico', null);
+        const { data: porNome } = await query.limit(1);
+        atual = porNome?.[0] || null;
+    }
 
     if (atual) {
         const rank = typeof RANK_STATUS_EDITAL !== 'undefined'
@@ -77,15 +143,26 @@ async function salvarEditalProgressoItem(materia, topico, subtopico, dados) {
         }
     }
 
-    const { error } = await supabaseClient
-        .from('edital_progresso')
-        .upsert(registro, {
+    // Atualiza a linha existente pelo id (regrava os nomes atuais, caso o
+    // item tenha sido renomeado); só insere quando não há linha.
+    const { error } = atual?.id
+        ? await supabaseClient.from('edital_progresso').update(registro).eq('id', atual.id)
+        : await supabaseClient.from('edital_progresso').upsert(registro, {
             onConflict: 'user_id,plano_id,materia,topico,subtopico'
         });
 
     if (error) {
         console.error('Erro ao salvar progresso do edital:', error);
+        _avisarFalhaSalvarEdital();
     }
+}
+
+// Falha ao gravar progresso não pode ser silenciosa: o aluno acha que salvou.
+let _avisoFalhaEditalEm = 0;
+function _avisarFalhaSalvarEdital() {
+    if (Date.now() - _avisoFalhaEditalEm < 60000) return;
+    _avisoFalhaEditalEm = Date.now();
+    alert('Não foi possível salvar seu progresso no edital. Verifique sua conexão; o item pode voltar ao estado anterior ao recarregar a página.');
 }
 
 function gerarChaveEdital(materia, topico, subtopico) {
