@@ -154,6 +154,28 @@ const videosCode = fs.readFileSync(path.join(__dirname, '..', 'js', 'videos.js')
 assert(videosCode.includes('rel="noopener noreferrer"'),
     'links externos de video tem rel=noopener');
 
+// ── Nomes de coluna do banco nunca levam acento ─────────────────────────────
+// Um find/replace de acentuacao no redesenho de layout trocou `configuracoes`,
+// `materia` e `anotacoes` dentro de consultas, que passaram a falhar em
+// silencio (inclusive a carga do estado da nuvem no login).
+console.log('\nConsultas ao banco sem acento:');
+
+const jsDir = path.join(__dirname, '..', 'js');
+const reConsulta = /\.(select|eq|in|order|is|update|insert|upsert|neq|match)\([^)]*[áàâãéêíóôõúçÁÀÂÃÉÊÍÓÔÕÚÇ]/;
+const ofensores = [];
+fs.readdirSync(jsDir).filter(f => f.endsWith('.js')).forEach(f => {
+    fs.readFileSync(path.join(jsDir, f), 'utf8').split('\n').forEach((linha, i) => {
+        if (reConsulta.test(linha)) ofensores.push(`${f}:${i + 1}`);
+    });
+});
+assert(ofensores.length === 0,
+    'nenhuma consulta Supabase com acento' + (ofensores.length ? ' — ' + ofensores.join(', ') : ''));
+
+const matcherSrc = fs.readFileSync(path.join(jsDir, 'matcher.js'), 'utf8');
+const blocoAbrev = matcherSrc.slice(matcherSrc.indexOf('const ABREVIACOES'), matcherSrc.indexOf('};', matcherSrc.indexOf('const ABREVIACOES')));
+assert(!/[áàâãéêíóôõúç]/i.test(blocoAbrev),
+    'ABREVIACOES do matcher sem acento (texto comparado ja e normalizado)');
+
 // ── Resumo ───────────────────────────────────────────────────────────────────
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

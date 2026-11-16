@@ -67,7 +67,7 @@ async function carregarQuestoesHistorico() {
 
     const { data, error } = await supabaseClient
         .from('questoes')
-        .select('matéria, questoes_feitas, questoes_corretas')
+        .select('materia, questoes_feitas, questoes_corretas')
         .eq('user_id', user.id);
 
     if (error) {

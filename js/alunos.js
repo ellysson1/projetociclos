@@ -39,7 +39,7 @@ async function renderizarAbaAlunos() {
 
     const { data: atribuicoes, error } = await supabaseClient
         .from('plano_atribuicoes')
-        .select('aluno_id, plano_id, configurações, updated_at, created_at, planos(nome)')
+        .select('aluno_id, plano_id, configuracoes, updated_at, created_at, planos(nome)')
         .eq('professor_id', user.id)
         .order('created_at', { ascending: false });
 

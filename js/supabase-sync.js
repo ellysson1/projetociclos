@@ -113,7 +113,7 @@ async function carregarEstadoNuvem() {
     let data = null;
     const resp = await supabaseClient
         .from('progresso')
-        .select('estado, versao, anotações')
+        .select('estado, versao, anotacoes')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -121,7 +121,7 @@ async function carregarEstadoNuvem() {
         // Migração ainda não aplicada: tentar sem a coluna versao
         const legado = await supabaseClient
             .from('progresso')
-            .select('estado, anotações')
+            .select('estado, anotacoes')
             .eq('user_id', user.id)
             .maybeSingle();
         if (legado.error) {

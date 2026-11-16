@@ -976,7 +976,7 @@ async function abrirPainelAlunos(plano) {
 
     const { data: atribuicoes, error } = await supabaseClient
         .from('plano_atribuicoes')
-        .select('aluno_id, configurações, modos_materia, created_at')
+        .select('aluno_id, configuracoes, modos_materia, created_at')
         .eq('plano_id', plano.id);
 
     if (error || !atribuicoes?.length) {
@@ -989,7 +989,7 @@ async function abrirPainelAlunos(plano) {
     const [profilesResp, progressoResp, editalResp] = await Promise.all([
         supabaseClient.from('profiles').select('user_id, nome').in('user_id', alunoIds),
         supabaseClient.from('progresso').select('user_id, estado, updated_at').in('user_id', alunoIds),
-        supabaseClient.from('edital_progresso').select('user_id, matéria, topico, subtopico, status').eq('plano_id', plano.id).in('user_id', alunoIds)
+        supabaseClient.from('edital_progresso').select('user_id, materia, topico, subtopico, status').eq('plano_id', plano.id).in('user_id', alunoIds)
     ]);
 
     if (progressoResp.error) console.warn('Painel: erro ao ler progresso dos alunos (provável RLS):', progressoResp.error);
@@ -1117,7 +1117,7 @@ async function entrarModoVisualizacao(alunoId, alunoNome, planoId) {
     const [progressoResp, editalResp, questoesResp, planoResp] = await Promise.all([
         supabaseClient.from('progresso').select('estado').eq('user_id', alunoId).maybeSingle(),
         supabaseClient.from('edital_progresso').select('*').eq('user_id', alunoId).eq('plano_id', planoId),
-        supabaseClient.from('questoes').select('matéria, questoes_feitas, questoes_corretas').eq('user_id', alunoId),
+        supabaseClient.from('questoes').select('materia, questoes_feitas, questoes_corretas').eq('user_id', alunoId),
         supabaseClient.from('planos').select('*').eq('id', planoId).maybeSingle()
     ]);
 
