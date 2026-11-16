@@ -18,8 +18,6 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ULAmkcVfbsAzJ6tRCQJarQ_WGMbMaTo
 const BASE_URL = 'https://profellysson.com.br';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-const CODIGO_PROFESSOR = 'prof2026@ciclo';
-
 function setMsg(text, type='success') {
     const el = document.getElementById('msg');
     if (!el) return;
@@ -33,23 +31,12 @@ function setMsg(text, type='success') {
     <div class="auth-wrapper">
         <div class="brand">
             <h1>No Controle</h1>
-            <p>Cadastro restrito a professores.</p>
+            <p>Solicitação de acesso de professor.</p>
         </div>
         <div class="card">
-            <div id="formCodigo">
-                <h2>Acesso restrito</h2>
-                <p class="sub">Informe o código de acesso para cadastrar uma conta de professor.</p>
-
-                <label for="codigo">Código de acesso</label>
-                <input type="password" id="codigo" placeholder="Digite o código">
-
-                <button id="btnValidarCodigo" type="button">Validar</button>
-                <div id="msg" class="msg"></div>
-            </div>
-
-            <div id="formProfessor">
-                <h2>Criar conta de professor</h2>
-                <p class="sub">Depois do cadastro, confirme seu e-mail antes de entrar.</p>
+            <div id="formProfessor" style="display:block;">
+                <h2>Solicitar acesso de professor</h2>
+                <p class="sub">Crie sua conta e confirme o e-mail. O acesso de professor é liberado manualmente pelo administrador; até lá a conta funciona como a de um aluno.</p>
 
                 <label for="nome">Nome</label>
                 <input type="text" id="nome" placeholder="Seu nome completo">
@@ -63,7 +50,7 @@ function setMsg(text, type='success') {
                 <label for="senha2">Confirmar senha</label>
                 <input type="password" id="senha2" autocomplete="new-password" placeholder="Repita a senha">
 
-                <button id="btnCriarProfessor" type="button">Criar conta</button>
+                <button id="btnCriarProfessor" type="button">Criar conta e solicitar acesso</button>
                 <div id="msg2" class="msg"></div>
             </div>
 
@@ -79,21 +66,10 @@ function setMsg2(text, type='success') {
     el.className = 'msg ' + type;
 }
 
-// ATENÇÃO: este código NÃO é um segredo — ele vive no JavaScript do
-// navegador e é legível por qualquer visitante no DevTools. Serve apenas
-// como atrito de UX. A barreira real é a trigger `impedir_auto_promocao`
-// (sql/fase6_seguranca.sql): toda conta criada pelo navegador nasce como
-// 'aluno' e o role só é elevado via service_role (painel do Supabase).
-document.getElementById('btnValidarCodigo').addEventListener('click', () => {
-    const codigo = document.getElementById('codigo').value.trim();
-    if (codigo === CODIGO_PROFESSOR) {
-        document.getElementById('formCodigo').style.display = 'none';
-        document.getElementById('formProfessor').style.display = 'block';
-    } else {
-        setMsg('Código inválido.', 'error');
-    }
-});
-
+// Não existe mais código de acesso: ele vivia no JavaScript e qualquer
+// visitante podia lê-lo. O papel de professor é definido só no banco (trigger
+// impedir_auto_promocao): toda conta criada pelo navegador nasce como aluno.
+// O pedido fica registrado nos metadados do usuário para o administrador.
 document.getElementById('btnCriarProfessor').addEventListener('click', async () => {
     const nome = document.getElementById('nome').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -117,7 +93,7 @@ document.getElementById('btnCriarProfessor').addEventListener('click', async () 
         email,
         password,
         options: {
-            data: { nome, role: 'professor' },
+            data: { nome, solicitou_professor: true },
             emailRedirectTo: BASE_URL + '/login.html'
         }
     });
@@ -127,7 +103,7 @@ document.getElementById('btnCriarProfessor').addEventListener('click', async () 
         return;
     }
 
-    setMsg2('Conta de professor criada com sucesso! Verifique seu e-mail para confirmar o cadastro.');
+    setMsg2('Conta criada. Confirme seu e-mail e avise o administrador para liberar o acesso de professor.');
 });
 </script>
 </body>

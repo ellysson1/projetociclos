@@ -1,5 +1,3 @@
-const CODIGO_PROFESSOR = 'prof2026@ciclo';
-
 let currentProfile = null;
 
 async function getProfile() {
@@ -29,7 +27,10 @@ async function ensureProfile() {
     if (!profile) {
         const user = await getUsuarioLogado();
         if (!user) return null;
-        const role = user.user_metadata?.role === 'professor' ? 'professor' : 'aluno';
+        // Toda conta nasce como aluno. O banco ignora qualquer outro valor
+        // vindo do navegador (trigger impedir_auto_promocao); a promoção a
+        // professor é feita pelo administrador direto no banco.
+        const role = 'aluno';
         const nome = user.user_metadata?.nome || user.email.split('@')[0];
         const { error } = await supabaseClient
             .from('profiles')
@@ -47,19 +48,6 @@ async function ensureProfile() {
     }
     currentProfile = profile;
     return profile;
-}
-
-async function promoverParaProfessor(userId) {
-    const { error } = await supabaseClient
-        .from('profiles')
-        .update({ role: 'professor' })
-        .eq('user_id', userId);
-
-    if (error) {
-        console.error('Erro ao promover para professor:', error);
-        return false;
-    }
-    return true;
 }
 
 function atualizarUIRole() {

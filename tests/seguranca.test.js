@@ -176,6 +176,19 @@ const blocoAbrev = matcherSrc.slice(matcherSrc.indexOf('const ABREVIACOES'), mat
 assert(!/[áàâãéêíóôõúç]/i.test(blocoAbrev),
     'ABREVIACOES do matcher sem acento (texto comparado ja e normalizado)');
 
+// ── Papel de professor nunca é decidido no navegador ───────────────────────
+console.log('\nPapel de professor:');
+
+const raiz = path.join(__dirname, '..');
+const fontes = fs.readdirSync(jsDir).filter(f => f.endsWith('.js')).map(f => path.join(jsDir, f))
+    .concat(fs.readdirSync(raiz).filter(f => f.endsWith('.html')).map(f => path.join(raiz, f)));
+const comCodigo = fontes.filter(f => /CODIGO_PROFESSOR|prof2026@ciclo/.test(fs.readFileSync(f, 'utf8')));
+assert(comCodigo.length === 0,
+    'nenhum codigo de acesso de professor no front' + (comCodigo.length ? ' — ' + comCodigo.map(f => path.basename(f)).join(', ') : ''));
+const comRole = fontes.filter(f => /role:\s*['"]professor['"]/.test(fs.readFileSync(f, 'utf8')));
+assert(comRole.length === 0,
+    'nenhum trecho do front grava role professor' + (comRole.length ? ' — ' + comRole.map(f => path.basename(f)).join(', ') : ''));
+
 // ── Resumo ───────────────────────────────────────────────────────────────────
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
