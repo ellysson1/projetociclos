@@ -23,8 +23,13 @@ async function carregarEditalProgresso() {
     // Progresso é localizado primeiro pelo id estável do item (sobrevive a
     // renomeações no edital) e só depois pelos nomes gravados na linha.
     const porId = _indiceItensEditalPorId();
+
+    const linhas = data || [];
+    const herdadas = await _herdarProgressoDeOutrosPlanos(user, linhas, porId);
+    linhas.push(...herdadas);
+
     editalProgresso = {};
-    (data || []).forEach(row => {
+    linhas.forEach(row => {
         const atual = row.item_id ? porId[row.item_id] : null;
         const key = atual
             ? gerarChaveEdital(atual.materia, atual.topico, atual.subtopico)
@@ -46,6 +51,80 @@ async function carregarEditalProgresso() {
         }
         editalProgresso[key] = novo;
     });
+}
+
+// Escolhe, entre linhas de OUTROS planos, as que correspondem a itens deste
+// edital (mesmo item_id — planos duplicados compartilham ids) e que ainda
+// não têm linha no plano atual. Por item fica o status mais avançado e a
+// maior contagem de questões. O casamento é por id, nunca por nome.
+// Função pura; devolve as linhas já com os nomes atuais do item.
+function _selecionarProgressoHerdavel(linhasOutrosPlanos, linhasAtuais, porId) {
+    const rank = typeof RANK_STATUS_EDITAL !== 'undefined'
+        ? RANK_STATUS_EDITAL
+        : { pendente: 0, em_andamento: 1, visto: 2, concluido: 3 };
+    const jaTem = new Set();
+    (linhasAtuais || []).forEach(r => {
+        if (r.item_id) jaTem.add(r.item_id);
+        const viaNome = Object.keys(porId).find(id =>
+            porId[id].materia === r.materia && porId[id].topico === r.topico &&
+            (porId[id].subtopico || null) === (r.subtopico || null));
+        if (viaNome) jaTem.add(viaNome);
+    });
+
+    const melhor = {};
+    (linhasOutrosPlanos || []).forEach(r => {
+        if (!r.item_id || !porId[r.item_id] || jaTem.has(r.item_id)) return;
+        const atual = porId[r.item_id];
+        const m = melhor[r.item_id] || {
+            item_id: r.item_id,
+            materia: atual.materia,
+            topico: atual.topico,
+            subtopico: atual.subtopico || null,
+            status: 'pendente',
+            questoes_feitas: 0,
+            questoes_corretas: 0
+        };
+        if ((rank[r.status] || 0) > (rank[m.status] || 0)) m.status = r.status;
+        m.questoes_feitas = Math.max(m.questoes_feitas, r.questoes_feitas || 0);
+        m.questoes_corretas = Math.max(m.questoes_corretas, r.questoes_corretas || 0);
+        melhor[r.item_id] = m;
+    });
+
+    return Object.values(melhor).filter(m => m.status !== 'pendente' || m.questoes_feitas > 0);
+}
+
+// Ao abrir um plano, traz o progresso que o aluno já tinha nos mesmos itens
+// em outro plano (troca entre concursos parecidos). Nada é apagado do plano
+// de origem.
+async function _herdarProgressoDeOutrosPlanos(user, linhasAtuais, porId) {
+    if (typeof _modoVisualizacaoAluno !== 'undefined' && _modoVisualizacaoAluno) return [];
+    if (Object.keys(porId).length === 0) return [];
+
+    const { data: outras, error } = await supabaseClient
+        .from('edital_progresso')
+        .select('item_id, status, questoes_feitas, questoes_corretas')
+        .eq('user_id', user.id)
+        .neq('plano_id', planoAdotado.id)
+        .not('item_id', 'is', null);
+    if (error || !outras || outras.length === 0) return [];
+
+    const herdaveis = _selecionarProgressoHerdavel(outras, linhasAtuais, porId);
+    if (herdaveis.length === 0) return [];
+
+    const registros = herdaveis.map(h => ({
+        ...h,
+        user_id: user.id,
+        plano_id: planoAdotado.id,
+        updated_at: new Date().toISOString()
+    }));
+    const { error: errIns } = await supabaseClient
+        .from('edital_progresso')
+        .upsert(registros, { onConflict: 'user_id,plano_id,materia,topico,subtopico', ignoreDuplicates: true });
+    if (errIns) {
+        console.error('Erro ao herdar progresso de outro plano:', errIns);
+        return [];
+    }
+    return registros;
 }
 
 // { item_id: { materia, topico, subtopico } } com os nomes ATUAIS do edital.

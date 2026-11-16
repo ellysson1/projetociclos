@@ -88,6 +88,29 @@ async function excluirPlano(planoId) {
     return true;
 }
 
+// ── Duplicar plano ──────────────────────────────────────────────────────────
+// A cópia preserva os ids estáveis de matéria/tópico/subtópico do edital.
+// É isso que permite a um aluno trocar entre concursos parecidos levando o
+// progresso: edital_progresso é casado pelo item_id (ver
+// _herdarProgressoDeOutrosPlanos em edital.js). Função pura.
+function _montarCopiaDoPlano(plano) {
+    const clone = v => (v === undefined || v === null ? v : JSON.parse(JSON.stringify(v)));
+    return {
+        nome: `${plano.nome || 'Plano'} (cópia)`,
+        descricao: plano.descricao || '',
+        materias: clone(plano.materias) || [],
+        configuracoes: clone(plano.configuracoes) || {},
+        edital: clone(plano.edital) || null,
+        regras_evolucao: clone(plano.regras_evolucao) || [],
+        publico: false
+    };
+}
+
+async function duplicarPlano(plano) {
+    if (!plano) return null;
+    return salvarPlano(_montarCopiaDoPlano(plano));
+}
+
 // ── UI do Professor: Aba Planos ─────────────────────────────────────────────
 
 async function renderizarListaPlanosProfessor() {
@@ -117,6 +140,7 @@ async function renderizarListaPlanosProfessor() {
                 <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
                     <button class="btn-painel-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:var(--nc-superficie-alta); color:var(--nc-gelo); border:none; border-radius:6px; cursor:pointer;">Painel</button>
                     <button class="btn-atribuir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:var(--nc-superficie-alta); color:var(--nc-gelo); border:none; border-radius:6px; cursor:pointer;">Atribuir</button>
+                    <button class="btn-duplicar-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:var(--nc-superficie-alta); color:var(--nc-gelo); border:none; border-radius:6px; cursor:pointer;">Duplicar</button>
                     <button class="btn-editar-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px;">Editar</button>
                     <button class="btn-excluir-plano" data-id="${escapeHtml(plano.id)}" style="font-size:12px; padding:6px 12px; background:var(--nc-alerta-fundo);">Excluir</button>
                 </div>
@@ -135,6 +159,18 @@ async function renderizarListaPlanosProfessor() {
         btn.addEventListener('click', () => {
             const plano = planos.find(p => p.id === btn.dataset.id);
             if (plano) abrirModalAtribuir(plano);
+        });
+    });
+    container.querySelectorAll('.btn-duplicar-plano').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const plano = planos.find(p => p.id === btn.dataset.id);
+            if (!plano) return;
+            if (!confirm(`Duplicar o plano "${plano.nome}"? A cópia nasce privada e mantém os mesmos itens de edital, então um aluno que trocar de um para o outro leva o progresso junto.`)) return;
+            btn.disabled = true;
+            const copia = await duplicarPlano(plano);
+            btn.disabled = false;
+            if (!copia) { alert('Não foi possível duplicar o plano. Verifique sua conexão e tente novamente.'); return; }
+            renderizarListaPlanosProfessor();
         });
     });
     container.querySelectorAll('.btn-editar-plano').forEach(btn => {
@@ -835,7 +871,7 @@ async function verificarEAplicarPlanoAtribuido() {
         const ok = confirm(
             `Seu professor atribuiu um novo plano: "${plano.nome}".\n\n` +
             `Seu ciclo atual (${feitos} de ${blocosAtivos.length} blocos concluídos) será arquivado e um novo ciclo será montado. ` +
-            `O progresso no edital do plano anterior continua guardado.\n\nAplicar o novo plano agora?`
+            `Os itens do edital que também existem no novo plano levam o progresso junto; o restante continua guardado no plano anterior.\n\nAplicar o novo plano agora?`
         );
         if (!ok) return;
         const salvou = await _salvarSnapshotEstado('troca_de_plano');

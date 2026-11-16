@@ -29,6 +29,8 @@ vm.runInThisContext(extrairBloco(planosCode, '_mesclarMateriasDoPlano'));
 vm.runInThisContext(extrairBloco(blocosCode, '_rebalancearPendentes'));
 vm.runInThisContext(extrairBloco(editalCode, '_indiceItensEditalPorId'));
 vm.runInThisContext(extrairBloco(editalCode, '_idItemEdital'));
+vm.runInThisContext(extrairBloco(editalCode, '_selecionarProgressoHerdavel'));
+vm.runInThisContext(extrairBloco(planosCode, '_montarCopiaDoPlano'));
 
 let passed = 0, failed = 0;
 function assert(cond, msg) {
@@ -146,6 +148,63 @@ assert(!idx.t1, 'topico COM subtopicos nao e item (so os subtopicos sao)');
 // Renomeação: o mesmo id passa a apontar para o nome novo
 planoAdotado.edital[0].topicos[0].subtopicos[0].nome = 'Balanço Patrimonial';
 assert(_indiceItensEditalPorId().s1.subtopico === 'Balanço Patrimonial', 'apos renomear, o id resolve para o nome novo');
+
+// ── _montarCopiaDoPlano ──────────────────────────────────────────────────────
+console.log('\n_montarCopiaDoPlano:');
+
+const original = {
+    id: 'plano-1', professor_id: 'prof', nome: 'TCU 2026', descricao: 'd', publico: true,
+    materias: [{ nome: 'AFO', legenda: 'AFO', peso: 8 }],
+    configuracoes: { duracaoBloco: 50 },
+    regras_evolucao: [{ fase: 1, pct_edital: 60 }],
+    edital: [{ id: 'm1', materia: 'AFO', topicos: [{ id: 't1', nome: 'Orçamento', subtopicos: [{ id: 's1', nome: 'PPA', curso_nome: 'Aula 02' }] }] }]
+};
+const copia = _montarCopiaDoPlano(original);
+assert(!('id' in copia), 'copia nao leva o id do plano (vira um registro novo)');
+assert(copia.nome === 'TCU 2026 (cópia)', 'nome marcado como copia');
+assert(copia.publico === false, 'copia nasce privada');
+assert(copia.edital[0].id === 'm1' && copia.edital[0].topicos[0].id === 't1' && copia.edital[0].topicos[0].subtopicos[0].id === 's1',
+    'ids de materia, topico e subtopico sao PRESERVADOS');
+assert(copia.edital[0].topicos[0].subtopicos[0].curso_nome === 'Aula 02', 'mapeamento curso/TEC vai junto');
+copia.edital[0].topicos[0].nome = 'Mudou';
+copia.materias[0].peso = 1;
+assert(original.edital[0].topicos[0].nome === 'Orçamento' && original.materias[0].peso === 8,
+    'copia e independente (editar a copia nao altera o original)');
+assert(_montarCopiaDoPlano({ nome: 'X' }).edital === null, 'plano sem edital: copia com edital null');
+
+// ── _selecionarProgressoHerdavel ─────────────────────────────────────────────
+console.log('\n_selecionarProgressoHerdavel:');
+
+const porIdNovo = {
+    s1: { materia: 'AFO', topico: 'Orçamento', subtopico: 'PPA (novo nome)' },
+    s2: { materia: 'AFO', topico: 'Orçamento', subtopico: 'LDO' },
+    t9: { materia: 'AFO', topico: 'Receita', subtopico: null }
+};
+const outros = [
+    { item_id: 's1', status: 'visto', questoes_feitas: 10, questoes_corretas: 7 },
+    { item_id: 's1', status: 'em_andamento', questoes_feitas: 14, questoes_corretas: 6 },
+    { item_id: 's2', status: 'concluido', questoes_feitas: 0, questoes_corretas: 0 },
+    { item_id: 't9', status: 'pendente', questoes_feitas: 0, questoes_corretas: 0 },
+    { item_id: 'zz', status: 'visto', questoes_feitas: 3, questoes_corretas: 3 },
+    { item_id: null, status: 'visto', questoes_feitas: 3, questoes_corretas: 3 }
+];
+let h = _selecionarProgressoHerdavel(outros, [], porIdNovo);
+const hs1 = h.find(x => x.item_id === 's1');
+assert(hs1 && hs1.status === 'visto', 'entre varias linhas do mesmo item fica o status mais avancado');
+assert(hs1.questoes_feitas === 14 && hs1.questoes_corretas === 7, 'questoes: maior contagem');
+assert(hs1.subtopico === 'PPA (novo nome)', 'linha herdada usa o nome ATUAL do item no plano novo');
+assert(h.some(x => x.item_id === 's2' && x.status === 'concluido'), 'concluido e herdado');
+assert(!h.some(x => x.item_id === 't9'), 'item pendente e sem questoes nao gera linha');
+assert(!h.some(x => x.item_id === 'zz'), 'item que nao existe no plano novo e ignorado');
+assert(h.length === 2, 'linhas sem item_id sao ignoradas (nunca casa por nome)');
+
+h = _selecionarProgressoHerdavel(outros, [{ item_id: 's1', materia: 'AFO', topico: 'Orçamento', subtopico: 'PPA (novo nome)', status: 'pendente' }], porIdNovo);
+assert(!h.some(x => x.item_id === 's1'), 'item que ja tem linha no plano atual NAO e sobrescrito (mesmo pendente)');
+
+h = _selecionarProgressoHerdavel(outros, [{ item_id: null, materia: 'AFO', topico: 'Orçamento', subtopico: 'LDO', status: 'em_andamento' }], porIdNovo);
+assert(!h.some(x => x.item_id === 's2'), 'linha atual antiga sem item_id tambem protege o item');
+
+assert(_selecionarProgressoHerdavel(null, null, {}).length === 0, 'entradas vazias: nada a herdar');
 
 // ── Guardas de regressão ─────────────────────────────────────────────────────
 console.log('\nGuardas de regressao:');
